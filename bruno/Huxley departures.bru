@@ -1,0 +1,20 @@
+meta {
+  name: Huxley departures
+  type: http
+  seq: 1
+}
+
+get {
+  url: https://huxley2.azurewebsites.net/staffdepartures/swi?access_token=NBN9o15uI8cGHkxFNTMOtS4ebhdoaG62P362QRcjVABdBCLt
+  body: none
+  auth: inherit
+}
+
+params:query {
+  access_token: NBN9o15uI8cGHkxFNTMOtS4ebhdoaG62P362QRcjVABdBCLt
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

@@ -1,0 +1,49 @@
+@import 'tailwindcss';
+
+:root {
+	--color-background: #fff;
+	--color-foreground-muted: #e4e4e7;
+	--color-foreground: #000;
+	--color-border: #f4f4f5;
+	--color-primary: #000;
+	--color-primary-invert: #fff;
+	--color-good: oklch(62.7% 0.194 149.214);
+	--color-warning: oklch(68.1% 0.162 75.834);
+	--color-danger: oklch(57.7% 0.245 27.325);
+}
+
+@media (prefers-color-scheme: dark) {
+	:root {
+		--color-background: #09090b;
+		--color-foreground: #fafafa;
+		--color-foreground-muted: #27272a;
+		--color-primary: #fff;
+		--color-primary-invert: #000;
+		--color-border: #27272a;
+		--color-good: oklch(62.7% 0.194 149.214);
+		--color-warning: #eab308;
+		--color-danger: #ef4444;
+	}
+}
+
+@theme {
+	--default-font-family: 'Inter', 'Arial', sans-serif;
+	--color-background: var(--color-background);
+		--color-foreground-muted: var(--color-foreground-muted);
+	--color-foreground: var(--color-foreground);
+	--color-border: var(--color-border);
+	--color-primary: var(--color-primary);
+	--color-primary-invert: var(--color-primary-invert);
+	--color-good: var(--color-good);
+	--color-warning: var(--color-warning);
+	--color-danger: var(--color-danger);
+}
+
+:root {
+	overscroll-behavior: none;
+	color: var(--color-foreground);
+}
+
+.pane {
+	padding-top: 0px !important;
+}

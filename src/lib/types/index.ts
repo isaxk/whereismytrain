@@ -1,0 +1,124 @@
+export type DestinationOrigin = {
+	crs: string;
+	name: string;
+	via: string | null;
+};
+
+export type TimeObject = {
+	rt: {
+		dep: string | null;
+		depSource?: 'trust' | 'none';
+		arr: string | null;
+		arrSource?: 'trust' | 'none';
+	};
+	plan: {
+		dep: string | null;
+		arr: string | null;
+	};
+};
+
+export type Operator = {
+	id: string | null;
+	name: string;
+	color: string;
+};
+
+export type Position = 'Arriving' | 'Departing' | 'Departed' | 'Arrived' | 'Cancelled' | null;
+
+export type BoardItem = {
+	rid: string;
+	uid: string;
+	sdd: string;
+	destination: DestinationOrigin[];
+	origin: DestinationOrigin[];
+	times: TimeObject;
+	isCancelled: boolean;
+	platform: string | null;
+	operator: Operator;
+	position: Position;
+	delay: number | null;
+	delayReason: string | null;
+	cancelReason: string | null;
+};
+
+export type BoardDetails = {
+	name: string;
+	filterName: string | null;
+	notices: Notice[];
+};
+
+export enum Severity {
+	info = 0,
+	minor = 1,
+	major = 2,
+	severe = 3,
+}
+
+export type Notice = {
+	category: number;
+	severity: Severity;
+	xhtmlMessage: string;
+};
+
+export type Board = {
+	services: BoardItem[];
+	details: BoardDetails;
+};
+
+export type ServiceLocation = {
+	crs: string | null;
+	tiploc: string;
+	isCancelled: boolean;
+	atd: string | null;
+	ata: string | null;
+	etd: string | null;
+	eta: string | null;
+	std: string | null;
+	sta: string | null;
+};
+
+export type CallingPointOrder = 'origin' | 'previous' | 'focus' | 'subsequent' | 'further' | 'destination';
+
+export type CallingPoint = {
+	crs: string | null;
+	tiploc: string;
+	times: TimeObject;
+	isCancelled: boolean;
+	name: string;
+	platform: string | null;
+	inDivision: boolean;
+	startDivide: boolean;
+	endDivide: boolean;
+	delay: number | null;
+	order: CallingPointOrder;
+};
+
+export type TrainService = {
+	rid: string;
+	uid: string;
+	sdd: string;
+	locations: ServiceLocation[];
+	callingPoints: CallingPoint[];
+	operator: Operator;
+	title: string;
+	reasonCode: string | null;
+};
+
+export type ServiceLocationWithCoords = ServiceLocation & {
+	coords: [number, number];
+};
+
+export type MapDataLocationGroup = {
+	lineLocations: ServiceLocationWithCoords[];
+	trainPosition: [number, number] | null;
+	trainBearing: number | null;
+	destination: ServiceLocationWithCoords;
+};
+
+export type ServiceMapData = {
+	locations: MapDataLocationGroup[];
+	tiplocData: {
+		tiploc: string;
+		coords: [number, number];
+	}[];
+};

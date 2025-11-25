@@ -1,0 +1,34 @@
+meta {
+  name: Disruptions
+  type: http
+  seq: 4
+}
+
+post {
+  url: https://api1.raildata.org.uk/1010-disruptions-experience-api-11_0/bulletins/search
+  body: json
+  auth: inherit
+}
+
+headers {
+  x-apikey: TLcGxTIfUFiWCYzAke8M8s28rFz0Pp3MiF6u37tBOlbO3Arp
+}
+
+body:json {
+  {
+    "effectiveAt": "2025-11-25T17:06:00Z",
+    "isAlert": true,
+    "isDisruption": true,
+    "hasContextValue": true,
+    "severity": "High",
+    "mode": [
+      "TRAIN",
+      "BUS"
+    ]
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
