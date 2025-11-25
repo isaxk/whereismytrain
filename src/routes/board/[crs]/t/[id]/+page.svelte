@@ -95,7 +95,6 @@
 								version="1.1"
 								id="svg1"
 								xmlns="http://www.w3.org/2000/svg"
-								xmlns:svg="http://www.w3.org/2000/svg"
 							>
 								<defs id="defs1" />
 								<g id="layer1">

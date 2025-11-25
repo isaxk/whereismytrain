@@ -1,12 +1,12 @@
 import { ACCESS_TOKEN } from '$env/static/private';
 import { operatorList } from '$lib/data/operators';
-import type { CallingPoint, CallingPointOrder, ServiceLocation } from '$lib/types';
+import type { CallingPoint, CallingPointOrder, ServiceLocation, TimeObject } from '$lib/types';
 import { error, json } from '@sveltejs/kit';
 import dayjs from 'dayjs';
 
 const nullTime = '0001-01-01T00:00:00';
 
-function parseLocation(l): ServiceLocation {
+function parseLocation(l: any): ServiceLocation {
 	return {
 		crs: l.crs ?? null,
 		isCancelled: l.isCancelled ?? false,
@@ -39,7 +39,7 @@ function parseCallingPoint(item: any, index: number, length: number, focusIndex:
 		delay = rtd.diff(ptd, 'minutes');
 	}
 
-	const times = {
+	const times: TimeObject = {
 		rt: {
 			arr: item.ata || item.eta ? dayjs(item.ata ?? item.eta).format('HH:mm') : null,
 			arrSource: item.arrivalSource === 'Trust' || item.arrivalSource === 'TD' ? 'trust' : 'none',
@@ -106,7 +106,7 @@ export const GET = async ({ params }) => {
 	);
 	const data = await response.json();
 	const locations: [ServiceLocation[]] = [data.locations.map(parseLocation)];
-	const rawCallingPoints = data.locations.filter((l) => !l.isPass && l.crs);
+	const rawCallingPoints = data.locations.filter((l: any) => !l.isPass && l.crs);
 
 	let callingPoints = [];
 	let destination = [rawCallingPoints[rawCallingPoints.length - 1]];
@@ -144,9 +144,6 @@ export const GET = async ({ params }) => {
 
 				callingPoints.push(cp);
 			});
-		}
-		else {
-			callingPoints.push(cp);
 		}
 	}
 	// otherwise assume the current service is the primary service, or there is no division

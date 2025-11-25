@@ -36,6 +36,7 @@
 
 	let details: BoardDetails | null = $state(null);
 	let services: BoardItem[] | null = $state(null);
+	let error: string | null = $state(null);
 
 	$effect(() => {
 		const station = StationsJSON.find((s) => s.crsCode === data.crs);
@@ -55,10 +56,14 @@
 
 	$effect(() => {
 		services = null;
-		data.board.then((d) => {
-			details = d.details;
-			services = d.services;
-		});
+		data.board
+			.then((d) => {
+				details = d.details;
+				services = d.services;
+			})
+			.catch((e) => {
+				error = e.body?.message ?? 'An unknown error occured';
+			});
 	});
 
 	function timeToDayjs(v: string) {
@@ -104,10 +109,10 @@
 	});
 
 	function serviceUrl(rid: string) {
-		const url = new URL(`${page.url.host}/board/${data.crs}/t/${rid}`);
-		page.data.to && url.searchParams.set('to', page.data.to);
-		page.data.offset && url.searchParams.set('offset', page.data.offset.toString());
-		return url.toString();
+		const search = new URLSearchParams();
+		data.to && search.set('to', data.to);
+		data.offset && search.set('offset', data.offset.toString());
+		return `/board/${data.crs}/t/${rid}?${search.toString()}`;
 	}
 </script>
 
@@ -115,40 +120,45 @@
 
 <div class="flex w-full" in:fade|global={{ duration: 200 }}>
 	{#if !page.data.service}
-
 		<div class={['min-w-full']}>
 			{#if !services}
 				<BoardHeader from={data.crs} to={page.data.to} {details} />
-				
-				<div class="p-2" in:fade|global={{ duration: 200, delay: 150 }}>
-					<div class="border-border flex border-b px-3">
-						<a href="#" class="text-foreground/60 flex items-center gap-1 py-3">
-							<Skeleton class="h-4 w-24" />
-						</a>
 
-						<div class="grow"></div>
-						{#if page.data.offset != 0}
-							<a href={offsetUrl(0)} class="text-foreground/60 flex items-center gap-1 py-3">
-								<Clock size={18} />
-								<Skeleton class="h-4 w-10" />
-							</a>
-						{/if}
+				{#if error}
+					<div class="text-xl text-red-600">
+						{error}
 					</div>
-					{#each Array(10) as _, i}
-						<div class="border-border flex h-20 w-full flex-col gap-1 border-b p-4">
-							<div class="flex items-center">
-								<div class="w-16"><Skeleton class="h-4 w-12" /></div>
-								<div class="grow"><Skeleton class="h-4 w-2/3" /></div>
-								<div class="w-16 text-right"><Skeleton class="ml-auto h-4 w-10" /></div>
-							</div>
-							<div class="flex items-center gap-4 text-sm">
+				{:else}
+					<div class="p-2" in:fade|global={{ duration: 200, delay: 150 }}>
+						<div class="border-border flex border-b px-3">
+							<a href="#" class="text-foreground/60 flex items-center gap-1 py-3">
 								<Skeleton class="h-4 w-24" />
-								<div class="grow"></div>
-								<Skeleton class="h-4 w-20 rounded-md" />
-							</div>
+							</a>
+
+							<div class="grow"></div>
+							{#if page.data.offset != 0}
+								<a href={offsetUrl(0)} class="text-foreground/60 flex items-center gap-1 py-3">
+									<Clock size={18} />
+									<Skeleton class="h-4 w-10" />
+								</a>
+							{/if}
 						</div>
-					{/each}
-				</div>
+						{#each Array(10) as _, i}
+							<div class="border-border flex h-20 w-full flex-col gap-1 border-b p-4">
+								<div class="flex items-center">
+									<div class="w-16"><Skeleton class="h-4 w-12" /></div>
+									<div class="grow"><Skeleton class="h-4 w-2/3" /></div>
+									<div class="w-16 text-right"><Skeleton class="ml-auto h-4 w-10" /></div>
+								</div>
+								<div class="flex items-center gap-4 text-sm">
+									<Skeleton class="h-4 w-24" />
+									<div class="grow"></div>
+									<Skeleton class="h-4 w-20 rounded-md" />
+								</div>
+							</div>
+						{/each}
+					</div>
+				{/if}
 			{:else}
 				<BoardHeader from={data.crs} to={page.data.to} {details} />
 				{#if details && details.notices.length > 0}

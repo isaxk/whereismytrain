@@ -1,5 +1,5 @@
 import type { Board } from '$lib/types/index.js';
-import { error as kitError } from '@sveltejs/kit';
+import { error as kitError, type HttpError } from '@sveltejs/kit';
 
 export const load = async ({ params, fetch, url }) => {
 	const { crs } = params;
@@ -11,12 +11,19 @@ export const load = async ({ params, fetch, url }) => {
 	async function getBoard(): Promise<Board> {
 		try {
 			const response = await fetch(`/api/board/${crs}/${to ?? 'null'}/${offset}`);
-			const data = await response.json();
-			return data;
+			if (response.ok) {
+				const data = await response.json();
+				return data;
+			}
+			else {
+				// console.log(await response.json())
+				throw new Error((await response.json())?.message)
+			}
+
 		}
-		catch (e) {
-			console.error('Catched', e);
-			return kitError(500, "An unknown error occured");
+		catch (e: any) {
+			console.log(e);
+			kitError(500, e ?? 'An unknown error occured');
 		}
 
 

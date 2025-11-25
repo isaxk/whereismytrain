@@ -45,12 +45,12 @@ function parseBoardItem(item: any): BoardItem {
 		rid: item.rid,
 		uid: item.uid,
 		sdd: item.sdd,
-		destination: item.destination.map((d) => ({
+		destination: item.destination.map((d: any) => ({
 			crs: d.crs,
 			name: d.locationName,
 			via: d.via
 		})),
-		origin: item.origin.map((o) => ({
+		origin: item.origin.map((o: any) => ({
 			crs: o.crs,
 			name: o.locationName,
 			via: o.via
@@ -71,12 +71,16 @@ function parseBoardItem(item: any): BoardItem {
 }
 
 export const GET: RequestHandler = async ({ params }) => {
+
 	const { crs, to, offset } = params;
+
+
+
 
 	let shouldUseRailData = false;
 	if (parseInt(offset || '0') > 119) {
 		shouldUseRailData = true;
-	}	
+	}
 
 
 	let url = `https://huxley2.azurewebsites.net/staffdepartures/${crs}?timeOffset=${offset}&timeWindow=120&access_token=${ACCESS_TOKEN}`;
@@ -94,39 +98,49 @@ export const GET: RequestHandler = async ({ params }) => {
 
 
 
+
 	try {
-const response = await fetch(url, {
-		headers: shouldUseRailData ? {
-			'x-apikey': ACCESS_TOKEN
-		} : {}
-	});
-	const data = await response.json();
-	
-
-	
-	const services = (data.trainServices ?? []).concat(data.busServices ?? []).map(parseBoardItem);
+		const response = await fetch(url, {
+			headers: shouldUseRailData ? {
+				'x-apikey': ACCESS_TOKEN
+			} : {}
+		});
 
 
-	const nrccMessages: Notice[] = (data.nrccMessages ?? []).map((m) => ({
-		...m,
-		severity: typeof m.severity === 'number' ? m.severity : Severity[m.severity.toLowerCase()],
-		xhtmlMessage: m.xhtmlMessage.replace('Latest information can be found in', '').replace('Status and Disruptions.', 'More info')
-	}));
+		console.log(response.ok)
 
-	
-
-	const board: Board = {
-		services,
-		details: {
-			name: data.locationName,
-			filterName: data.filterLocationName ?? null,
-			notices: nrccMessages
+		if (!response.ok) {
+			throw new Error("Failed to fetch station board");
 		}
+
+		const data = await response.json();
+
+
+
+		const services = (data.trainServices ?? []).concat(data.busServices ?? []).map(parseBoardItem);
+
+
+		const nrccMessages: Notice[] = (data.nrccMessages ?? []).map((m: any) => ({
+			...m,
+			severity: typeof m.severity === 'number' ? m.severity : Severity[m.severity.toLowerCase()],
+			xhtmlMessage: m.xhtmlMessage.replace('Latest information can be found in', '').replace('Status and Disruptions.', 'More info')
+		}));
+
+
+
+		const board: Board = {
+			services,
+			details: {
+				name: data.locationName,
+				filterName: data.filterLocationName ?? null,
+				notices: nrccMessages
+			}
+		}
+
+		return json(board);
+	} catch (error: any) {
+		console.log(error);
+		throw kitError(500, error.message);
 	}
 
-	return json(board);
-	} catch (error) {
-		console.error(error);
-		kitError(500, "An unknown error occured");
-	}
 };
