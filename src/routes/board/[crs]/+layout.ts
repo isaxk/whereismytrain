@@ -14,20 +14,20 @@ export const load = async ({ params, fetch, url }) => {
 			if (response.ok) {
 				const data = await response.json();
 				return data;
-			}
-			else {
+			} else {
 				// console.log(await response.json())
-				throw new Error((await response.json())?.message)
+				throw new Error((await response.json())?.message);
 			}
-
-		}
-		catch (e: any) {
+		} catch (e: any) {
 			console.log(e);
 			kitError(500, e ?? 'An unknown error occured');
 		}
-
-
 	}
 
-	return { crs: crs.toUpperCase(), to: to?.toUpperCase(), board: getBoard(), offset: parseInt(offset) };
+	return {
+		crs: crs.toUpperCase(),
+		to: to?.toUpperCase(),
+		board: getBoard(),
+		offset: parseInt(offset)
+	};
 };

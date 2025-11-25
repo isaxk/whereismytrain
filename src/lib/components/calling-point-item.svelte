@@ -118,7 +118,16 @@
 			>
 				{cp.name}
 			</div>
-			<div class={["text-zinc-400", cp.order === 'focus' || cp.order === 'destination' || cp.endDivide ? 'text-[10px]/4' : 'text-[10px]/3']}>({cp.crs})</div>
+			<div
+				class={[
+					'text-zinc-400',
+					cp.order === 'focus' || cp.order === 'destination' || cp.endDivide
+						? 'text-[10px]/4'
+						: 'text-[10px]/3'
+				]}
+			>
+				({cp.crs})
+			</div>
 		</div>
 		{#if cp.isCancelled}
 			<div class="text-xs/4 text-red-600">Cancelled</div>

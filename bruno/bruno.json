@@ -1,9 +1,6 @@
 {
-  "version": "1",
-  "name": "whereismytrain",
-  "type": "collection",
-  "ignore": [
-    "node_modules",
-    ".git"
-  ]
+	"version": "1",
+	"name": "whereismytrain",
+	"type": "collection",
+	"ignore": ["node_modules", ".git"]
 }

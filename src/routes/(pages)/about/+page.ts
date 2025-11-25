@@ -1,5 +1,5 @@
 export const load = async () => {
-    return {
-        pageTitle: 'About & data sources'
-    }
-}
+	return {
+		pageTitle: 'About & data sources'
+	};
+};

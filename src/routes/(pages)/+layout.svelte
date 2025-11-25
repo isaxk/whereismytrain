@@ -6,7 +6,9 @@
 </script>
 
 <div class="">
-	<div class="pt-6 rounded-t-xl bg-background sticky top-0 p-4 border-b-border border-b flex items-center gap-2">
+	<div
+		class="bg-background border-b-border sticky top-0 flex items-center gap-2 rounded-t-xl border-b p-4 pt-6"
+	>
 		<a href="../"><ArrowLeft /></a>
 		<a href="../" class="text-xl font-semibold">{page.data.pageTitle}</a>
 	</div>

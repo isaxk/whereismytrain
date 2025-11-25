@@ -29,7 +29,7 @@
 @theme {
 	--default-font-family: 'Inter', 'Arial', sans-serif;
 	--color-background: var(--color-background);
-		--color-foreground-muted: var(--color-foreground-muted);
+	--color-foreground-muted: var(--color-foreground-muted);
 	--color-foreground: var(--color-foreground);
 	--color-border: var(--color-border);
 	--color-primary: var(--color-primary);

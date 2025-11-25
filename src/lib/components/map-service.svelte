@@ -51,20 +51,20 @@
 							style:color={isTrainAtStation ? serviceData.operator.color : '#fff'}
 							style:border-color={serviceData.operator.color}
 							class={[
-								'text-[10px]/3 flex flex-col items-center justify-center rounded-full overflow-hidden',
-								isTrainAtStation ? 'w-9 h-14 border-2' : 'w-7 h-7 ',
-								
-								cp.isCancelled ? 'opacity-30 line-through' : ''
+								'flex flex-col items-center justify-center overflow-hidden rounded-full text-[10px]/3',
+								isTrainAtStation ? 'h-14 w-9 border-2' : 'h-7 w-7 ',
+
+								cp.isCancelled ? 'line-through opacity-30' : ''
 							]}
 						>
 							{#if isTrainAtStation}
 								<div
-									class="w-full h-full grow text-white flex items-center pt-1 justify-center"
+									class="flex h-full w-full grow items-center justify-center pt-1 text-white"
 									style:background={serviceData.operator.color}
 								>
 									{cp.crs}
 								</div>
-								<div class="grow h-full flex pb-1 flex-col items-center justify-center">
+								<div class="flex h-full grow flex-col items-center justify-center pb-1">
 									<TrainFront size={16} />
 									<!-- <div class="text-[7px]/3">
 									to {mapData.locations.find(

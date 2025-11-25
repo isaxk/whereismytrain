@@ -16,15 +16,22 @@
 		key,
 		class: className,
 		selected = $bindable(null),
-        onSelect = ()=>{},
+		onSelect = () => {}
 	}: {
 		trigger?: Snippet<
-			[{send:typeof send, receive:typeof receive, selected: { stationName: string; crsCode: string } | null, onclick: ()=>void}]
+			[
+				{
+					send: typeof send;
+					receive: typeof receive;
+					selected: { stationName: string; crsCode: string } | null;
+					onclick: () => void;
+				}
+			]
 		>;
 		class?: string;
 		key: string;
 		selected?: string | null;
-        onSelect?: (crs: string) => void,
+		onSelect?: (crs: string) => void;
 	} = $props();
 
 	let active = $state(false);
@@ -56,7 +63,7 @@
 
 	function submit(crs: string) {
 		selected = crs;
-        onSelect(crs);
+		onSelect(crs);
 		closeSearch();
 	}
 
@@ -73,13 +80,18 @@
 <div class={className}>
 	{#if !active}
 		{#if trigger}
-			{@render trigger?.({send, receive, selected: selectedStation ?? null, onclick: () => openSearch()})}
+			{@render trigger?.({
+				send,
+				receive,
+				selected: selectedStation ?? null,
+				onclick: () => openSearch()
+			})}
 		{:else}
 			<button
 				out:send|global={{ key }}
 				in:receive|global={{ key }}
 				onclick={() => openSearch()}
-				class="border w-full text-left border-border px-4 h-14 flex flex-col justify-center rounded-lg drop-shadow-sm bg-background"
+				class="border-border bg-background flex h-14 w-full flex-col justify-center rounded-lg border px-4 text-left drop-shadow-sm"
 			>
 				{#if selectedStation}
 					<div class="text-lg/5 font-semibold">{selectedStation.crsCode}</div>
@@ -101,25 +113,24 @@
 			submit(results[0]?.item.crsCode);
 		}}
 		transition:fade={{ duration: 200 }}
-		class={['fixed bg-background inset-0 rounded-t-xl z-10000 transition-all']}
+		class={['bg-background fixed inset-0 z-10000 rounded-t-xl transition-all']}
 	>
-		<div class="pt-6 p-4 flex gap-2">
+		<div class="flex gap-2 p-4 pt-6">
 			<input
 				bind:this={elm}
 				bind:value
 				autofocus
-		
 				out:send|global={{ key }}
 				in:receive|global={{ key }}
 				type="text"
 				placeholder="Search for a station..."
-				class="p-3 px-4 bg-background w-full border border-border rounded-lg drop-shadow-xs"
+				class="bg-background border-border w-full rounded-lg border p-3 px-4 drop-shadow-xs"
 			/>
-			<button class="w-10 flex items-center justify-center" onclick={() => closeSearch()}
+			<button class="flex w-10 items-center justify-center" onclick={() => closeSearch()}
 				><X /></button
 			>
 		</div>
-		<div class="py-4 px-2">
+		<div class="px-2 py-4">
 			{#if formatted.length}
 				{#each formatted as result, i (results[i].item.crsCode)}
 					<button

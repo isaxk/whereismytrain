@@ -1,5 +1,5 @@
 <script lang="ts">
-    let {class: className, style = ""} = $props();
+	let { class: className, style = '' } = $props();
 </script>
 
-<div {style} class={["bg-zinc-200 animate-pulse rounded-md", className]}></div>
+<div {style} class={['animate-pulse rounded-md bg-zinc-200', className]}></div>

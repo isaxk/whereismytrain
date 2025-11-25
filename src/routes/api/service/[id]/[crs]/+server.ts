@@ -20,7 +20,12 @@ function parseLocation(l: any): ServiceLocation {
 	};
 }
 
-function parseCallingPoint(item: any, index: number, length: number, focusIndex: number): CallingPoint {
+function parseCallingPoint(
+	item: any,
+	index: number,
+	length: number,
+	focusIndex: number
+): CallingPoint {
 	if (item.ata === nullTime) item.ata = null;
 	if (item.atd === nullTime) item.atd = null;
 	if (item.eta === nullTime) item.eta = null;
@@ -44,7 +49,8 @@ function parseCallingPoint(item: any, index: number, length: number, focusIndex:
 			arr: item.ata || item.eta ? dayjs(item.ata ?? item.eta).format('HH:mm') : null,
 			arrSource: item.arrivalSource === 'Trust' || item.arrivalSource === 'TD' ? 'trust' : 'none',
 			dep: item.atd || item.etd ? dayjs(item.atd ?? item.etd).format('HH:mm') : null,
-			depSource: item.departureSource === 'Trust' || item.departureSource === 'TD' ? 'trust' : 'none',
+			depSource:
+				item.departureSource === 'Trust' || item.departureSource === 'TD' ? 'trust' : 'none'
 		},
 		plan: {
 			arr: item.sta ? dayjs(item.sta).format('HH:mm') : null,
@@ -57,9 +63,8 @@ function parseCallingPoint(item: any, index: number, length: number, focusIndex:
 	if (index === 0) {
 		order = 'origin';
 	} else if (index < focusIndex) {
-		order = 'previous'
-	}
-	else if (index === focusIndex) {
+		order = 'previous';
+	} else if (index === focusIndex) {
 		order = 'focus';
 	} else if (index === length - 1) {
 		order = 'destination';
@@ -83,7 +88,6 @@ function parseCallingPoint(item: any, index: number, length: number, focusIndex:
 		endDivide: item.endDivide ?? false,
 		platform: item.platform ?? null,
 		order
-
 	};
 }
 
@@ -116,13 +120,11 @@ export const GET = async ({ params }) => {
 	// If the current service *is* the division
 	// category 1 == 'divide'
 	if (rawCallingPoints[0].associations?.some((l: any) => l.category === 1)) {
-
 		const assocService = await fetchAssocService(
 			rawCallingPoints[0].associations.find((l: any) => l.category === 1).rid
 		);
 
 		if (assocService) {
-
 			// add the location as a line to the map object
 			const assocParsedLocations = assocService.locations.map(parseLocation);
 			locations.push(assocParsedLocations);
@@ -151,13 +153,14 @@ export const GET = async ({ params }) => {
 		for (const cp of rawCallingPoints) {
 			// if there is a division at this calling point
 			if (cp.associations?.some((l: any) => l.category === 1)) {
-
 				// add the location before the division, with arr. info only
 				callingPoints.push({ ...cp, std: null, etd: null, atd: null });
 
 				// get and fetch assoc services
 				const associations = cp.associations.filter((l: any) => l.category === 1);
-				const assocServices = await Promise.all(associations.map((assoc: any) => fetchAssocService(assoc.rid)));
+				const assocServices = await Promise.all(
+					associations.map((assoc: any) => fetchAssocService(assoc.rid))
+				);
 
 				// sort assoc services by dep
 				assocServices.sort((a: any, b: any) => {
@@ -165,14 +168,12 @@ export const GET = async ({ params }) => {
 					const bOrigin = b.locations?.[0];
 					if (dayjs(aOrigin.std).isBefore(dayjs(bOrigin.std))) {
 						return -1;
-					}
-					else {
+					} else {
 						return 1;
 					}
-				})
+				});
 
 				for (const { locations: assocLocations } of assocServices) {
-
 					// add locations to line model
 					const parsedAssoc = assocLocations.map(parseLocation);
 					locations.push(parsedAssoc);
@@ -192,7 +193,6 @@ export const GET = async ({ params }) => {
 							endDivide: i === assocRawCallingPoints.length - 1
 						});
 					});
-
 				}
 
 				// finally add the cp after division for the main service, with dep. info only
@@ -228,7 +228,9 @@ export const GET = async ({ params }) => {
 	const title = `to ${destination.map((l) => l.name).join(', ')}`;
 
 	return json({
-		callingPoints: callingPoints.map((cp, i) => parseCallingPoint(cp, i, callingPoints.length, focusIndex)),
+		callingPoints: callingPoints.map((cp, i) =>
+			parseCallingPoint(cp, i, callingPoints.length, focusIndex)
+		),
 		locations,
 		operator: {
 			id: data.operatorCode,

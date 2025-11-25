@@ -25,7 +25,7 @@
 
 <AlertCard status={type === 'cancel' ? 'major' : 'minor'}>
 	{#await data}
-		<Skeleton class="w-full h-8 bg-zinc-200/50" />
+		<Skeleton class="h-8 w-full bg-zinc-200/50" />
 	{:then data}
 		{type === 'delay' ? data.lateReason : data.cancReason}
 	{/await}

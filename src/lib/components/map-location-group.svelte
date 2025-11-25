@@ -43,7 +43,7 @@
 	);
 
 	const primaryCoordinates = $derived.by(() => {
-		const filtered = data.lineLocations.filter((l)=>!l.isCancelled)
+		const filtered = data.lineLocations.filter((l) => !l.isCancelled);
 		const focus = filtered.findIndex((l) => l.crs === crs);
 		if (filtered.find((l) => l.crs === crs)) {
 			const coords = filtered.slice(focus);
@@ -148,7 +148,7 @@
 				style:border-color={color}
 				style:color
 				class={[
-					'bg-white a relative rounded-full z-20 border-2 w-9 h-9 items-center flex flex-col justify-center'
+					'a relative z-20 flex h-9 w-9 flex-col items-center justify-center rounded-full border-2 bg-white'
 				]}
 			>
 				<TrainFront size={showDestination ? 14 : 18} />
@@ -160,7 +160,7 @@
 			</div>
 			{#if !isAtStation && data.trainBearing != null}
 				<svg
-					class="absolute -z-20 left-1/2 top-1/2"
+					class="absolute top-1/2 left-1/2 -z-20"
 					width="20"
 					height="20"
 					style="

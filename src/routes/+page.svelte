@@ -23,7 +23,7 @@
 </script>
 
 <div class="">
-	<div class="pt-6 p-4 rounded-t-xl border-b-border border-b">
+	<div class="border-b-border rounded-t-xl border-b p-4 pt-6">
 		<div class="text-3xl font-bold">Where is my train?</div>
 		<div class="flex *:text-blue-400 hover:underline">
 			<a href="/about">About & data sources</a>
@@ -31,17 +31,17 @@
 	</div>
 
 	<div class="p-4">
-		<div class="flex gap-2 items-center pb-4">
-			<Search class="w-full h-14" key="from" bind:selected={from}></Search>
-			<div class="min-w-8 flex justify-center">
+		<div class="flex items-center gap-2 pb-4">
+			<Search class="h-14 w-full" key="from" bind:selected={from}></Search>
+			<div class="flex min-w-8 justify-center">
 				<ChevronRight />
 			</div>
-			<Search class="w-full h-14" key="to" bind:selected={to}></Search>
+			<Search class="h-14 w-full" key="to" bind:selected={to}></Search>
 		</div>
 		<a
 			aria-disabled={from && from !== to}
 			class={[
-				'block text-center py-2 rounded-lg',
+				'block rounded-lg py-2 text-center',
 				from && from !== to ? 'bg-primary text-primary-invert' : 'bg-foreground-muted text-white'
 			]}
 			onclick={() => {

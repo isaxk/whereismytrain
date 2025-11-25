@@ -193,8 +193,10 @@
 </script>
 
 <MapLibre
-	style={darkMode ? "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json": "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json"}
-	class="relative w-full h-full"
+	style={darkMode
+		? 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json'
+		: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json'}
+	class="relative h-full w-full"
 	standardControls
 	onload={(e) => {
 		map = e;
@@ -230,7 +232,7 @@
 				{#snippet children({ feature })}
 					<div
 						class={[
-							'bg-zinc-800 dark:bg-zinc-600 text-white rounded-full w-7 h-7 text-[10px] flex items-center justify-center',
+							'flex h-7 w-7 items-center justify-center rounded-full bg-zinc-800 text-[10px] text-white dark:bg-zinc-600',
 							page.data.crs ? 'opacity-30' : 'opacity-80'
 						]}
 					>
@@ -251,7 +253,7 @@
 				{#snippet children({ feature })}
 					<div
 						class={[
-							'bg-zinc-800 dark:bg-zinc-600 text-white rounded-full w-7 h-7 text-[10px] flex items-center justify-center',
+							'flex h-7 w-7 items-center justify-center rounded-full bg-zinc-800 text-[10px] text-white dark:bg-zinc-600',
 							page.data.crs ? 'opacity-30' : 'opacity-80'
 						]}
 					>
@@ -265,7 +267,7 @@
 			{#if station}
 				<Marker lngLat={[station.long, station.lat]} zIndex={5000}>
 					<div
-						class="bg-black dark:bg-white text-white dark:text-black rounded-full w-7 h-7 text-[10px] text-xs flex items-center justify-center"
+						class="flex h-7 w-7 items-center justify-center rounded-full bg-black text-xs text-[10px] text-white dark:bg-white dark:text-black"
 					>
 						{page.data.crs}
 					</div>
@@ -288,7 +290,7 @@
 			{#if station}
 				<Marker lngLat={[station.long, station.lat]} zIndex={5000}>
 					<div
-						class="bg-black dark:bg-white text-white dark:text-black rounded-full w-7 h-7 text-[10px] text-xs flex items-center justify-center"
+						class="flex h-7 w-7 items-center justify-center rounded-full bg-black text-xs text-[10px] text-white dark:bg-white dark:text-black"
 					>
 						{page.data.to}
 					</div>

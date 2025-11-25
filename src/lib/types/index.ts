@@ -51,7 +51,7 @@ export enum Severity {
 	info = 0,
 	minor = 1,
 	major = 2,
-	severe = 3,
+	severe = 3
 }
 
 export type Notice = {
@@ -77,7 +77,13 @@ export type ServiceLocation = {
 	sta: string | null;
 };
 
-export type CallingPointOrder = 'origin' | 'previous' | 'focus' | 'subsequent' | 'further' | 'destination';
+export type CallingPointOrder =
+	| 'origin'
+	| 'previous'
+	| 'focus'
+	| 'subsequent'
+	| 'further'
+	| 'destination';
 
 export type CallingPoint = {
 	crs: string | null;

@@ -87,11 +87,21 @@
 
 <div class="fixed inset-0 flex">
 	{#if lg.current}
-		<div class={[lg.current ? 'h-full max-w-md min-w-md w-md relative bg-background overflow-y-scroll transform-gpu' : '']}>
+		<div
+			class={[
+				lg.current
+					? 'bg-background relative h-full w-md max-w-md min-w-md transform-gpu overflow-y-scroll'
+					: ''
+			]}
+		>
 			{@render children()}
 		</div>
 	{:else}
-		<div style:background={paneHeaderColour ?? ''} bind:this={paneElm} class="w-full rounded-t-xl bg-background">
+		<div
+			style:background={paneHeaderColour ?? ''}
+			bind:this={paneElm}
+			class="bg-background w-full rounded-t-xl"
+		>
 			{@render children()}
 		</div>
 	{/if}
