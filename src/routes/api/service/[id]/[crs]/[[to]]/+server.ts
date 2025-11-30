@@ -1,6 +1,8 @@
 import { ACCESS_TOKEN } from '$env/static/private';
 import { operatorList } from '$lib/data/operators';
-import type { CallingPoint, CallingPointOrder, ServiceLocation, TimeObject } from '$lib/types';
+import { findOvergroundLine } from '$lib/data/overground';
+import type { CallingPoint, CallingPointOrder, Carriage, ServiceLocation, TimeObject, TrainService } from '$lib/types';
+import { parseServiceId } from '$lib/utils.js';
 import { error, json } from '@sveltejs/kit';
 import dayjs from 'dayjs';
 
@@ -20,11 +22,19 @@ function parseLocation(l: any): ServiceLocation {
 	};
 }
 
+
+
 function parseCallingPoint(
 	item: any,
 	index: number,
 	length: number,
-	focusIndex: number
+	focusIndex: number,
+	filterIndex: number,
+	dest: {
+		crs: string;
+		name: string;
+		indexInCPs: number;
+	}[]
 ): CallingPoint {
 	if (item.ata === nullTime) item.ata = null;
 	if (item.atd === nullTime) item.atd = null;
@@ -60,15 +70,31 @@ function parseCallingPoint(
 
 	let order: CallingPointOrder | null = null;
 
-	if (index === 0) {
-		order = 'origin';
-	} else if (index < focusIndex) {
-		order = 'previous';
-	} else if (index === focusIndex) {
+	const max = dest.reduce((prev, current) => (prev && prev.indexInCPs > current.indexInCPs) ? prev : current)
+
+
+	if (index === focusIndex) {
 		order = 'focus';
-	} else if (index === length - 1) {
+	}
+	else if (index === 0) {
+		order = 'origin';
+	}
+	else if (index === filterIndex) {
+		order = 'filter';
+	}
+	else if (dest.some((d) => d.indexInCPs === index)) {
 		order = 'destination';
-	} else {
+	}
+	else if (index < focusIndex) {
+		order = 'previous';
+	}
+	else if (index > max.indexInCPs) {
+		order = 'post-destination';
+	}
+	else if (filterIndex && index > filterIndex) {
+		order = 'further';
+	}
+	else {
 		order = 'subsequent';
 	}
 
@@ -82,6 +108,8 @@ function parseCallingPoint(
 		name: item.locationName,
 		times,
 		delay,
+		departed: item.atd && item.atd !== nullTime,
+		arrived: item.ata && item.ata !== nullTime,
 		isCancelled: item.isCancelled,
 		inDivision: item.inDivision ?? false,
 		startDivide: item.startDivide ?? false,
@@ -104,15 +132,19 @@ async function fetchAssocService(rid: string) {
 }
 
 export const GET = async ({ params }) => {
-	const { id, crs } = params;
+	const { id: rawid, crs, to } = params;
+
+
+	const { id, destCrsList } = parseServiceId(rawid);
+
 	const response = await fetch(
 		`https://huxley2.azurewebsites.net/service/${id}?access_token=${ACCESS_TOKEN}`
 	);
 	const data = await response.json();
-	const locations: [ServiceLocation[]] = [data.locations.map(parseLocation)];
+	const locations: ServiceLocation[] = [data.locations.map(parseLocation)];
 	const rawCallingPoints = data.locations.filter((l: any) => !l.isPass && l.crs);
 
-	let callingPoints = [];
+	let callingPoints: any[] = [];
 	let destination = [rawCallingPoints[rawCallingPoints.length - 1]];
 
 	// Division logic
@@ -218,18 +250,84 @@ export const GET = async ({ params }) => {
 	// 		.join(', ')
 	// );
 
-	destination = destination.map((l) => ({
-		crs: l.crs,
-		name: l.locationName
-	}));
 
-	const focusIndex = callingPoints.findIndex((l) => l.crs === crs);
+
+
+	destination = destCrsList.map((item) => {
+		const cp = callingPoints.find((loc: any) => loc.crs === item);
+		return {
+			crs: cp.crs,
+			name: cp.locationName,
+			indexInCPs: callingPoints.findLastIndex((l, i) => l.crs === item),
+		}
+	})
+
+	let focusIndex = callingPoints.findLastIndex((l, i) => l.crs === crs && i < destination[0].indexInCPs);
+	let filterIndex = to ? callingPoints.findIndex((l, i) => l.crs === to && i > focusIndex) : null;
+
+	console.log('focusIndex', focusIndex)
+	console.log('filterIndex', filterIndex)
+
+	if ((!filterIndex || filterIndex === -1) && to) {
+		console.log('Could not find filter, retrying')
+		filterIndex = callingPoints.findLastIndex((l, i) => l.crs === to);
+		focusIndex = callingPoints.findLastIndex((l, i) => l.crs === crs && i < destination[0].indexInCPs && i < (filterIndex ?? 10000))
+		console.log('focusIndex', focusIndex)
+		console.log('filterIndex', filterIndex)
+	}
+
+
+	if (filterIndex && focusIndex > filterIndex) {
+		console.log('Focus index is after filter index, retrying')
+		focusIndex = callingPoints.findLastIndex((l, i) => l.crs === crs && i < destination[0].indexInCPs && i < filterIndex);
+		console.log('focusIndex', focusIndex)
+		console.log('filterIndex', filterIndex)
+	}
+
+
 
 	const title = `to ${destination.map((l) => l.name).join(', ')}`;
 
-	return json({
+
+	let formationLengthOnly: boolean = data.locations[focusIndex]?.length ? true : false;
+
+	let formation: Carriage[] | null = data.locations[focusIndex]?.length ? [...Array(data.locations[focusIndex]?.length).keys()].map((_, i) => {
+		return {
+			coachNumber: (i + 1).toString(),
+			serviceClass: "standard",
+			toilet: false,
+			toiletIsAccessible: false,
+			loading: null
+		}
+	}) : null;
+
+	if (data.formation) {
+		const focus = data.formation.find((f: any) => f.tiploc === data.locations[focusIndex]?.tiploc);
+		const lastWithLoading = data.formation.find((f: any) => f ? f?.coaches?.some((c: any) => c.loading?.value !== null) : false) ?? null;
+
+		if (focus?.coaches || lastWithLoading?.coaches) {
+
+			formationLengthOnly = false;
+			formation = ((focus?.coaches || lastWithLoading?.coaches) ?? []).map((c: any, i) => ({
+				coachNumber: c.number,
+				serviceClass: c.coachClass === 'First' ? 'first' : 'standard',
+				toilet: c.toilet && c.toilet?.value !== 'None',
+				toiletIsAccessible: c.toilet?.value === 'Accessible',
+				loading: lastWithLoading.coaches[i].loading?.value ?? null
+			}))
+		}
+	}
+
+
+
+	if (data.operatorCode == 'LO') {
+		data.operatorCode = findOvergroundLine(data.uid);
+	}
+
+	const final: TrainService = {
+		rid: data.id,
 		callingPoints: callingPoints.map((cp, i) =>
-			parseCallingPoint(cp, i, callingPoints.length, focusIndex)
+			parseCallingPoint(cp, i, callingPoints.length, focusIndex, filterIndex, destination)
 		),
 		locations,
 		operator: {
@@ -238,6 +336,13 @@ export const GET = async ({ params }) => {
 			color: operatorList[data.operatorCode].bg ?? '#000000'
 		},
 		title,
+		destination,
+		formation,
+		formationLengthOnly,
+		uid: data.uid,
+		sdd: data.sdd,
 		reasonCode: data.delayReason?.value ?? data.cancelReason?.value ?? null
-	});
+	}
+
+	return json(final);
 };

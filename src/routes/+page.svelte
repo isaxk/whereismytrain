@@ -4,6 +4,8 @@
 	import { mapData, paneHeight } from '$lib/state/map.svelte';
 	import { ChevronRight } from 'lucide-svelte';
 	import AllStations from '$lib/data/stations.json';
+	import { saved } from '$lib/state/saved.svelte';
+	import SavedTrain from '$lib/components/saved-train.svelte';
 
 	let from = $state(null);
 	let to = $state(null);
@@ -22,15 +24,15 @@
 	// });
 </script>
 
-<div class="">
-	<div class="border-b-border rounded-t-xl border-b p-4 pt-6">
+<div class="flex flex-col gap-4">
+	<div class="border-b-border sticky top-0 z-20 bg-background rounded-t-xl border-b p-4 pt-6">
 		<div class="text-3xl font-bold">Where is my train?</div>
 		<div class="flex *:text-blue-400 hover:underline">
 			<a href="/about">About & data sources</a>
 		</div>
 	</div>
 
-	<div class="p-4">
+	<div class="px-4 border-b-border border-b pb-4">
 		<div class="flex items-center gap-2 pb-4">
 			<Search class="h-14 w-full" key="from" bind:selected={from}></Search>
 			<div class="flex min-w-8 justify-center">
@@ -42,12 +44,18 @@
 			aria-disabled={from && from !== to}
 			class={[
 				'block rounded-lg py-2 text-center',
-				from && from !== to ? 'bg-primary text-primary-invert' : 'bg-foreground-muted text-white'
+				from && from !== to ? 'bg-primary text-primary-invert' : 'bg-muted text-white'
 			]}
 			onclick={() => {
 				paneHeight.break = 'middle';
 			}}
 			href={from && from !== to ? (to ? `/board/${from}?to=${to}` : `/board/${from}`) : '#'}>Go</a
 		>
+	</div>
+	<div class="px-4">
+		<div class="text-2xl font-medium">Subscribed trains</div>
+		{#each saved.value as item}
+			<SavedTrain data={item} />
+		{/each}
 	</div>
 </div>

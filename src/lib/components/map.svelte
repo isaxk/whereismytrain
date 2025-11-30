@@ -25,6 +25,7 @@
 	import { onMount, untrack } from 'svelte';
 	import { explicitEffect } from '$lib/utils/index.svelte';
 	import { cameraForBoundsCustom } from '$lib/utils';
+	import { saved } from '$lib/state/saved.svelte';
 
 	let serviceData: TrainService | null = $state(null);
 	let map: maplibregl.Map;
@@ -59,7 +60,7 @@
 					},
 					geometry: {
 						type: 'LineString',
-						coordinates: mapData.board
+						coordinates: mapData.board ?? []
 					}
 				}
 			: null
@@ -106,7 +107,8 @@
 	let lastEaseTo: maplibregl.EaseToOptions | null = null;
 
 	function easeToIfChanged(options: maplibregl.EaseToOptions) {
-		if (lastEaseTo?.center !== options.center || lastEaseTo?.zoom !== options.zoom) {
+		console.log(lastEaseTo?.center, options.center)
+		if (lastEaseTo?.center?.[0] !== options.center?.[0] || lastEaseTo?.center?.[1] !== options.center?.[1]) {
 			map.easeTo(options);
 		}
 		lastEaseTo = options;
@@ -163,20 +165,6 @@
 		return undefined; // Return undefined if bbox calculation fails or is empty
 	}
 
-	const saved = [
-		// {
-		// 	rid: '202511236728146',
-		// 	crs: 'SWI'
-		// },
-		// {
-		// 	rid: '202511238937001',
-		// 	crs: 'ZFD'
-		// },
-		// {
-		// 	rid: '202511237089311',
-		// 	crs: 'PAD'
-		// }
-	];
 
 	let darkMode = $state(false);
 
@@ -207,9 +195,9 @@
 	}}
 >
 	{#if !mapData.service}
-		{#each saved as item, i (item.rid)}
-			{#if !page.data.id || page.data.id === item.rid}
-				<SavedMapService rid={item.rid} crs={item.crs} />
+		{#each saved.value as item, i (item.id)}
+			{#if !page.data.id || page.data.id === item.id}
+				<SavedMapService rid={item.id} crs={item.focusCrs} />
 			{/if}
 		{/each}
 	{/if}

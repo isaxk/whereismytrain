@@ -8,7 +8,7 @@
 	let mapData: ServiceMapData | null = $state(null);
 
 	async function getServiceData() {
-		const response = await fetch(`/api/service/${rid}`);
+		const response = await fetch(`/api/service/${rid}/${crs}`);
 		const data = await response.json();
 		return data;
 	}

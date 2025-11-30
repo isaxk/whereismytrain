@@ -81,9 +81,11 @@ export type CallingPointOrder =
 	| 'origin'
 	| 'previous'
 	| 'focus'
+	| 'filter'
 	| 'subsequent'
 	| 'further'
-	| 'destination';
+	| 'destination'
+	| 'post-destination';
 
 export type CallingPoint = {
 	crs: string | null;
@@ -97,7 +99,18 @@ export type CallingPoint = {
 	endDivide: boolean;
 	delay: number | null;
 	order: CallingPointOrder;
+	departed: boolean;
+	arrived: boolean;
 };
+
+export type Carriage = {
+	coachNumber: string | null;
+	serviceClass: "first" | "standard";
+	toilet: boolean;
+	bikeSpace?: boolean;
+	toiletIsAccessible: boolean;
+	loading: number | null;
+}
 
 export type TrainService = {
 	rid: string;
@@ -108,7 +121,17 @@ export type TrainService = {
 	operator: Operator;
 	title: string;
 	reasonCode: string | null;
+	formation: Carriage[] | null;
+	formationLengthOnly: boolean;
+	destination: DestinationOrigin[]
 };
+
+export type SavedTrain = {
+	service: TrainService;
+	focusCrs: string;
+	filterCrs: string;
+	id: string;
+}
 
 export type ServiceLocationWithCoords = ServiceLocation & {
 	coords: [number, number];

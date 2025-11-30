@@ -5,6 +5,7 @@ import { json, type RequestHandler, error as kitError } from '@sveltejs/kit';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import tz from 'dayjs/plugin/timezone';
+import { findOvergroundLine } from '$lib/data/overground';
 
 dayjs.extend(utc);
 dayjs.extend(tz);
@@ -26,6 +27,8 @@ function parseBoardItem(item: any): BoardItem {
 	const pta = item.sta ? dayjs(item.sta) : null;
 	const ptd = item.std ? dayjs(item.std) : null;
 
+	item.rid = `${item.rid}d${item.destination.map((d)=>d.crs).join('d')}`
+
 	if (rtd && ptd) {
 		delay = rtd.diff(ptd, 'minutes');
 	}
@@ -40,6 +43,11 @@ function parseBoardItem(item: any): BoardItem {
 			dep: item.std ? dayjs(item.std).format('HH:mm') : null
 		}
 	};
+
+	if(item.operatorCode === 'LO') {
+		item.operatorCode = findOvergroundLine(item.uid);
+	}
+
 
 	return {
 		rid: item.rid,
@@ -78,7 +86,7 @@ export const GET: RequestHandler = async ({ params }) => {
 		shouldUseRailData = true;
 	}
 
-	let url = `https://huxley2.azurewebsites.net/staffdepartures/${crs}?timeOffset=${offset}&timeWindow=120&access_token=${ACCESS_TOKEN}`;
+	let url = `https://huxley2.azurewebsites.net/staffdepartures/${crs}?timeOffset=${offset}&timeWindow=120&expand=true&access_token=${ACCESS_TOKEN}`;
 	if (shouldUseRailData) {
 		const time = dayjs()
 			.tz('Europe/London')
@@ -87,11 +95,11 @@ export const GET: RequestHandler = async ({ params }) => {
 		let urlObj = new URL(
 			`https://api1.raildata.org.uk/1010-live-departure-board---staff-version1_0/LDBSVWS/api/20220120/GetDepartureBoardByCRS/${crs}/${time}`
 		);
-		to && urlObj.searchParams.append('to', to);
+		to && urlObj.searchParams.append('filterCRS', to);
 		url = urlObj.toString();
 	} else {
 		if (to != 'null') {
-			url = `https://huxley2.azurewebsites.net/staffdepartures/${crs}/to/${to}?timeOffset=${offset}&timeWindow=120&access_token=${ACCESS_TOKEN}`;
+			url = `https://huxley2.azurewebsites.net/staffdepartures/${crs}/to/${to}?timeOffset=${offset}&timeWindow=120&expand=true&access_token=${ACCESS_TOKEN}`;
 		}
 	}
 
@@ -99,8 +107,8 @@ export const GET: RequestHandler = async ({ params }) => {
 		const response = await fetch(url, {
 			headers: shouldUseRailData
 				? {
-						'x-apikey': ACCESS_TOKEN
-					}
+					'x-apikey': ACCESS_TOKEN
+				}
 				: {}
 		});
 
@@ -112,7 +120,7 @@ export const GET: RequestHandler = async ({ params }) => {
 
 		const data = await response.json();
 
-		const services = (data.trainServices ?? []).concat(data.busServices ?? []).map(parseBoardItem);
+		const services = (data.trainServices ?? []).concat(data.busServices ?? []).map((s: any) => parseBoardItem(s));
 
 		const nrccMessages: Notice[] = (data.nrccMessages ?? []).map((m: any) => ({
 			...m,
@@ -121,6 +129,10 @@ export const GET: RequestHandler = async ({ params }) => {
 				.replace('Latest information can be found in', '')
 				.replace('Status and Disruptions.', 'More info')
 		}));
+
+		console.log(services.map((s)=>s.uid));
+
+
 
 		const board: Board = {
 			services,

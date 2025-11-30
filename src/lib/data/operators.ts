@@ -188,5 +188,30 @@ export const operatorList: Record<string, { name: string; bg: string; text: stri
 		name: 'MerseyRail',
 		bg: '#404745',
 		text: '#ffffff'
-	}
+	},
+	LIONESS: {
+		name: 'Lioness Line',
+		bg: '#CE4800',
+		text: '#ffffff'
+	},
+	WEAVER: {
+		name: 'Weaver Line',
+		bg: '#970042',
+		text: '#ffffff'
+	},
+	SUFF: {
+		name: 'Suffragette Line',
+		bg: '#693D90',
+		text: '#ffffff'
+	}, 
+	MILDMAY: {
+		name: 'Mildmay Line',
+		bg: '#008855',
+		text: '#ffffff'
+	},
+	WINDRUSH: {
+		name: 'Windrush Line',
+		bg: '#D95700',
+		text: '#ffffff'
+	},
 };

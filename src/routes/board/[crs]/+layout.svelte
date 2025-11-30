@@ -31,6 +31,7 @@
 	import dayjs from 'dayjs';
 	import BoardHeader from '$lib/components/board-header.svelte';
 	import Skeleton from '$lib/components/skeleton.svelte';
+	import BoardItemComponent from '$lib/components/board-item.svelte';
 
 	let { data, children } = $props();
 
@@ -198,13 +199,25 @@
 						<div class="p-4">No services found</div>
 					{/if}
 					{#each services as service, index (service.rid)}
-						<a
+						<BoardItemComponent
+							href={serviceUrl(service.rid)}
+							id={service.rid}
+							planDep={service.times.plan.dep ?? 'N/A'}
+							rtDep={service.times.rt.dep}
+							departed={false}
+							isCancelled={service.isCancelled}
+							destination={service.destination}
+							platform={service.platform}
+							crs={data.crs}
+							operator={service.operator}
+						/>
+						<!-- <a
 							href={serviceUrl(service.rid)}
 							class="border-border flex h-20 w-full flex-col gap-1 border-b p-4 text-left"
 						>
 							<div class="flex items-center">
 								<div class="w-16 font-medium">{service.times.plan.dep}</div>
-								<div class="grow font-semibold">
+								<div class="min-w-0 grow truncate font-semibold">
 									{service.destination.map((d) => d.name).join(', ')}
 								</div>
 								<div class="w-16 text-right">
@@ -243,7 +256,7 @@
 									{service.operator.name}
 								</div>
 							</div>
-						</a>
+						</a> -->
 					{/each}
 					<div class="px-3 pt-1">
 						{#await laterUrl}

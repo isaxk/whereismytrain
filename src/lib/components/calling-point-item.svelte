@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import type { CallingPoint, Operator } from '$lib/types';
+	import { slide } from 'svelte/transition';
 
 	let {
 		cp,
@@ -17,12 +18,15 @@
 		nextCancelled?: boolean;
 		prevCancelled?: boolean;
 	} = $props();
-
-	console.log(cp);
 </script>
 
-<div class={['flex h-12 items-center gap-2']}>
-	<div class={['z-0 flex gap-4', cp.order === 'focus' ? 'font-medium' : 'opacity-80 ']}>
+<div class={['flex h-12 items-center gap-2', cp.order === 'post-destination' ? 'opacity-50' : '']}>
+	<div
+		class={[
+			'z-0 flex gap-4',
+			cp.order === 'focus' || cp.order === 'filter' ? 'font-medium' : cp.order === 'further' ? 'opacity-40' : 'opacity-80'
+		]}
+	>
 		<div class={['w-8 min-w-8']}>
 			<div
 				class={[
@@ -97,6 +101,10 @@
 			<div style:background={operator.color} class="w-1.5 grow bg-black"></div>
 			<div style:background={operator.color} class="h-1.5 w-4"></div>
 			<div class="grow"></div>
+		{:else if cp.order === 'destination'}
+		<div style:background={operator.color} class="w-1.5 grow bg-black"></div>
+			<div style:background={operator.color} class="h-1.5 w-4"></div>
+			<div style:background={operator.color} class="w-1.5 grow bg-black opacity-50"></div>
 		{:else}
 			<div style:background={operator.color} class="w-1.5 grow bg-black"></div>
 			<div class="flex w-4">
@@ -111,9 +119,9 @@
 			<div
 				class={[
 					'min-w-0 overflow-hidden text-nowrap text-ellipsis',
-					cp.order === 'focus' || cp.order === 'destination' || cp.endDivide
+					cp.order === 'focus' || cp.order === 'destination' || cp.order === 'filter'
 						? 'text-base/5 font-semibold'
-						: 'text-sm/4 text-zinc-600'
+						: cp.order === 'further' ? 'text-sm/3 text-muted-foreground/60' : 'text-sm/3 text-muted-foreground'
 				]}
 			>
 				{cp.name}
@@ -121,7 +129,7 @@
 			<div
 				class={[
 					'text-zinc-400',
-					cp.order === 'focus' || cp.order === 'destination' || cp.endDivide
+					cp.order === 'focus' || cp.order === 'destination' || cp.order === 'filter'
 						? 'text-[10px]/4'
 						: 'text-[10px]/3'
 				]}
@@ -133,7 +141,7 @@
 			<div class="text-xs/4 text-red-600">Cancelled</div>
 		{/if}
 	</div>
-	<div class={[page.data.crs === cp.crs ? 'text-lg font-medium' : 'text-sm text-zinc-400']}>
+	<div class={[cp.order==='focus' ? 'text-lg font-medium' : 'text-sm text-zinc-400']}>
 		{cp.platform}
 	</div>
 </div>
