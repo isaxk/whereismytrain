@@ -11,7 +11,7 @@
 		LineLayer
 	} from 'svelte-maplibre';
 	import MapLocationGroup from './map-location-group.svelte';
-	import { page } from '$app/state';
+	import { navigating, page } from '$app/state';
 	import type { ServiceMapData, TrainService } from '$lib/types';
 	import { TrainFront } from 'lucide-svelte';
 	import StationsJSON from '$lib/data/stations.json';
@@ -44,13 +44,6 @@
 		}
 	});
 
-	const padding = $derived({
-		top: 20,
-		bottom: paneHeight.current + 20,
-		left: 60,
-		right: 50
-	});
-
 	const route: Feature | null = $derived(
 		mapData.board?.length == 2
 			? {
@@ -68,6 +61,13 @@
 
 	explicitEffect(
 		() => {
+			console.log(paneHeight.current);
+			const padding = {
+				top: 20,
+				bottom: paneHeight.current + 50,
+				left: 60,
+				right: 60
+			};
 			if (map && mapData.service) {
 				console.log('Should zoom to map');
 				const data: Feature = {
@@ -84,9 +84,9 @@
 				if (bbox) {
 					console.log('Should be a bbox', bbox);
 
-					setBounds(bbox);
+					setBounds(bbox, padding);
 				}
-			} else if (map && mapData.board && !page.data.id) {
+			} else if (map && mapData.board && navigating.to?.url.pathname !== '/' && !page.data.id) {
 				if (mapData.board.length === 1) {
 					easeToIfChanged({
 						center: mapData.board[0],
@@ -96,27 +96,43 @@
 				} else if (route) {
 					const bbox = getBbox(route);
 					if (bbox) {
-						setBounds(bbox);
+						setBounds(bbox, padding);
 					}
 				}
 			}
 		},
-		() => [map, mapData.service, mapData.board, page.data.id, padding, paneHeight.current]
+		() => [map, mapData.service, mapData.board, page.data.id, paneHeight.current]
 	);
 
 	let lastEaseTo: maplibregl.EaseToOptions | null = null;
 
 	function easeToIfChanged(options: maplibregl.EaseToOptions) {
-		console.log(lastEaseTo?.center, options.center)
-		if (lastEaseTo?.center?.[0] !== options.center?.[0] || lastEaseTo?.center?.[1] !== options.center?.[1]) {
-			map.easeTo(options);
+		map.easeTo(options);
+		if (
+			lastEaseTo?.center?.[0] !== options.center?.[0] ||
+			lastEaseTo?.center?.[1] !== options.center?.[1] ||
+			JSON.stringify(lastEaseTo?.padding) !== JSON.stringify(options.padding) ||
+			lastEaseTo?.zoom !== options.zoom
+		) {
+			lastEaseTo = options;
 		}
-		lastEaseTo = options;
 	}
 
-	function setBounds(bbox?: LngLatBoundsLike, animate = true) {
+	function setBounds(
+		bbox: LngLatBoundsLike,
+		padding: { top: number; bottom: number; left: number; right: number },
+		animate = true
+	) {
 		if (map && bbox) {
+			padding = {
+				top: padding.top ?? 0,
+				bottom: padding.bottom ?? 0,
+				left: padding.left ?? 0,
+				right: padding.right ?? 0
+			};
+			console.log('padding', padding);
 			const camera = cameraForBoundsCustom(map, bbox as number[], padding);
+			console.log('camera', camera);
 			if (camera) {
 				map.stop();
 
@@ -164,7 +180,6 @@
 		}
 		return undefined; // Return undefined if bbox calculation fails or is empty
 	}
-
 
 	let darkMode = $state(false);
 
@@ -250,7 +265,7 @@
 				{/snippet}
 			</MarkerLayer>
 		</GeoJSON>
-		{#if page.data.crs}
+		{#if page.data.crs && navigating.to?.url.pathname != '/'}
 			{@const station = StationsJSON.find((s) => s.crsCode === page.data.crs)}
 			{#if station}
 				<Marker lngLat={[station.long, station.lat]} zIndex={5000}>

@@ -94,7 +94,9 @@
 			<div class="bg-background/40 h-[5px] w-10 rounded-sm"></div>
 		</div>
 		<div class="w-10">
-			<a href="../{page.url.search}" class="p-4 text-white"><ArrowLeft /></a>
+			<a href={data.returnToHome ? '/' : `../${page.url.search}`} class="p-4 text-white"
+				><ArrowLeft /></a
+			>
 		</div>
 		<div class="min-w-0 grow text-center">
 			<div class="text-xs">
@@ -126,6 +128,14 @@
 			/>
 		{/if}
 		<div class="flex flex-col">
+			<div class="text-muted-foreground flex gap-4 text-xs">
+				<div class="flex w-28 gap-2">
+					<div class="w-10">Arr.</div>
+					<div class="w-10">Dep.</div>
+				</div>
+				<div class="grow">Station</div>
+				<div>Platform</div>
+			</div>
 			{#each callingPoints as cp, i (cp.tiploc + cp.times.plan.dep + i)}
 				{#if (cp.order !== 'previous' && cp.order !== 'origin' && !(cp.order === 'post-destination' && previousIncludesStartDivide)) || ((cp.order === 'previous' || cp.order === 'origin' || cp.order === 'post-destination') && showPrevious)}
 					{@const next = callingPoints[i + 1]}

@@ -20,7 +20,7 @@
 			<MapLocationGroup
 				{rid}
 				{crs}
-				href="/board/{crs}/t/{rid}"
+				href="/board/{crs}/t/{rid}?returnToHome=1"
 				isAtStation={false}
 				showDestination={mapData.locations.reduce(
 					(acc, curr) => acc + (curr.trainPosition ? 1 : 0),

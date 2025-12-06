@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Carriage } from '$lib/types';
-	import { Accessibility, Bike, Toilet } from 'lucide-svelte';
+	import { Accessibility, Bike, Toilet, VolumeOffIcon } from 'lucide-svelte';
 	import { fade, slide } from 'svelte/transition';
 	import { ca } from 'zod/locales';
 
@@ -12,12 +12,12 @@
 		)
 	);
 
-	console.log(formation)
+	console.log(formation);
 </script>
 
 <div in:fade={{ duration: 200 }}>
 	<div class="flex gap-1 overflow-x-scroll">
-		{#each formation as carriage, i}
+		{#each formation as carriage, i (JSON.stringify(carriage) + i)}
 			<div
 				class="bg-background border-border relative flex h-16 min-w-16 flex-col items-center justify-center gap-0.5 rounded border drop-shadow-xs"
 			>
@@ -35,7 +35,7 @@
 					></div>
 				{/if}
 				<div class="z-10 text-sm font-semibold">
-					{carriage.coachNumber ?? i + 1} {carriage.loading}
+					{carriage.coachNumber ?? i + 1}
 				</div>
 				{#if showIconBar}
 					<div class="z-10 flex h-4 items-center gap-1">
@@ -55,6 +55,9 @@
 						{/if}
 						{#if carriage.bikeSpace}
 							<Bike size={12} />
+						{/if}
+						{#if carriage.quietSpace}
+							<VolumeOffIcon size={12} />
 						{/if}
 					</div>
 				{/if}

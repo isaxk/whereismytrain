@@ -6,6 +6,7 @@
 	import AllStations from '$lib/data/stations.json';
 	import { saved } from '$lib/state/saved.svelte';
 	import SavedTrain from '$lib/components/saved-train.svelte';
+	import { onMount } from 'svelte';
 
 	let from = $state(null);
 	let to = $state(null);
@@ -22,17 +23,46 @@
 	// 		mapData.board = [[origin?.long, origin?.lat]];
 	// 	}
 	// });
+
+	async function refreshSavedService(id: string, focus: string, filter: string) {
+		const response = await fetch(`/api/service/${id}/${focus}/${filter}`);
+		if (response.ok) {
+			const data = await response.json();
+			if (data) {
+				const index = saved.value.findIndex((s) => s.id === id);
+				if (index !== -1) {
+					saved.value[index].service = data;
+				}
+			}
+			else {
+				saved.value = saved.value.filter((s) => s.id !== id);
+			}
+		}
+	}
+
+	function refresh() {
+		saved.value.forEach((item) => {
+			refreshSavedService(item.id, item.focusCrs, item.filterCrs);
+		});
+	}
+
+	onMount(() => {
+		const interval = setInterval(() => {
+			refresh();
+		}, 10000);
+		return () => clearInterval(interval);
+	});
 </script>
 
 <div class="flex flex-col gap-4">
-	<div class="border-b-border sticky top-0 z-20 bg-background rounded-t-xl border-b p-4 pt-6">
+	<div class="border-b-border bg-background sticky top-0 z-20 rounded-t-xl border-b p-4 pt-6">
 		<div class="text-3xl font-bold">Where is my train?</div>
 		<div class="flex *:text-blue-400 hover:underline">
 			<a href="/about">About & data sources</a>
 		</div>
 	</div>
 
-	<div class="px-4 border-b-border border-b pb-4">
+	<div class="border-b-border border-b px-4 pb-4">
 		<div class="flex items-center gap-2 pb-4">
 			<Search class="h-14 w-full" key="from" bind:selected={from}></Search>
 			<div class="flex min-w-8 justify-center">

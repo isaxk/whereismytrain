@@ -92,6 +92,8 @@ export type CallingPoint = {
 	tiploc: string;
 	times: TimeObject;
 	isCancelled: boolean;
+	departureCancelled: boolean;
+	arrivalCancelled: boolean;
 	name: string;
 	platform: string | null;
 	inDivision: boolean;
@@ -105,12 +107,13 @@ export type CallingPoint = {
 
 export type Carriage = {
 	coachNumber: string | null;
-	serviceClass: "first" | "standard";
+	serviceClass: 'first' | 'standard';
 	toilet: boolean;
 	bikeSpace?: boolean;
+	quietSpace?: boolean;
 	toiletIsAccessible: boolean;
 	loading: number | null;
-}
+};
 
 export type TrainService = {
 	rid: string;
@@ -123,7 +126,7 @@ export type TrainService = {
 	reasonCode: string | null;
 	formation: Carriage[] | null;
 	formationLengthOnly: boolean;
-	destination: DestinationOrigin[]
+	destination: DestinationOrigin[];
 };
 
 export type SavedTrain = {
@@ -131,7 +134,7 @@ export type SavedTrain = {
 	focusCrs: string;
 	filterCrs: string;
 	id: string;
-}
+};
 
 export type ServiceLocationWithCoords = ServiceLocation & {
 	coords: [number, number];

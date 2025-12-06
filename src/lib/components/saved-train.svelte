@@ -11,25 +11,31 @@
 
 	async function refetch() {
 		const res = await fetch(`/api/service/${data.id}/${data.focusCrs}`);
-		return await res.json();
+		if (res.ok) {
+			return await res.json();
+		} else {
+			return null;
+		}
 	}
 
 	onMount(() => {
 		refetch().then((d) => {
-			service = d;
-			saved.value.find((s) => s.id === data.id).service = d;
+			if (d) {
+				service = d;
+				saved.value.find((s) => s.id === data.id)!.service = d;
+			} else {
+				saved.value = saved.value.filter((s) => s.id !== data.id);
+			}
 		});
 	});
 
-	const focus = $derived(service.callingPoints.find((cp) => cp.crs === data.focusCrs));
-	const filter = $derived(service.callingPoints.find((cp) => cp.crs === data.filterCrs));
-
+	const focus = $derived(service?.callingPoints?.find((cp) => cp.crs === data.focusCrs));
+	const filter = $derived(service?.callingPoints?.find((cp) => cp.crs === data.filterCrs));
 </script>
-
 
 {#if focus}
 	<BoardItem
-		href={`/board/${data.focusCrs}/t/${data.id}?to=${data.filterCrs}`}
+		href={`/board/${data.focusCrs}/t/${data.id}?to=${data.filterCrs}&returnToHome=1`}
 		id={data.id}
 		planDep={focus?.times.plan.dep ?? 'N/A'}
 		rtDep={focus?.times.rt.dep ?? null}
@@ -40,12 +46,14 @@
 		platform={focus.platform}
 		crs={focus.crs ?? ''}
 		operator={data.service.operator}
-		filter={filter ? {
-			name: filter.name,
-			planArr: filter.times.plan.arr ?? 'N/A',
-			rtArr: filter.times.rt.arr ?? null,
-			isCancelled: filter.isCancelled,
-			arrived: filter.arrived,
-		} : null}
+		filter={filter
+			? {
+					name: filter.name,
+					planArr: filter.times.plan.arr ?? 'N/A',
+					rtArr: filter.times.rt.arr ?? null,
+					isCancelled: filter.isCancelled,
+					arrived: filter.arrived
+				}
+			: null}
 	/>
 {/if}

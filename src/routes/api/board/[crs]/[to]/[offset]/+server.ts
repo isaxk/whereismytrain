@@ -122,7 +122,7 @@ export const GET: RequestHandler = async ({ params }) => {
 
 		const services = (data.trainServices ?? []).concat(data.busServices ?? []).map((s: any) => parseBoardItem(s));
 
-		const nrccMessages: Notice[] = (data.nrccMessages ?? []).map((m: any) => ({
+		const nrccMessages: Notice[] = (data.nrccMessages ?? []).toSorted((a: any, b: any) => b.severity - a.severity).map((m: any) => ({
 			...m,
 			severity: typeof m.severity === 'number' ? m.severity : Severity[m.severity.toLowerCase()],
 			xhtmlMessage: m.xhtmlMessage

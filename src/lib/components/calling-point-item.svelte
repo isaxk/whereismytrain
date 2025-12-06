@@ -24,13 +24,17 @@
 	<div
 		class={[
 			'z-0 flex gap-4',
-			cp.order === 'focus' || cp.order === 'filter' ? 'font-medium' : cp.order === 'further' ? 'opacity-40' : 'opacity-80'
+			cp.order === 'focus' || cp.order === 'filter'
+				? 'font-medium'
+				: cp.order === 'further'
+					? 'opacity-40'
+					: 'opacity-80'
 		]}
 	>
 		<div class={['w-8 min-w-8']}>
 			<div
 				class={[
-					cp.isCancelled || prevCancelled
+					cp.isCancelled || cp.arrivalCancelled
 						? 'text-sm text-red-600 line-through'
 						: cp.times.rt.arr !== cp.times.plan.arr
 							? cp.times.rt.arr
@@ -41,13 +45,13 @@
 			>
 				{cp.times.plan.arr}
 			</div>
-			{#if cp.times.rt.arr !== cp.times.plan.arr && !cp.isCancelled && !prevCancelled}
+			{#if cp.times.rt.arr !== cp.times.plan.arr && !cp.isCancelled && !cp.arrivalCancelled}
 				{#if cp.times.rt.arr}
 					<div class="text-sm/3 text-yellow-500">
 						{cp.times.rt.arr ?? 'Delayed'}
 					</div>
-				{:else if cp.times.rt.arrSource === 'none'}
-					<div class="text-foreground text-[10px]/3">Unknown</div>
+					<!-- {:else if cp.times.rt.arrSource === 'none'}
+					<div class="text-foreground text-[10px]/3">Unknown</div> -->
 				{:else}
 					<div class="text-[10px]/3 text-yellow-500">Delayed</div>
 				{/if}
@@ -56,7 +60,7 @@
 		<div class={['w-8 min-w-8']}>
 			<div
 				class={[
-					cp.isCancelled || nextCancelled
+					cp.isCancelled || cp.departureCancelled
 						? 'text-sm text-red-600 line-through'
 						: cp.times.rt.dep !== cp.times.plan.dep
 							? cp.times.rt.dep
@@ -67,13 +71,13 @@
 			>
 				{cp.times.plan.dep}
 			</div>
-			{#if cp.times.rt.dep !== cp.times.plan.dep}
+			{#if cp.times.rt.dep !== cp.times.plan.dep && !cp.isCancelled && !cp.departureCancelled}
 				{#if cp.times.rt.dep}
 					<div class="text-sm/3 text-yellow-500">
 						{cp.times.rt.dep}
 					</div>
-				{:else if cp.times.rt.depSource === 'none'}
-					<div class="text-foreground text-[10px]/3">Unknown</div>
+					<!-- {:else if cp.times.rt.depSource === 'none'}
+					<div class="text-foreground text-[10px]/3">Unknown</div> -->
 				{:else}
 					<div class="text-[10px]/3 text-yellow-500">Delayed</div>
 				{/if}
@@ -102,7 +106,7 @@
 			<div style:background={operator.color} class="h-1.5 w-4"></div>
 			<div class="grow"></div>
 		{:else if cp.order === 'destination'}
-		<div style:background={operator.color} class="w-1.5 grow bg-black"></div>
+			<div style:background={operator.color} class="w-1.5 grow bg-black"></div>
 			<div style:background={operator.color} class="h-1.5 w-4"></div>
 			<div style:background={operator.color} class="w-1.5 grow bg-black opacity-50"></div>
 		{:else}
@@ -121,7 +125,9 @@
 					'min-w-0 overflow-hidden text-nowrap text-ellipsis',
 					cp.order === 'focus' || cp.order === 'destination' || cp.order === 'filter'
 						? 'text-base/5 font-semibold'
-						: cp.order === 'further' ? 'text-sm/3 text-muted-foreground/60' : 'text-sm/3 text-muted-foreground'
+						: cp.order === 'further'
+							? 'text-muted-foreground/60 text-sm/3'
+							: 'text-muted-foreground text-sm/3'
 				]}
 			>
 				{cp.name}
@@ -141,7 +147,7 @@
 			<div class="text-xs/4 text-red-600">Cancelled</div>
 		{/if}
 	</div>
-	<div class={[cp.order==='focus' ? 'text-lg font-medium' : 'text-sm text-zinc-400']}>
+	<div class={[cp.order === 'focus' ? 'text-lg font-medium' : 'text-sm text-zinc-400']}>
 		{cp.platform}
 	</div>
 </div>

@@ -1,10 +1,18 @@
 import { ACCESS_TOKEN } from '$env/static/private';
 import { operatorList } from '$lib/data/operators';
 import { findOvergroundLine } from '$lib/data/overground';
-import type { CallingPoint, CallingPointOrder, Carriage, ServiceLocation, TimeObject, TrainService } from '$lib/types';
+import type {
+	CallingPoint,
+	CallingPointOrder,
+	Carriage,
+	ServiceLocation,
+	TimeObject,
+	TrainService
+} from '$lib/types';
 import { parseServiceId } from '$lib/utils.js';
 import { error, json } from '@sveltejs/kit';
 import dayjs from 'dayjs';
+import { TreesIcon } from 'lucide-svelte';
 
 const nullTime = '0001-01-01T00:00:00';
 
@@ -22,8 +30,6 @@ function parseLocation(l: any): ServiceLocation {
 	};
 }
 
-
-
 function parseCallingPoint(
 	item: any,
 	index: number,
@@ -34,7 +40,8 @@ function parseCallingPoint(
 		crs: string;
 		name: string;
 		indexInCPs: number;
-	}[]
+	}[],
+	all: any[]
 ): CallingPoint {
 	if (item.ata === nullTime) item.ata = null;
 	if (item.atd === nullTime) item.atd = null;
@@ -60,7 +67,11 @@ function parseCallingPoint(
 			arrSource: item.arrivalSource === 'Trust' || item.arrivalSource === 'TD' ? 'trust' : 'none',
 			dep: item.atd || item.etd ? dayjs(item.atd ?? item.etd).format('HH:mm') : null,
 			depSource:
-				item.departureSource === 'Trust' || item.departureSource === 'TD' ? 'trust' : 'none'
+				item.departureSource === 'Trust' ||
+				item.departureSource === 'TD' ||
+				item.departureSource === null
+					? 'trust'
+					: 'none'
 		},
 		plan: {
 			arr: item.sta ? dayjs(item.sta).format('HH:mm') : null,
@@ -70,31 +81,42 @@ function parseCallingPoint(
 
 	let order: CallingPointOrder | null = null;
 
-	const max = dest.reduce((prev, current) => (prev && prev.indexInCPs > current.indexInCPs) ? prev : current)
+	let arrivalCancelled = false;
+	let departureCancelled = false;
 
+	if (item.isCancelled) {
+		arrivalCancelled = true;
+		departureCancelled = true;
+	} else {
+		const isUnCancelledAfter = all.some((cp, i) => !cp.isCancelled && i > index);
+		const isUnCancelledBefore = all.some((cp, i) => !cp.isCancelled && i < index);
+		if (!isUnCancelledAfter) {
+			departureCancelled = true;
+		}
+		if (!isUnCancelledBefore) {
+			arrivalCancelled = true;
+		}
+	}
+
+	const max = dest.reduce((prev, current) =>
+		prev && prev.indexInCPs > current.indexInCPs ? prev : current
+	);
 
 	if (index === focusIndex) {
 		order = 'focus';
-	}
-	else if (index === 0) {
+	} else if (index === 0) {
 		order = 'origin';
-	}
-	else if (index === filterIndex) {
+	} else if (index === filterIndex) {
 		order = 'filter';
-	}
-	else if (dest.some((d) => d.indexInCPs === index)) {
+	} else if (dest.some((d) => d.indexInCPs === index)) {
 		order = 'destination';
-	}
-	else if (index < focusIndex) {
+	} else if (index < focusIndex) {
 		order = 'previous';
-	}
-	else if (index > max.indexInCPs) {
+	} else if (index > max.indexInCPs) {
 		order = 'post-destination';
-	}
-	else if (filterIndex && index > filterIndex) {
+	} else if (filterIndex && index > filterIndex) {
 		order = 'further';
-	}
-	else {
+	} else {
 		order = 'subsequent';
 	}
 
@@ -111,6 +133,8 @@ function parseCallingPoint(
 		departed: item.atd && item.atd !== nullTime,
 		arrived: item.ata && item.ata !== nullTime,
 		isCancelled: item.isCancelled,
+		departureCancelled,
+		arrivalCancelled,
 		inDivision: item.inDivision ?? false,
 		startDivide: item.startDivide ?? false,
 		endDivide: item.endDivide ?? false,
@@ -133,7 +157,6 @@ async function fetchAssocService(rid: string) {
 
 export const GET = async ({ params }) => {
 	const { id: rawid, crs, to } = params;
-
 
 	const { id, destCrsList } = parseServiceId(rawid);
 
@@ -250,63 +273,66 @@ export const GET = async ({ params }) => {
 	// 		.join(', ')
 	// );
 
-
-
-
 	destination = destCrsList.map((item) => {
 		const cp = callingPoints.find((loc: any) => loc.crs === item);
 		return {
 			crs: cp.crs,
 			name: cp.locationName,
-			indexInCPs: callingPoints.findLastIndex((l, i) => l.crs === item),
-		}
-	})
+			indexInCPs: callingPoints.findLastIndex((l, i) => l.crs === item)
+		};
+	});
 
-	let focusIndex = callingPoints.findLastIndex((l, i) => l.crs === crs && i < destination[0].indexInCPs);
+	let focusIndex = callingPoints.findLastIndex(
+		(l, i) => l.crs === crs && i < destination[0].indexInCPs
+	);
 	let filterIndex = to ? callingPoints.findIndex((l, i) => l.crs === to && i > focusIndex) : null;
 
-	console.log('focusIndex', focusIndex)
-	console.log('filterIndex', filterIndex)
+	console.log('focusIndex', focusIndex);
+	console.log('filterIndex', filterIndex);
 
 	if ((!filterIndex || filterIndex === -1) && to) {
-		console.log('Could not find filter, retrying')
+		console.log('Could not find filter, retrying');
 		filterIndex = callingPoints.findLastIndex((l, i) => l.crs === to);
-		focusIndex = callingPoints.findLastIndex((l, i) => l.crs === crs && i < destination[0].indexInCPs && i < (filterIndex ?? 10000))
-		console.log('focusIndex', focusIndex)
-		console.log('filterIndex', filterIndex)
+		focusIndex = callingPoints.findLastIndex(
+			(l, i) => l.crs === crs && i < destination[0].indexInCPs && i < (filterIndex ?? 10000)
+		);
+		console.log('focusIndex', focusIndex);
+		console.log('filterIndex', filterIndex);
 	}
-
 
 	if (filterIndex && focusIndex > filterIndex) {
-		console.log('Focus index is after filter index, retrying')
-		focusIndex = callingPoints.findLastIndex((l, i) => l.crs === crs && i < destination[0].indexInCPs && i < filterIndex);
-		console.log('focusIndex', focusIndex)
-		console.log('filterIndex', filterIndex)
+		console.log('Focus index is after filter index, retrying');
+		focusIndex = callingPoints.findLastIndex(
+			(l, i) => l.crs === crs && i < destination[0].indexInCPs && i < filterIndex
+		);
+		console.log('focusIndex', focusIndex);
+		console.log('filterIndex', filterIndex);
 	}
-
-
 
 	const title = `to ${destination.map((l) => l.name).join(', ')}`;
 
-
 	let formationLengthOnly: boolean = data.locations[focusIndex]?.length ? true : false;
 
-	let formation: Carriage[] | null = data.locations[focusIndex]?.length ? [...Array(data.locations[focusIndex]?.length).keys()].map((_, i) => {
-		return {
-			coachNumber: (i + 1).toString(),
-			serviceClass: "standard",
-			toilet: false,
-			toiletIsAccessible: false,
-			loading: null
-		}
-	}) : null;
+	let formation: Carriage[] | null = data.locations[focusIndex]?.length
+		? [...Array(data.locations[focusIndex]?.length).keys()].map((_, i) => {
+				return {
+					coachNumber: (i + 1).toString(),
+					serviceClass: 'standard',
+					toilet: false,
+					toiletIsAccessible: false,
+					loading: null
+				};
+			})
+		: null;
 
 	if (data.formation) {
 		const focus = data.formation.find((f: any) => f.tiploc === data.locations[focusIndex]?.tiploc);
-		const lastWithLoading = data.formation.find((f: any) => f ? f?.coaches?.some((c: any) => c.loading?.value !== null) : false) ?? null;
+		const lastWithLoading =
+			data.formation.find((f: any) =>
+				f ? f?.coaches?.some((c: any) => c.loading?.value !== null) : false
+			) ?? null;
 
 		if (focus?.coaches || lastWithLoading?.coaches) {
-
 			formationLengthOnly = false;
 			formation = ((focus?.coaches || lastWithLoading?.coaches) ?? []).map((c: any, i) => ({
 				coachNumber: c.number,
@@ -314,11 +340,13 @@ export const GET = async ({ params }) => {
 				toilet: c.toilet && c.toilet?.value !== 'None',
 				toiletIsAccessible: c.toilet?.value === 'Accessible',
 				loading: lastWithLoading.coaches[i].loading?.value ?? null
-			}))
+			}));
 		}
 	}
 
-
+	if (id === '202511307801133') {
+		callingPoints[focusIndex].isCancelled = false;
+	}
 
 	if (data.operatorCode == 'LO') {
 		data.operatorCode = findOvergroundLine(data.uid);
@@ -327,7 +355,15 @@ export const GET = async ({ params }) => {
 	const final: TrainService = {
 		rid: data.id,
 		callingPoints: callingPoints.map((cp, i) =>
-			parseCallingPoint(cp, i, callingPoints.length, focusIndex, filterIndex, destination)
+			parseCallingPoint(
+				cp,
+				i,
+				callingPoints.length,
+				focusIndex,
+				filterIndex,
+				destination,
+				callingPoints
+			)
 		),
 		locations,
 		operator: {
@@ -342,7 +378,7 @@ export const GET = async ({ params }) => {
 		uid: data.uid,
 		sdd: data.sdd,
 		reasonCode: data.delayReason?.value ?? data.cancelReason?.value ?? null
-	}
+	};
 
 	return json(final);
 };

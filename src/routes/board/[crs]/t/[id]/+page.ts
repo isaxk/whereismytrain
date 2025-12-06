@@ -4,6 +4,7 @@ export const load = async ({ params, fetch, url }) => {
 	const { id, crs } = params;
 
 	const to = url.searchParams.get('to') ?? undefined;
+	const returnToHome = url.searchParams.get('returnToHome') === '1';
 
 	async function getService(): Promise<TrainService> {
 		const response = await fetch(`/api/service/${id}/${crs}${to ? `/${to}` : ''}`);
@@ -11,5 +12,5 @@ export const load = async ({ params, fetch, url }) => {
 		return data;
 	}
 
-	return { id, service: getService() };
+	return { id, service: getService(), returnToHome };
 };
