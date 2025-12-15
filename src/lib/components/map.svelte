@@ -236,14 +236,8 @@
 			if (favourites.includes(b.crsCode) && !favourites.includes(a.crsCode)) return 1;
 			return 0;
 		});
-		if (map?.getZoom() > 10) {
-			return sorted.slice(0, 75);
-		} else if (map?.getZoom() > 9) {
+		if (map?.getZoom() > 8) {
 			return sorted.slice(0, 125);
-		} else if (map?.getZoom() > 7) {
-			return sorted.slice(0, 175);
-		} else if (map?.getZoom() > 6) {
-			return sorted.slice(0, 225);
 		} else {
 			return favs;
 		}
