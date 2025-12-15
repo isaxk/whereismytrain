@@ -24,7 +24,7 @@
 	import type { Feature, FeatureCollection } from 'geojson';
 	import { MediaQuery } from 'svelte/reactivity';
 	import { onMount, untrack } from 'svelte';
-	import { explicitEffect } from '$lib/utils/index.svelte';
+	import { explicitEffect, throttle } from '$lib/utils/index.svelte';
 	import { cameraForBoundsCustom } from '$lib/utils';
 	import { saved } from '$lib/state/saved.svelte';
 	import { favourites } from '$lib/data/favourites';
@@ -237,17 +237,21 @@
 			return 0;
 		});
 		if (map?.getZoom() > 10) {
-			return sorted.slice(0, 250);
-		} else if (map?.getZoom() > 9) {
-			return sorted.slice(0, 200);
-		} else if (map?.getZoom() > 7) {
-			return sorted.slice(0, 150);
-		} else if (map?.getZoom() > 6) {
 			return sorted.slice(0, 100);
+		} else if (map?.getZoom() > 9) {
+			return sorted.slice(0, 150);
+		} else if (map?.getZoom() > 7) {
+			return sorted.slice(0, 200);
+		} else if (map?.getZoom() > 6) {
+			return sorted.slice(0, 250);
 		} else {
 			return favs;
 		}
 	});
+
+	const updateBounds = throttle(() => {
+		bounds = map?.getBounds();
+	}, 500);
 
 	$inspect(filteredStations);
 </script>
@@ -258,11 +262,10 @@
 		: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json'}
 	class="relative h-full w-full"
 	onmousemove={(e) => {
-		bounds = map?.getBounds();
+		updateBounds();
 	}}
 	onzoom={(e) => {
-		bounds = map?.getBounds();
-		console.log(map.getZoom());
+		updateBounds();
 	}}
 	standardControls
 	onload={(e) => {
