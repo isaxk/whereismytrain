@@ -10,10 +10,11 @@
 		type LngLatLike,
 		LineLayer
 	} from 'svelte-maplibre';
+	import { LngLatBounds } from 'maplibre-gl';
 	import MapLocationGroup from './map-location-group.svelte';
 	import { navigating, page } from '$app/state';
 	import type { ServiceMapData, TrainService } from '$lib/types';
-	import { TrainFront } from 'lucide-svelte';
+	import { AlertCircle, CircleAlertIcon, TrainFront } from 'lucide-svelte';
 	import StationsJSON from '$lib/data/stations.json';
 	import { fade } from 'svelte/transition';
 	import bbox from '@turf/bbox';
@@ -26,6 +27,7 @@
 	import { explicitEffect } from '$lib/utils/index.svelte';
 	import { cameraForBoundsCustom } from '$lib/utils';
 	import { saved } from '$lib/state/saved.svelte';
+	import { favourites } from '$lib/data/favourites';
 
 	let serviceData: TrainService | null = $state(null);
 	let map: maplibregl.Map;
@@ -223,6 +225,31 @@
 			darkMode = event.matches;
 		});
 	});
+
+	let bounds: LngLatBounds = $state(new LngLatBounds([-8.2, 49.8, 1.9, 59.2]));
+
+	let filteredStations = $derived.by(() => {
+		const favs = favourites.map((crs) => StationsJSON.find((station) => station.crsCode === crs));
+		const list = StationsJSON.filter((station) => bounds?.contains([station.long, station.lat]));
+		const sorted = list.toSorted((a, b) => {
+			if (favourites.includes(a.crsCode)) return -1;
+			if (favourites.includes(b.crsCode) && !favourites.includes(a.crsCode)) return 1;
+			return 0;
+		});
+		if (map?.getZoom() > 10) {
+			return sorted.slice(0, 250);
+		} else if (map?.getZoom() > 9) {
+			return sorted.slice(0, 200);
+		} else if (map?.getZoom() > 7) {
+			return sorted.slice(0, 150);
+		} else if (map?.getZoom() > 6) {
+			return sorted.slice(0, 100);
+		} else {
+			return favs;
+		}
+	});
+
+	$inspect(filteredStations);
 </script>
 
 <MapLibre
@@ -230,6 +257,13 @@
 		? 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json'
 		: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json'}
 	class="relative h-full w-full"
+	onmousemove={(e) => {
+		bounds = map?.getBounds();
+	}}
+	onzoom={(e) => {
+		bounds = map?.getBounds();
+		console.log(map.getZoom());
+	}}
 	standardControls
 	onload={(e) => {
 		map = e;
@@ -256,9 +290,38 @@
 			crs={page.data.crs}
 		/>
 	{:else if !page.data.id}
+		{#if filteredStations.length === 0}
+			<div class="fixed top-3 right-3 z-[200]">
+				<div class="bg-background flex w-max items-center gap-1 rounded-md px-2 py-1">
+					<CircleAlertIcon size={16} />
+					Zoom in too see stations
+				</div>
+			</div>
+		{/if}
+
+		{#each filteredStations as station (station.crsCode)}
+			<Marker
+				zIndex={favourites.includes(station.crsCode) ? 1000 : 100}
+				lngLat={[station.long, station.lat]}
+				onclick={(e) => {
+					page.data.crs = station.crsCode;
+					goto('/board/' + station.crsCode);
+				}}
+			>
+				<div
+					class={[
+						'flex h-7 w-7 items-center justify-center rounded-full bg-zinc-700 text-[10px] text-white dark:bg-zinc-600',
+						page.data.crs ? 'opacity-30' : 'opacity-100'
+					]}
+				>
+					{station.crsCode}
+				</div>
+			</Marker>
+		{/each}
+
 		<!-- GeoJSON source with clustering -->
 
-		{#key stationsGeoJSON}
+		<!-- {#key stationsGeoJSON}
 			<GeoJSON
 				id="stations"
 				data={stationsGeoJSON}
@@ -267,7 +330,7 @@
 					maxZoom: 12
 				}}
 			>
-				<!-- Clustered marker icons -->
+
 				<MarkerLayer applyToClusters asButton>
 					{#snippet children({ feature })}
 						<div
@@ -281,7 +344,7 @@
 					{/snippet}
 				</MarkerLayer>
 
-				<!-- Unclustered single station markers -->
+
 				<MarkerLayer
 					onclick={(e) => {
 						page.data.crs = e.feature.properties.crsCode;
@@ -302,13 +365,13 @@
 					{/snippet}
 				</MarkerLayer>
 			</GeoJSON>
-		{/key}
+		{/key} -->
 		{#if page.data.crs && navigating.to?.url.pathname != '/'}
 			{@const station = StationsJSON.find((s) => s.crsCode === page.data.crs)}
 			{#if station}
 				<Marker lngLat={[station.long, station.lat]} zIndex={5000}>
 					<div
-						class="flex h-7 w-7 items-center justify-center rounded-full bg-black text-xs text-[10px] text-white dark:bg-white dark:text-black"
+						class="animate-in fade-in-20 flex h-7 w-7 items-center justify-center rounded-full bg-black text-xs text-[10px] text-white dark:bg-white dark:text-black"
 					>
 						{page.data.crs}
 					</div>

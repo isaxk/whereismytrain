@@ -47,6 +47,7 @@
 		"@supabase/supabase-js": "^2.84.0",
 		"@turf/bbox": "^7.3.0",
 		"@types/geojson": "^7946.0.16",
+		"@types/maplibre-gl": "^1.14.0",
 		"bits-ui": "^2.14.4",
 		"cupertino-pane": "^1.5.4",
 		"dayjs": "^1.11.19",
@@ -55,6 +56,7 @@
 		"fuse.js": "^7.1.0",
 		"geojson": "^0.5.0",
 		"lucide-svelte": "^0.554.0",
+		"maplibre-gl": "^5.14.0",
 		"svelte-maplibre": "^1.2.5",
 		"ts-node": "^10.9.2",
 		"zod": "^4.1.12"
