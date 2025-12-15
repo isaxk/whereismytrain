@@ -258,49 +258,51 @@
 	{:else if !page.data.id}
 		<!-- GeoJSON source with clustering -->
 
-		<GeoJSON
-			id="stations"
-			data={stationsGeoJSON}
-			cluster={{
-				radius: 45,
-				maxZoom: 12
-			}}
-		>
-			<!-- Clustered marker icons -->
-			<MarkerLayer applyToClusters asButton>
-				{#snippet children({ feature })}
-					<div
-						class={[
-							'flex h-7 w-7 items-center justify-center rounded-full bg-zinc-800 text-[10px] text-white dark:bg-zinc-600',
-							page.data.crs ? 'opacity-30' : 'opacity-80'
-						]}
-					>
-						{feature.properties?.point_count}
-					</div>
-				{/snippet}
-			</MarkerLayer>
-
-			<!-- Unclustered single station markers -->
-			<MarkerLayer
-				onclick={(e) => {
-					page.data.crs = e.feature.properties.crsCode;
-					goto('/board/' + e.feature.properties.crsCode);
+		{#key stationsGeoJSON}
+			<GeoJSON
+				id="stations"
+				data={stationsGeoJSON}
+				cluster={{
+					radius: 45,
+					maxZoom: 12
 				}}
-				applyToClusters={false}
-				asButton
 			>
-				{#snippet children({ feature })}
-					<div
-						class={[
-							'flex h-7 w-7 items-center justify-center rounded-full bg-zinc-800 text-[10px] text-white dark:bg-zinc-600',
-							page.data.crs ? 'opacity-30' : 'opacity-80'
-						]}
-					>
-						{feature.properties?.crsCode}
-					</div>
-				{/snippet}
-			</MarkerLayer>
-		</GeoJSON>
+				<!-- Clustered marker icons -->
+				<MarkerLayer applyToClusters asButton>
+					{#snippet children({ feature })}
+						<div
+							class={[
+								'flex h-7 w-7 items-center justify-center rounded-full bg-zinc-800 text-[10px] text-white dark:bg-zinc-600',
+								page.data.crs ? 'opacity-30' : 'opacity-80'
+							]}
+						>
+							{feature.properties?.point_count}
+						</div>
+					{/snippet}
+				</MarkerLayer>
+
+				<!-- Unclustered single station markers -->
+				<MarkerLayer
+					onclick={(e) => {
+						page.data.crs = e.feature.properties.crsCode;
+						goto('/board/' + e.feature.properties.crsCode);
+					}}
+					applyToClusters={false}
+					asButton
+				>
+					{#snippet children({ feature })}
+						<div
+							class={[
+								'flex h-7 w-7 items-center justify-center rounded-full bg-zinc-800 text-[10px] text-white dark:bg-zinc-600',
+								page.data.crs ? 'opacity-30' : 'opacity-80'
+							]}
+						>
+							{feature.properties?.crsCode}
+						</div>
+					{/snippet}
+				</MarkerLayer>
+			</GeoJSON>
+		{/key}
 		{#if page.data.crs && navigating.to?.url.pathname != '/'}
 			{@const station = StationsJSON.find((s) => s.crsCode === page.data.crs)}
 			{#if station}
