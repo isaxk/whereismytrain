@@ -7,6 +7,7 @@
 	import { saved } from '$lib/state/saved.svelte';
 	import SavedTrain from '$lib/components/saved-train.svelte';
 	import { onMount } from 'svelte';
+	import { servicesSub } from '$lib/state/services-subscriber';
 
 	let from = $state(null);
 	let to = $state(null);
@@ -24,33 +25,30 @@
 	// 	}
 	// });
 
-	async function refreshSavedService(id: string, focus: string, filter: string) {
-		const response = await fetch(`/api/service/${id}/${focus}/${filter}`);
-		if (response.ok) {
-			const data = await response.json();
-			if (data) {
-				const index = saved.value.findIndex((s) => s.id === id);
-				if (index !== -1) {
-					saved.value[index].service = data;
-				}
-			}
-			else {
-				saved.value = saved.value.filter((s) => s.id !== id);
-			}
-		}
-	}
+	// async function refreshSavedService(id: string, focus: string, filter: string) {
+	// 	const response = await fetch(`/api/service/${id}/${focus}/${filter}`);
+	// 	if (response.ok) {
+	// 		const data = await response.json();
+	// 		if (data) {
+	// 			const index = saved.value.findIndex((s) => s.id === id);
+	// 			if (index !== -1) {
+	// 				saved.value[index].service = data;
+	// 			}
+	// 		} else {
+	// 			saved.value = saved.value.filter((s) => s.id !== id);
+	// 		}
+	// 	}
+	// }
 
-	function refresh() {
-		saved.value.forEach((item) => {
-			refreshSavedService(item.id, item.focusCrs, item.filterCrs);
-		});
-	}
+	// function refresh() {
+	// 	saved.value.forEach((item) => {
+	// 		refreshSavedService(item.id, item.focusCrs, item.filterCrs);
+	// 	});
+	// }
 
 	onMount(() => {
-		const interval = setInterval(() => {
-			refresh();
-		}, 10000);
-		return () => clearInterval(interval);
+		const clear = servicesSub.init();
+		return () => clear();
 	});
 </script>
 

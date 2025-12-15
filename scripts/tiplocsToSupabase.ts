@@ -23,6 +23,9 @@ interface TiplocData {
 	Name: string;
 	Latitude: number;
 	Longitude: number;
+	Details: {
+		CRS: string | null;
+	};
 	// Add other properties from your JSON if needed
 }
 
@@ -43,7 +46,8 @@ async function seedData() {
 				tiploc: item.Tiploc,
 				name: item.Name,
 				lat: item.Latitude,
-				long: item.Longitude
+				long: item.Longitude,
+				crs: item.Details.CRS
 				// If you created an original_data JSONB column:
 				// original_data: item
 			}));

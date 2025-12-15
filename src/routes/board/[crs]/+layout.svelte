@@ -89,7 +89,7 @@
 				timeToDayjs(first.times.plan.dep),
 				'minute'
 			);
-			console.log(diff);
+			// console.log(diff);
 			return offsetUrl(data.offset + diff);
 		});
 	});
@@ -104,7 +104,7 @@
 				timeToDayjs(first.times.plan.dep),
 				'minute'
 			);
-			console.log(diff);
+			// console.log(diff);
 			return offsetUrl(data.offset - diff);
 		});
 	});
@@ -204,7 +204,7 @@
 							id={service.rid}
 							planDep={service.times.plan.dep ?? 'N/A'}
 							rtDep={service.times.rt.dep}
-							departed={false}
+							departed={service.departed}
 							isCancelled={service.isCancelled}
 							destination={service.destination}
 							platform={service.platform}

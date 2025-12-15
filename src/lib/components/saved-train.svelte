@@ -4,6 +4,7 @@
 	import { Bus, Check, ClockAlert, X } from 'lucide-svelte';
 	import { onMount } from 'svelte';
 	import BoardItem from './board-item.svelte';
+	import { servicesSub } from '$lib/state/services-subscriber';
 
 	let { data }: { data: SavedTrain } = $props();
 
@@ -12,21 +13,31 @@
 	async function refetch() {
 		const res = await fetch(`/api/service/${data.id}/${data.focusCrs}`);
 		if (res.ok) {
-			return await res.json();
+			const s = await res.json();
+			if (s) {
+				service = s;
+				if (saved.value.find((s) => s.id === data.id)) {
+					saved.value.find((s) => s.id === data.id)!.service = s;
+				}
+			} else {
+				saved.value = saved.value.filter((s) => s.id !== data.id);
+			}
 		} else {
 			return null;
 		}
 	}
 
 	onMount(() => {
-		refetch().then((d) => {
-			if (d) {
-				service = d;
-				saved.value.find((s) => s.id === data.id)!.service = d;
-			} else {
-				saved.value = saved.value.filter((s) => s.id !== data.id);
+		refetch();
+		const unsubscribe = servicesSub.subscribe(data.id, data.focusCrs, data.filterCrs, (s) => {
+			if (s) {
+				service = s;
+				saved.value.find((s) => s.id === data.id)!.service = s;
 			}
 		});
+		return () => {
+			unsubscribe();
+		};
 	});
 
 	const focus = $derived(service?.callingPoints?.find((cp) => cp.crs === data.focusCrs));

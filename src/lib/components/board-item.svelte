@@ -44,7 +44,7 @@
 <a
 	{href}
 	class={[
-		'border-border flex w-full justify-center flex-col border-b p-4 px-2 text-left',
+		'border-border flex w-full flex-col justify-center border-b p-4 px-2 text-left',
 		filter ? 'h-32 gap-1' : 'h-22 gap-0.5'
 	]}
 >
@@ -57,7 +57,12 @@
 				<div class="flex items-center gap-1 text-red-600"><X size={14} /> Cancelled</div>
 			{:else if rtDep == planDep}
 				<div class="text-good flex items-center gap-1">
-					<Check size={14} /> On time
+					<Check size={14} />
+					{#if departed}
+						Departed on time
+					{:else}
+						On time
+					{/if}
 				</div>
 			{:else if rtDep}
 				<div class="flex items-center gap-1 text-yellow-600">
@@ -101,11 +106,11 @@
 			<div class={['truncate text-base/5 font-semibold']}>
 				{destination.map((d) => d.name).join(', ')}
 			</div>
-            {#if destination[0].via} 
-                <div class="text-muted-foreground text-xs/3 font-light">
-                    {destination[0].via}
-                </div>
-            {/if}
+			{#if destination[0].via}
+				<div class="text-muted-foreground text-xs/3 font-light">
+					{destination[0].via}
+				</div>
+			{/if}
 		</div>
 		<div
 			class="h-max rounded-md px-1.5 py-0.5 text-[10px] text-white"
@@ -124,7 +129,14 @@
 				{/if}
 			{:else}
 				<div class="flex min-w-0 gap-1 overflow-hidden text-xs text-nowrap">
-					<div class="truncate">Expected arrival at {filter.name}</div>
+					<div class="truncate">
+						{#if filter.arrived}
+							Arrived
+						{:else}
+							Expected arrival
+						{/if}
+						at {filter.name}
+					</div>
 					{#if filter.planArr === filter.rtArr}
 						<div class="text-good flex items-center gap-0.5">
 							<Check size={12} />

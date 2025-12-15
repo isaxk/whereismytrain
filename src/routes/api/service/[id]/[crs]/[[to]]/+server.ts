@@ -21,6 +21,7 @@ function parseLocation(l: any): ServiceLocation {
 		crs: l.crs ?? null,
 		isCancelled: l.isCancelled ?? false,
 		tiploc: l.tiploc!,
+		isCallingPoint: l.crs && !l.isPass,
 		eta: l.eta ?? null,
 		etd: l.etd ?? null,
 		ata: l.ata ?? null,

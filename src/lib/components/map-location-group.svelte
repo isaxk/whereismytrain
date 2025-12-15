@@ -14,7 +14,8 @@
 		index,
 		color,
 		showDestination,
-		isAtStation
+		isAtStation,
+		filter
 	}: {
 		href: string;
 		crs: string;
@@ -24,34 +25,80 @@
 		color: string;
 		showDestination: boolean;
 		isAtStation: boolean;
+		filter?: string | null;
 	} = $props();
 
-	const coordinates = $derived(
-		data.lineLocations
-			.filter((c, i) => {
-				if (!c.isCancelled) {
-					return true;
-				}
-				const prev = data.lineLocations[i - 1];
-				const next = data.lineLocations[i + 1];
-				if (prev && !prev.isCancelled && next && !next.isCancelled) {
-					return true;
-				}
+	const coordinates = $derived(data.lineLocations.map((l) => l.coords));
+
+	const unCancelled = $derived(
+		data.lineLocations.filter((c, i) => {
+			const prevCP = data.lineLocations.find((l, j) => l.isCallingPoint && j < i);
+			const nextCP = data.lineLocations.find((l, j) => l.isCallingPoint && j > i);
+
+			const prevCpIsCancelled = prevCP?.isCancelled ?? false;
+			const nextCpIsCancelled = nextCP?.isCancelled ?? false;
+
+			if (!c.isCancelled) {
+				return true;
+			}
+
+			if (!nextCP && c.isCancelled) {
 				return false;
-			})
-			.map((l) => l.coords)
+			}
+
+			if (!prevCpIsCancelled && !nextCpIsCancelled) {
+				return true;
+			}
+			return false;
+		})
 	);
 
+	const unCancelledCoordinates = $derived(unCancelled.map((l) => l.coords));
+
 	const primaryCoordinates = $derived.by(() => {
-		const filtered = data.lineLocations.filter((l) => !l.isCancelled);
+		const filtered = unCancelled;
+		console.log('filtered', filtered);
 		const focus = filtered.findIndex((l) => l.crs === crs);
-		if (filtered.find((l) => l.crs === crs)) {
-			const coords = filtered.slice(focus);
+		if (focus !== -1 && filtered.find((l) => l.crs === crs)) {
+			let coords = [];
+
+			if (filter) {
+				const filterIndex = filtered.findIndex((l) => l.crs === filter);
+
+				if (filterIndex !== -1 && filterIndex > focus) {
+					coords = filtered.slice(focus, filterIndex + 1);
+				} else {
+					coords = filtered.slice(focus);
+				}
+			} else {
+				coords = filtered.slice(focus);
+			}
 			return coords.map((l) => l.coords);
 		} else {
-			return [];
+			return filtered.map((l) => l.coords);
 		}
 	});
+
+	// const lineData = $derived.by(() => {
+	// 	const filtered = data.lineLocations.filter((l) => !l.isCancelled);
+	// 	const focus = filtered.findIndex((l) => l.crs === crs);
+	// 	if (focus !== -1 && filtered.find((l) => l.crs === crs)) {
+	// 		let coords = [];
+	// 		if (filter) {
+	// 			const filterIndex = data.lineLocations.findIndex((l) => l.crs === filter);
+	// 			if (filterIndex !== -1 && filterIndex > focus) {
+	// 				coords = data.lineLocations.slice(focus, filterIndex + 1);
+	// 			} else {
+	// 				coords = data.lineLocations.slice(focus);
+	// 			}
+	// 		} else {
+	// 			coords = filtered.slice(focus);
+	// 		}
+	// 		return coords.map((l) => l.coords);
+	// 	} else {
+	// 		return [];
+	// 	}
+	// });
 
 	const lineData: Feature = $derived({
 		type: 'Feature',
@@ -61,6 +108,17 @@
 		geometry: {
 			type: 'LineString',
 			coordinates: coordinates
+		}
+	});
+
+	const unCancelledLineData: Feature = $derived({
+		type: 'Feature',
+		properties: {
+			name: `train-route-${rid}-${index}-uncancelled`
+		},
+		geometry: {
+			type: 'LineString',
+			coordinates: unCancelledCoordinates
 		}
 	});
 
@@ -75,8 +133,26 @@
 		}
 	});
 
-	const coordsTween = Tween.of(() => data.trainPosition);
+	const coordsTween = $derived(data.trainPosition ? Tween.of(() => data.trainPosition) : null);
+
+	$inspect(data);
 </script>
+
+<GeoJSON id="train-route-{rid}-{index}-secondary" data={lineData}>
+	<LineLayer
+		onclick={() => {
+			page.data.id = rid;
+			page.data.crs = crs;
+			goto(href);
+		}}
+		layout={{ 'line-cap': 'round', 'line-join': 'round' }}
+		paint={{
+			'line-width': 5,
+			'line-color': color,
+			'line-opacity': 0.2
+		}}
+	/>
+</GeoJSON>
 
 <GeoJSON id="train-route-{rid}-{index}-primary" data={primaryLineData}>
 	<LineLayer
@@ -94,7 +170,7 @@
 	/>
 </GeoJSON>
 
-<GeoJSON id="train-route-{rid}-{index}-secondary" data={lineData}>
+<GeoJSON id="train-route-{rid}-{index}-uncancelled" data={unCancelledLineData}>
 	<LineLayer
 		onclick={() => {
 			page.data.id = rid;
@@ -126,7 +202,7 @@
 	/>
 </GeoJSON>
 
-{#if data.trainPosition && coordsTween.current}
+{#if data.trainPosition && coordsTween?.current}
 	<Marker
 		onclick={(e) => {
 			goto(href);
@@ -138,7 +214,7 @@
 				page.data.crs = crs;
 			}, 50);
 		}}
-		lngLat={coordsTween.current}
+		lngLat={coordsTween.current ?? data.trainPosition}
 		class="p-5 "
 		zIndex={2000}
 		opacity={page.data.crs && page.data.id !== rid ? 0.2 : 1}

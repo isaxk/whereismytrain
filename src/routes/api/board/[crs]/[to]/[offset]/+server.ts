@@ -27,7 +27,7 @@ function parseBoardItem(item: any): BoardItem {
 	const pta = item.sta ? dayjs(item.sta) : null;
 	const ptd = item.std ? dayjs(item.std) : null;
 
-	item.rid = `${item.rid}d${item.destination.map((d)=>d.crs).join('d')}`
+	item.rid = `${item.rid}d${item.destination.map((d) => d.crs).join('d')}`;
 
 	if (rtd && ptd) {
 		delay = rtd.diff(ptd, 'minutes');
@@ -44,10 +44,9 @@ function parseBoardItem(item: any): BoardItem {
 		}
 	};
 
-	if(item.operatorCode === 'LO') {
+	if (item.operatorCode === 'LO') {
 		item.operatorCode = findOvergroundLine(item.uid);
 	}
-
 
 	return {
 		rid: item.rid,
@@ -64,6 +63,7 @@ function parseBoardItem(item: any): BoardItem {
 			via: o.via
 		})),
 		times,
+		departed: item.atd && item.atd !== nullTime,
 		delay,
 		platform: item.platform ?? null,
 		operator: {
@@ -107,8 +107,8 @@ export const GET: RequestHandler = async ({ params }) => {
 		const response = await fetch(url, {
 			headers: shouldUseRailData
 				? {
-					'x-apikey': ACCESS_TOKEN
-				}
+						'x-apikey': ACCESS_TOKEN
+					}
 				: {}
 		});
 
@@ -120,19 +120,21 @@ export const GET: RequestHandler = async ({ params }) => {
 
 		const data = await response.json();
 
-		const services = (data.trainServices ?? []).concat(data.busServices ?? []).map((s: any) => parseBoardItem(s));
+		const services = (data.trainServices ?? [])
+			.concat(data.busServices ?? [])
+			.map((s: any) => parseBoardItem(s));
 
-		const nrccMessages: Notice[] = (data.nrccMessages ?? []).toSorted((a: any, b: any) => b.severity - a.severity).map((m: any) => ({
-			...m,
-			severity: typeof m.severity === 'number' ? m.severity : Severity[m.severity.toLowerCase()],
-			xhtmlMessage: m.xhtmlMessage
-				.replace('Latest information can be found in', '')
-				.replace('Status and Disruptions.', 'More info')
-		}));
+		const nrccMessages: Notice[] = (data.nrccMessages ?? [])
+			.toSorted((a: any, b: any) => b.severity - a.severity)
+			.map((m: any) => ({
+				...m,
+				severity: typeof m.severity === 'number' ? m.severity : Severity[m.severity.toLowerCase()],
+				xhtmlMessage: m.xhtmlMessage
+					.replace('Latest information can be found in', '')
+					.replace('Status and Disruptions.', 'More info')
+			}));
 
-		console.log(services.map((s)=>s.uid));
-
-
+		console.log(services.map((s) => s.uid));
 
 		const board: Board = {
 			services,

@@ -6,11 +6,11 @@
 
 	let { op, crs, sdd, uid, length, placeholder } = $props();
 
-	console.log('length', length);
+	// console.log('length', length);
 
 	async function getFormation(op, length) {
 		const knownFormation = getKnownFormation(op, length);
-		console.log('knownFormation', knownFormation);
+		// console.log('knownFormation', knownFormation);
 		if (knownFormation) {
 			return knownFormation;
 		} else {

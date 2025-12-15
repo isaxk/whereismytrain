@@ -61,7 +61,6 @@
 
 	explicitEffect(
 		() => {
-			console.log(paneHeight.current);
 			const padding = {
 				top: 20,
 				bottom: paneHeight.current + 50,
@@ -69,7 +68,21 @@
 				right: 60
 			};
 			if (map && mapData.service) {
-				console.log('Should zoom to map');
+				// console.log('Should zoom to map');
+				//
+
+				const flatten = mapData.service.locations.map((l) => l.lineLocations).flat();
+
+				const focus = flatten.find((l) => l.crs === page.data.crs);
+				const filter = page.data.to
+					? flatten.find((l) => l.crs === page.data.to)
+					: flatten[flatten.length - 1];
+				const train = mapData.service.locations[0]!.trainPosition ?? null;
+
+				const minimalObject = train
+					? [focus?.coords, filter?.coords, train]
+					: [focus?.coords, filter?.coords];
+
 				const data: Feature = {
 					type: 'Feature',
 					properties: {
@@ -77,44 +90,58 @@
 					},
 					geometry: {
 						type: 'LineString',
-						coordinates: mapData.service.tiplocData.map((t) => t.coords) ?? []
+						coordinates:
+							paneHeight.current > 400
+								? minimalObject
+								: mapData.service.locations[0].trainPosition
+									? [
+											...(mapData.service.tiplocData.map((t) => t.coords) ?? []),
+											mapData.service.locations[0].trainPosition
+										]
+									: (mapData.service.tiplocData.map((t) => t.coords) ?? [])
 					}
 				};
 				const bbox = getBbox(data);
 				if (bbox) {
-					console.log('Should be a bbox', bbox);
+					// console.log('Should be a bbox', bbox);
 
 					setBounds(bbox, padding);
 				}
 			} else if (map && mapData.board && navigating.to?.url.pathname !== '/' && !page.data.id) {
 				if (mapData.board.length === 1) {
-					easeToIfChanged({
-						center: mapData.board[0],
-						zoom: 7,
-						padding
-					});
+					easeToIfChanged(
+						{
+							center: mapData.board[0],
+							zoom: 7,
+							padding
+						},
+						`${page.data.crs}-${paneHeight.current}`
+					);
 				} else if (route) {
 					const bbox = getBbox(route);
 					if (bbox) {
 						setBounds(bbox, padding);
 					}
 				}
+			} else if (map && page.url.pathname === '/') {
+				setBounds([-8.2, 49.8, 1.9, 59.2], {
+					top: 0,
+					bottom: paneHeight.current,
+					left: 0,
+					right: 0
+				});
 			}
 		},
 		() => [map, mapData.service, mapData.board, page.data.id, paneHeight.current]
 	);
 
-	let lastEaseTo: maplibregl.EaseToOptions | null = null;
+	let lastKey: string | null = null;
 
-	function easeToIfChanged(options: maplibregl.EaseToOptions) {
-		map.easeTo(options);
-		if (
-			lastEaseTo?.center?.[0] !== options.center?.[0] ||
-			lastEaseTo?.center?.[1] !== options.center?.[1] ||
-			JSON.stringify(lastEaseTo?.padding) !== JSON.stringify(options.padding) ||
-			lastEaseTo?.zoom !== options.zoom
-		) {
-			lastEaseTo = options;
+	function easeToIfChanged(options: maplibregl.EaseToOptions, key: string) {
+		console.log(lastKey, key);
+		if (lastKey !== key) {
+			map.easeTo(options);
+			lastKey = key;
 		}
 	}
 
@@ -130,18 +157,21 @@
 				left: padding.left ?? 0,
 				right: padding.right ?? 0
 			};
-			console.log('padding', padding);
+			// console.log('padding', padding);
 			const camera = cameraForBoundsCustom(map, bbox as number[], padding);
-			console.log('camera', camera);
+			// console.log('camera', camera);
 			if (camera) {
 				map.stop();
 
-				easeToIfChanged({
-					center: camera.center,
-					zoom: camera.zoom,
-					padding,
-					animate
-				});
+				easeToIfChanged(
+					{
+						center: camera.center,
+						zoom: camera.zoom,
+						padding,
+						animate
+					},
+					`${page.data.id}-${page.data.crs}-${page.data.to}-${paneHeight.current}`
+				);
 			}
 		}
 	}
@@ -205,20 +235,26 @@
 		map = e;
 		const bbox: LngLatBoundsLike = [-8.2, 49.8, 1.9, 59.2];
 		if (bbox) {
-			setBounds(bbox, false);
+			setBounds(bbox, { top: 0, bottom: lg.current ? 0 : 500, left: 0, right: 0 });
 		}
 	}}
 >
 	{#if !mapData.service}
 		{#each saved.value as item, i (item.id)}
 			{#if !page.data.id || page.data.id === item.id}
-				<SavedMapService rid={item.id} crs={item.focusCrs} />
+				<SavedMapService rid={item.id} crs={item.focusCrs} filter={item.filterCrs} />
 			{/if}
 		{/each}
 	{/if}
 
 	{#if mapData.service && serviceData}
-		<MapService rid={page.data.id} mapData={mapData.service} {serviceData} crs={page.data.crs} />
+		<MapService
+			rid={page.data.id}
+			mapData={mapData.service}
+			{serviceData}
+			filter={page.data.to}
+			crs={page.data.crs}
+		/>
 	{:else if !page.data.id}
 		<!-- GeoJSON source with clustering -->
 
@@ -301,4 +337,8 @@
 			{/if}
 		{/if}
 	{/if}
+
+	<!-- <div style:bottom="{paneHeight.current}px" class="fixed z-20 transition-all duration-200">
+
+	</div> -->
 </MapLibre>

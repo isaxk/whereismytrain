@@ -32,6 +32,7 @@ export type BoardItem = {
 	destination: DestinationOrigin[];
 	origin: DestinationOrigin[];
 	times: TimeObject;
+	departed: boolean;
 	isCancelled: boolean;
 	platform: string | null;
 	operator: Operator;
@@ -69,6 +70,7 @@ export type ServiceLocation = {
 	crs: string | null;
 	tiploc: string;
 	isCancelled: boolean;
+	isCallingPoint: boolean;
 	atd: string | null;
 	ata: string | null;
 	etd: string | null;

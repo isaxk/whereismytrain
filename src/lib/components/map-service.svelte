@@ -10,8 +10,15 @@
 		serviceData,
 		mapData,
 		crs,
+		filter = null,
 		rid
-	}: { serviceData: TrainService; mapData: ServiceMapData; crs: string; rid: string } = $props();
+	}: {
+		serviceData: TrainService;
+		mapData: ServiceMapData;
+		crs: string;
+		filter?: string | null;
+		rid: string;
+	} = $props();
 </script>
 
 {#if mapData}
@@ -20,7 +27,8 @@
 			<MapLocationGroup
 				{rid}
 				{crs}
-				href="/board/{crs}/t/{rid}?returnToHome=1"
+				{filter}
+				href="/board/{crs}/t/{rid}?{filter ? `to=${filter}&` : ''}returnToHome=1"
 				isAtStation={false}
 				showDestination={mapData.locations.reduce(
 					(acc, curr) => acc + (curr.trainPosition ? 1 : 0),
@@ -45,21 +53,27 @@
 						}}
 						lngLat={tiploc?.coords}
 						zIndex={isTrainAtStation ? 2000 : 100}
+						class="rounded-full bg-white dark:bg-black"
 					>
 						<div
 							style:background={isTrainAtStation ? '#fff' : serviceData.operator.color}
 							style:color={isTrainAtStation ? serviceData.operator.color : '#fff'}
 							style:border-color={serviceData.operator.color}
 							class={[
-								'flex flex-col items-center justify-center overflow-hidden rounded-full text-[10px]/3',
+								'flex flex-col items-center justify-center overflow-hidden rounded-full text-[10px]/3 text-white',
 								isTrainAtStation ? 'h-14 w-9 border-2' : 'h-7 w-7 ',
-
-								cp.isCancelled ? 'line-through opacity-30' : ''
+								cp.order === 'origin' ||
+								cp.order === 'previous' ||
+								cp.order === 'further' ||
+								(cp.order === 'destination' && filter && filter !== cp.crs)
+									? 'opacity-50'
+									: '',
+								cp.isCancelled && 'line-through opacity-30'
 							]}
 						>
 							{#if isTrainAtStation}
 								<div
-									class="flex h-full w-full grow items-center justify-center pt-1 text-white"
+									class="flex h-full w-full grow items-center justify-center pt-1 text-current"
 									style:background={serviceData.operator.color}
 								>
 									{cp.crs}
@@ -75,7 +89,9 @@
 								</div> -->
 								</div>
 							{:else}
-								{cp.crs}
+								<div class={['text-current', cp.isCancelled && 'text-red-200 line-through']}>
+									{cp.crs}
+								</div>
 							{/if}
 						</div>
 					</Marker>

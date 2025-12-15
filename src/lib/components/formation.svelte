@@ -11,8 +11,6 @@
 			(c) => c.serviceClass === 'first' || c.toilet || c.toiletIsAccessible || c.bikeSpace
 		)
 	);
-
-	console.log(formation);
 </script>
 
 <div in:fade={{ duration: 200 }}>

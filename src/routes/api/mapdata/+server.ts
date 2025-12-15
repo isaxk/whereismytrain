@@ -68,7 +68,9 @@ export const POST: RequestHandler = async ({ request }) => {
 		const lastDepartedIndex: number = groupWithCoords.findLastIndex(
 			(location) => location.atd || location.ata
 		);
+		console.log('lastDepartedIndex', lastDepartedIndex);
 		const lastDeparted = group[lastDepartedIndex];
+		console.log('lastDeparted', lastDeparted);
 		if (lastDepartedIndex !== -1 && lastDeparted) {
 			const next = group[lastDepartedIndex + 1] ?? null;
 
@@ -94,7 +96,11 @@ export const POST: RequestHandler = async ({ request }) => {
 				).utc(false);
 				const timeElapsed = now.diff(lastTime, 'minutes');
 				const timeTotal = nextTime.diff(lastTime, 'minutes');
-				const progress = Math.min(0.95, Math.max(0, timeElapsed / timeTotal));
+				let progress = Math.min(0.95, Math.max(0.05, timeElapsed / timeTotal));
+
+				if (lastDeparted.ata && !lastDeparted.atd) {
+					progress = 0;
+				}
 
 				if (nextCoords) {
 					coords = [
@@ -110,6 +116,7 @@ export const POST: RequestHandler = async ({ request }) => {
 				}
 			}
 		}
+
 		return {
 			lineLocations: groupWithCoords,
 			trainPosition: coords,
@@ -117,5 +124,6 @@ export const POST: RequestHandler = async ({ request }) => {
 			destination: groupWithCoords[groupWithCoords.length - 1]
 		};
 	});
+
 	return json({ locations: parsedLocations, tiplocData: tiplocsData });
 };
