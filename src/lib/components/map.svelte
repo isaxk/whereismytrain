@@ -299,24 +299,26 @@
 			</div>
 		{/if}
 
-		{#each filteredStations as station (station.crsCode)}
-			<Marker
-				zIndex={favourites.includes(station.crsCode) ? 1000 : 100}
-				lngLat={[station.long, station.lat]}
-				onclick={(e) => {
-					page.data.crs = station.crsCode;
-					goto('/board/' + station.crsCode);
-				}}
-			>
-				<div
-					class={[
-						'flex h-7 w-7 items-center justify-center rounded-full bg-zinc-700 text-[10px] text-white dark:bg-zinc-600',
-						page.data.crs ? 'opacity-30' : 'opacity-100'
-					]}
+		{#each filteredStations as station, i ((station?.crsCode ?? Date.now().toString()) + i)}
+			{#if station}
+				<Marker
+					zIndex={favourites.includes(station.crsCode) ? 1000 : 100}
+					lngLat={[station.long, station.lat]}
+					onclick={(e) => {
+						page.data.crs = station.crsCode;
+						goto('/board/' + station.crsCode);
+					}}
 				>
-					{station.crsCode}
-				</div>
-			</Marker>
+					<div
+						class={[
+							'flex h-7 w-7 items-center justify-center rounded-full bg-zinc-700 text-[10px] text-white dark:bg-zinc-600',
+							page.data.crs ? 'opacity-30' : 'opacity-100'
+						]}
+					>
+						{station.crsCode}
+					</div>
+				</Marker>
+			{/if}
 		{/each}
 
 		<!-- GeoJSON source with clustering -->
