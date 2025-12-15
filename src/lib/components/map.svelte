@@ -255,7 +255,7 @@
 		? 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json'
 		: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json'}
 	class="relative h-full w-full"
-	onmousemove={(e) => {
+	onmoveend={(e) => {
 		updateBounds();
 	}}
 	onzoom={(e) => {
