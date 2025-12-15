@@ -237,13 +237,13 @@
 			return 0;
 		});
 		if (map?.getZoom() > 10) {
-			return sorted.slice(0, 100);
+			return sorted.slice(0, 75);
 		} else if (map?.getZoom() > 9) {
-			return sorted.slice(0, 150);
+			return sorted.slice(0, 125);
 		} else if (map?.getZoom() > 7) {
-			return sorted.slice(0, 200);
+			return sorted.slice(0, 175);
 		} else if (map?.getZoom() > 6) {
-			return sorted.slice(0, 250);
+			return sorted.slice(0, 225);
 		} else {
 			return favs;
 		}
