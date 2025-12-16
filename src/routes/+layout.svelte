@@ -8,8 +8,9 @@
 	import { MediaQuery } from 'svelte/reactivity';
 	import Map from '$lib/components/map.svelte';
 	import { page } from '$app/state';
-	import { paneHeight } from '$lib/state/map.svelte';
+	import { headerColor, mapData, paneHeight } from '$lib/state/map.svelte';
 	import { onNavigate } from '$app/navigation';
+	import { fade } from 'svelte/transition';
 
 	let { children } = $props();
 	let paneElm: HTMLDivElement;
@@ -79,11 +80,23 @@
 			paneHeight.current = 500;
 		}
 	});
+
+	// let isTop = $state(false);
 </script>
 
 <svelte:head>
 	<link rel="icon" href={favicon} />
 </svelte:head>
+
+<!-- {#if isTop}
+	<div
+		transition:fade={{ duration: 150 }}
+		style:background={headerColor.current}
+		class="bg-background fixed right-0 left-0 z-[10000] pb-1"
+	>
+		<div class="h-safe-top"></div>
+	</div>
+{/if} -->
 
 <div class="fixed inset-0 flex">
 	{#if lg.current}
@@ -100,7 +113,7 @@
 		<div
 			style:background={paneHeaderColour ?? ''}
 			bind:this={paneElm}
-			class="bg-background w-full rounded-t-xl"
+			class={['bg-background w-full rounded-t-2xl']}
 		>
 			{@render children()}
 		</div>

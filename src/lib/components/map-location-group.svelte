@@ -204,10 +204,12 @@
 
 {#if data.trainPosition && coordsTween?.current}
 	{#if data.isFormedFromTrain}
-		<div class="fixed top-3 right-3 z-[20000]">
-			<div class="bg-background flex items-center gap-1 rounded-md px-2.5 py-1.5">
+		<div class="top-safe-top fixed right-3 z-[20000] lg:top-3">
+			<div
+				class="bg-background flex max-w-96 items-center gap-2 rounded-md px-2.5 py-1.5 text-[10px]/3 drop-shadow sm:text-base"
+			>
 				<CircleAlert size={14} />
-				Train location is from the service your train is formed from.
+				Location indicator is of the service your train is formed from.
 			</div>
 		</div>
 	{/if}
@@ -232,11 +234,11 @@
 				style:border-color={color}
 				style:color
 				class={[
-					'a relative z-20 flex h-9 w-9 flex-col items-center justify-center rounded-full border-2 bg-white',
-					data.isFormedFromTrain ? 'opacity-20' : 'opacity-100'
+					'a relative z-20 flex  flex-col items-center justify-center rounded-full border-2 bg-white',
+					data.isFormedFromTrain ? 'h-8 w-8 opacity-20' : 'h-9 w-9 opacity-100'
 				]}
 			>
-				<TrainFront size={showDestination ? 14 : 18} />
+				<TrainFront size={showDestination || data.isFormedFromTrain ? 14 : 18} />
 				{#if showDestination}
 					<div class="text-[8px]/3">
 						to {data.destination.crs}
@@ -252,7 +254,7 @@
 					style="
       transform: translate(-50%, -50%)
                  rotate({data.trainBearing}deg)
-                 translateY(-18px);
+                 translateY(-{data.isFormedFromTrain && !isAtStation ? 14 : 18}px);
       transform-origin: center;
     "
 				>

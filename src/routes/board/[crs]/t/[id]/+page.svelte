@@ -1,6 +1,6 @@
 <script lang="ts">
 	import CallingPointItem from '$lib/components/calling-point-item.svelte';
-	import { mapData } from '$lib/state/map.svelte.js';
+	import { headerColor, mapData, paneHeight } from '$lib/state/map.svelte.js';
 	import { ArrowLeft, Bell, BellRing, Bookmark, ChevronDown, ChevronLeft } from 'lucide-svelte';
 	import type { PageData } from './$types';
 	import { invalidate, invalidateAll } from '$app/navigation';
@@ -19,6 +19,7 @@
 	$effect(() => {
 		data.service.then(async (r) => {
 			serviceData = r;
+			headerColor.current = r.operator.color;
 			const response = await fetch(`/api/mapdata`, {
 				body: JSON.stringify({ locations: r.locations, formedFrom: r.formedFrom }),
 				method: 'POST',
@@ -33,6 +34,7 @@
 	onDestroy(() => {
 		mapData.service = null;
 		serviceData = null;
+		headerColor.current = null;
 	});
 
 	onMount(() => {
@@ -85,6 +87,7 @@
 
 {#if serviceData}
 	{@const { operator, title, callingPoints } = serviceData as TrainService}
+
 	<div
 		in:fade|global={{ duration: 200 }}
 		class="sticky top-0 z-20 flex h-18 w-full items-center p-4 pt-6 text-white"

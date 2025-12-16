@@ -16,3 +16,9 @@ export const paneHeight: {
 	current: 0,
 	break: 'middle'
 });
+
+export const headerColor: {
+	current: string | null;
+} = $state({
+	current: null
+});

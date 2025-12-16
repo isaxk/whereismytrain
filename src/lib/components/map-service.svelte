@@ -45,10 +45,12 @@
 				{#if tiploc?.coords}
 					{@const isTrainAtStation = mapData.locations.some(
 						(l) =>
-							l.trainPosition?.[0] === tiploc.coords[0] &&
-							l.trainPosition?.[1] === tiploc.coords[1] &&
-							!l.isFormedFromTrain
+							l.trainPosition?.[0] === tiploc.coords[0] && l.trainPosition?.[1] === tiploc.coords[1]
 					)}
+					{@const isOfFormedFrom = mapData.locations.find(
+						(l) =>
+							l.trainPosition?.[0] === tiploc.coords[0] && l.trainPosition?.[1] === tiploc.coords[1]
+					)?.isFormedFromTrain}
 					<Marker
 						onclick={() => {
 							goto(`/board/${crs}/t/${rid}`);
@@ -63,7 +65,7 @@
 							style:border-color={serviceData.operator.color}
 							class={[
 								'flex flex-col items-center justify-center overflow-hidden rounded-full text-[10px]/3 text-white',
-								isTrainAtStation ? 'h-14 w-9 border-2' : 'h-7 w-7 ',
+								isTrainAtStation ? 'h-10 w-10 border-2' : 'h-7 w-7',
 								cp.order === 'origin' ||
 								cp.order === 'previous' ||
 								cp.order === 'further' ||
@@ -75,13 +77,18 @@
 						>
 							{#if isTrainAtStation}
 								<div
-									class="flex h-full w-full grow items-center justify-center pt-1 text-white"
+									class="flex w-full grow items-center justify-center pt-0.5 text-white"
 									style:background={serviceData.operator.color}
 								>
 									{cp.crs}
 								</div>
-								<div class="flex h-full grow flex-col items-center justify-center pb-1">
-									<TrainFront size={16} />
+								<div
+									class={[
+										'flex grow flex-col items-center justify-center pb-0.5',
+										isOfFormedFrom ? 'h-2 min-h-2 opacity-50' : 'h-5 min-h-5'
+									]}
+								>
+									<TrainFront size={isOfFormedFrom ? 10 : 14} />
 									<!-- <div class="text-[7px]/3">
 									to {mapData.locations.find(
 										(l) =>
