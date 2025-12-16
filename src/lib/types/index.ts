@@ -121,6 +121,7 @@ export type TrainService = {
 	rid: string;
 	uid: string;
 	sdd: string;
+	formedFrom: string | null;
 	locations: ServiceLocation[];
 	callingPoints: CallingPoint[];
 	operator: Operator;
@@ -145,6 +146,7 @@ export type ServiceLocationWithCoords = ServiceLocation & {
 export type MapDataLocationGroup = {
 	lineLocations: ServiceLocationWithCoords[];
 	trainPosition: [number, number] | null;
+	isFormedFromTrain: boolean;
 	trainBearing: number | null;
 	destination: ServiceLocationWithCoords;
 };

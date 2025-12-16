@@ -45,7 +45,9 @@
 				{#if tiploc?.coords}
 					{@const isTrainAtStation = mapData.locations.some(
 						(l) =>
-							l.trainPosition?.[0] === tiploc.coords[0] && l.trainPosition?.[1] === tiploc.coords[1]
+							l.trainPosition?.[0] === tiploc.coords[0] &&
+							l.trainPosition?.[1] === tiploc.coords[1] &&
+							!l.isFormedFromTrain
 					)}
 					<Marker
 						onclick={() => {

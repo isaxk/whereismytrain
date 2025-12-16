@@ -1,4 +1,4 @@
-import { SUPABASE_ANON_KEY, SUPABASE_URL } from '$env/static/private';
+import { ACCESS_TOKEN, SUPABASE_ANON_KEY, SUPABASE_URL } from '$env/static/private';
 import type {
 	MapDataLocationGroup,
 	ServiceLocation,
@@ -11,6 +11,7 @@ import type { RequestHandler } from './$types';
 import { createClient } from '@supabase/supabase-js';
 import { json } from '@sveltejs/kit';
 import { calculateBearing } from '$lib/utils';
+import { parse } from 'zod/v4-mini';
 
 const nullTime = '0001-01-01T00:00:00';
 
@@ -18,6 +19,23 @@ dayjs.extend(utc);
 dayjs.extend(timezone);
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+type TiplocDataItem = {
+	tiploc: string;
+	coords: [number, number];
+};
+
+async function fetchAssocService(rid: string) {
+	const response = await fetch(
+		`https://huxley2.azurewebsites.net/service/${rid}?access_token=${ACCESS_TOKEN}`
+	);
+	const data = await response.json();
+	if (data?.locations) {
+		return data;
+	} else {
+		throw new Error('Failed to fetch associated service');
+	}
+}
 
 async function getTiplocs(tiplocs: string[]): Promise<
 	{
@@ -36,8 +54,67 @@ async function getTiplocs(tiplocs: string[]): Promise<
 	);
 }
 
+function calculateTrainPosition(
+	lastDepartedCoords: [number, number] | null,
+	nextCoords: [number, number] | null,
+	lastDepartedTime: string,
+	nextDepartTime: string | null,
+	departed: boolean
+) {
+	let coords: null | [number, number] = null;
+	let bearing: number | null = null;
+
+	coords = lastDepartedCoords ?? null;
+
+	if (nextDepartTime && nextCoords && lastDepartedCoords) {
+		const lastTime = dayjs(lastDepartedTime, 'Europe/London').utc(false);
+		const now = dayjs();
+		const nextTime = dayjs(nextDepartTime, 'Europe/London').utc(false);
+		const timeElapsed = now.diff(lastTime, 'minutes');
+		const timeTotal = nextTime.diff(lastTime, 'minutes');
+		let progress = Math.min(0.95, Math.max(0.05, timeElapsed / timeTotal));
+
+		if (!departed) {
+			progress = 0;
+		}
+
+		if (nextCoords) {
+			coords = [
+				lastDepartedCoords[0] + (nextCoords[0] - lastDepartedCoords[0]) * progress,
+				lastDepartedCoords[1] + (nextCoords[1] - lastDepartedCoords[1]) * progress
+			];
+			bearing = calculateBearing(
+				lastDepartedCoords[1],
+				lastDepartedCoords[0],
+				nextCoords[1],
+				nextCoords[0]
+			);
+		}
+	}
+
+	return { coords, bearing };
+}
+
+function parseLocation(l: any): ServiceLocation {
+	return {
+		crs: l.crs ?? null,
+		isCancelled: l.isCancelled ?? false,
+		tiploc: l.tiploc!,
+		isCallingPoint: l.crs && !l.isPass,
+		eta: (l.eta ?? null) === nullTime ? null : l.eta,
+		etd: (l.etd ?? null) === nullTime ? null : l.etd,
+		ata: (l.ata ?? null) === nullTime ? null : l.ata,
+		atd: (l.atd ?? null) === nullTime ? null : l.atd,
+		sta: (l.sta ?? null) === nullTime ? null : l.sta,
+		std: (l.std ?? null) === nullTime ? null : l.std
+	};
+}
+
 export const POST: RequestHandler = async ({ request }) => {
-	const { locations }: { locations: [ServiceLocation[]] } = await request.json();
+	const {
+		locations,
+		formedFrom = null
+	}: { locations: [ServiceLocation[]]; formedFrom?: string | null } = await request.json();
 
 	const tiplocs: string[] = [];
 
@@ -46,6 +123,8 @@ export const POST: RequestHandler = async ({ request }) => {
 			tiplocs.push(location.tiploc);
 		});
 	});
+
+	console.log('formedFrom', formedFrom);
 
 	const tiplocsData = await getTiplocs(tiplocs);
 	const parsedLocations: MapDataLocationGroup[] = locations.map((group) => {
@@ -62,68 +141,90 @@ export const POST: RequestHandler = async ({ request }) => {
 			};
 		});
 
-		let coords: null | [number, number] = null;
-		let bearing: number | null = null;
+		// let coords: null | [number, number] = null;
+		// let bearing: number | null = null;
 
 		const lastDepartedIndex: number = groupWithCoords.findLastIndex(
 			(location) => location.atd || location.ata
 		);
-		console.log('lastDepartedIndex', lastDepartedIndex);
-		const lastDeparted = group[lastDepartedIndex];
-		console.log('lastDeparted', lastDeparted);
-		if (lastDepartedIndex !== -1 && lastDeparted) {
-			const next = group[lastDepartedIndex + 1] ?? null;
-
-			const lastDepartedCoords: [number, number] | undefined = tiplocsData.find(
-				(tiploc) => tiploc.tiploc === lastDeparted.tiploc
-			)?.coords;
-
-			coords = lastDepartedCoords ?? null;
-
-			if (next && lastDepartedCoords) {
-				const nextCoords: [number, number] | undefined = tiplocsData.find(
-					(tiploc) => tiploc.tiploc === next.tiploc
-				)?.coords;
-
-				const lastTime = dayjs(
-					lastDeparted.atd ?? lastDeparted.etd ?? lastDeparted.std,
-					'Europe/London'
-				).utc(false);
-				const now = dayjs();
-				const nextTime = dayjs(
-					next.ata ?? next.eta ?? next.sta ?? next.atd ?? next.etd ?? next.std,
-					'Europe/London'
-				).utc(false);
-				const timeElapsed = now.diff(lastTime, 'minutes');
-				const timeTotal = nextTime.diff(lastTime, 'minutes');
-				let progress = Math.min(0.95, Math.max(0.05, timeElapsed / timeTotal));
-
-				if (lastDeparted.ata && !lastDeparted.atd) {
-					progress = 0;
-				}
-
-				if (nextCoords) {
-					coords = [
-						lastDepartedCoords[0] + (nextCoords[0] - lastDepartedCoords[0]) * progress,
-						lastDepartedCoords[1] + (nextCoords[1] - lastDepartedCoords[1]) * progress
-					];
-					bearing = calculateBearing(
-						lastDepartedCoords[1],
-						lastDepartedCoords[0],
-						nextCoords[1],
-						nextCoords[0]
-					);
-				}
-			}
-		}
+		const lastDeparted = groupWithCoords[lastDepartedIndex];
+		const next = groupWithCoords[lastDepartedIndex + 1];
+		const { coords, bearing }: { coords: [number, number] | null; bearing: number | null } =
+			lastDeparted
+				? calculateTrainPosition(
+						lastDeparted.coords,
+						next?.coords ?? null,
+						lastDeparted.atd ??
+							lastDeparted.etd ??
+							lastDeparted.ata ??
+							lastDeparted.eta ??
+							lastDeparted.std ??
+							lastDeparted.sta ??
+							'',
+						next?.atd ?? next?.etd ?? next.ata ?? next.eta ?? next.std ?? next.sta ?? null,
+						lastDeparted.atd !== null
+					)
+				: { coords: null, bearing: null };
 
 		return {
 			lineLocations: groupWithCoords,
 			trainPosition: coords,
 			trainBearing: bearing,
+			isFormedFromTrain: false,
 			destination: groupWithCoords[groupWithCoords.length - 1]
 		};
 	});
+
+	if (formedFrom && parsedLocations[0] && !parsedLocations.some((l) => l.trainPosition !== null)) {
+		const data = await fetchAssocService(formedFrom);
+
+		if (data && data.locations) {
+			const parsed: ServiceLocation[] = data.locations.map(parseLocation);
+			const tiplocs = parsed.map((item) => item.tiploc);
+			const tiplocsData = await getTiplocs(tiplocs);
+
+			const groupWithCoords: ServiceLocationWithCoords[] = parsed.map((item) => {
+				return {
+					...item,
+					coords: tiplocsData.find((tiploc) => tiploc.tiploc === item.tiploc)?.coords ?? [0, 0]
+				};
+			});
+
+			const lastDepartedIndex = groupWithCoords.findLastIndex(
+				(l: ServiceLocationWithCoords) => l.atd || l.ata
+			);
+			const lastDeparted: ServiceLocationWithCoords | undefined =
+				groupWithCoords[lastDepartedIndex];
+			console.log('lastDeparted', lastDeparted);
+			const next = groupWithCoords[lastDepartedIndex + 1];
+			console.log('nexr', next);
+			const { coords, bearing }: { coords: [number, number] | null; bearing: number | null } =
+				lastDeparted
+					? calculateTrainPosition(
+							lastDeparted.coords,
+							next?.coords ?? null,
+							lastDeparted.atd ??
+								lastDeparted.etd ??
+								lastDeparted.ata ??
+								lastDeparted.eta ??
+								lastDeparted.std ??
+								lastDeparted.sta ??
+								'',
+							next?.ata ?? next?.eta ?? next?.atd ?? next?.etd ?? next?.sta ?? next?.std ?? null,
+							lastDeparted.atd !== null
+						)
+					: { coords: null, bearing: null };
+
+			if (coords) {
+				console.log(coords);
+				parsedLocations[0].trainPosition = coords;
+				parsedLocations[0].trainBearing = bearing;
+				if (parsedLocations[0].lineLocations[0].crs !== lastDeparted.crs) {
+					parsedLocations[0].isFormedFromTrain = true;
+				}
+			}
+		}
+	}
 
 	return json({ locations: parsedLocations, tiplocData: tiplocsData });
 };

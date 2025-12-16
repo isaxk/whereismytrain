@@ -171,6 +171,18 @@ export const GET = async ({ params }) => {
 	let callingPoints: any[] = [];
 	let destination = [rawCallingPoints[rawCallingPoints.length - 1]];
 
+	let formedFrom: string | null = null;
+
+	const hasNextAssoc = rawCallingPoints.find((l: any) =>
+		l.associations?.some((a: any) => a.category === 4 || a.category === 'next')
+	);
+	if (hasNextAssoc) {
+		const nextAssoc = hasNextAssoc.associations.find(
+			(l: any) => l.category === 4 || l.category === 'next'
+		);
+		formedFrom = nextAssoc?.rid;
+	}
+
 	// Division logic
 
 	// If the current service *is* the division
@@ -373,6 +385,7 @@ export const GET = async ({ params }) => {
 			color: operatorList[data.operatorCode].bg ?? '#000000'
 		},
 		title,
+		formedFrom,
 		destination,
 		formation,
 		formationLengthOnly,

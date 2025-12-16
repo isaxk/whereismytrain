@@ -1,6 +1,13 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import type { CallingPoint, Operator } from '$lib/types';
+	import Check from '@lucide/svelte/icons/check';
+	import {
+		ArrowDownRight,
+		ArrowDownRightFromCircle,
+		ArrowRight,
+		ArrowUpRight
+	} from 'lucide-svelte';
 	import { slide } from 'svelte/transition';
 
 	let {
@@ -47,7 +54,7 @@
 			</div>
 			{#if cp.times.rt.arr !== cp.times.plan.arr && !cp.isCancelled && !cp.arrivalCancelled}
 				{#if cp.times.rt.arr}
-					<div class="text-sm/3 text-yellow-500">
+					<div class="flex items-center gap-1 text-sm/3 text-yellow-500">
 						{cp.times.rt.arr ?? 'Delayed'}
 					</div>
 					<!-- {:else if cp.times.rt.arrSource === 'none'}
@@ -126,8 +133,8 @@
 					cp.order === 'focus' || cp.order === 'destination' || cp.order === 'filter'
 						? 'text-base/5 font-semibold'
 						: cp.order === 'further'
-							? 'text-muted-foreground/60 text-sm/3'
-							: 'text-muted-foreground text-sm/3'
+							? 'text-muted-foreground/60 text-sm/4'
+							: 'text-muted-foreground text-sm/4'
 				]}
 			>
 				{cp.name}
@@ -145,6 +152,12 @@
 		</div>
 		{#if cp.isCancelled}
 			<div class="text-xs/4 text-red-600">Cancelled</div>
+		{:else if cp.departed}
+			<div class={['text-muted-foreground flex items-center gap-1 text-[10px]/4']}>
+				<ArrowUpRight size={12} /> Departed {(cp.delay ?? 0) > 0 ? `${cp.delay}m late` : 'on time'}
+			</div>
+		{:else if cp.arrived}
+			<div class="flex items-center gap-1 text-[10px]/4"><ArrowDownRight size={12} /> Arrived</div>
 		{/if}
 	</div>
 	<div class={[cp.order === 'focus' ? 'text-lg font-medium' : 'text-sm text-zinc-400']}>

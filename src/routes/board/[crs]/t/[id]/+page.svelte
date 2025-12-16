@@ -20,7 +20,7 @@
 		data.service.then(async (r) => {
 			serviceData = r;
 			const response = await fetch(`/api/mapdata`, {
-				body: JSON.stringify({ locations: r.locations }),
+				body: JSON.stringify({ locations: r.locations, formedFrom: r.formedFrom }),
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'

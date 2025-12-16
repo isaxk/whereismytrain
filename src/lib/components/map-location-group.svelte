@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { MapDataLocationGroup, ServiceMapData } from '$lib/types';
 	import { LineLayer, MapLibre, GeoJSON, Marker, Popup, AttributionControl } from 'svelte-maplibre';
-	import { TrainFront } from 'lucide-svelte';
+	import { AlertCircle, CircleAlert, TrainFront } from 'lucide-svelte';
 	import type { Feature } from 'geojson';
 	import { Tween } from 'svelte/motion';
 	import { goto } from '$app/navigation';
@@ -203,6 +203,14 @@
 </GeoJSON>
 
 {#if data.trainPosition && coordsTween?.current}
+	{#if data.isFormedFromTrain}
+		<div class="fixed top-3 right-3 z-[20000]">
+			<div class="bg-background flex items-center gap-1 rounded-md px-2.5 py-1.5">
+				<CircleAlert size={14} />
+				Train location is from the service your train is formed from.
+			</div>
+		</div>
+	{/if}
 	<Marker
 		onclick={(e) => {
 			goto(href);
@@ -216,15 +224,16 @@
 		}}
 		lngLat={coordsTween.current ?? data.trainPosition}
 		class="p-5 "
-		zIndex={2000}
+		zIndex={data.isFormedFromTrain ? 0 : 2000}
 		opacity={page.data.crs && page.data.id !== rid ? 0.2 : 1}
 	>
-		<div class="relative">
+		<div class="bg-background relative rounded-full">
 			<div
 				style:border-color={color}
 				style:color
 				class={[
-					'a relative z-20 flex h-9 w-9 flex-col items-center justify-center rounded-full border-2 bg-white'
+					'a relative z-20 flex h-9 w-9 flex-col items-center justify-center rounded-full border-2 bg-white',
+					data.isFormedFromTrain ? 'opacity-20' : 'opacity-100'
 				]}
 			>
 				<TrainFront size={showDestination ? 14 : 18} />
@@ -234,9 +243,10 @@
 					</div>
 				{/if}
 			</div>
-			{#if !isAtStation && data.trainBearing != null}
+
+			{#if (!isAtStation || !data.isFormedFromTrain) && data.trainBearing != null}
 				<svg
-					class="absolute top-1/2 left-1/2 -z-20"
+					class={['absolute top-1/2 left-1/2 -z-20']}
 					width="20"
 					height="20"
 					style="
@@ -246,7 +256,18 @@
       transform-origin: center;
     "
 				>
-					<polygon points="10,0 0,20 20,20" fill="white" stroke={color} stroke-width="2" />
+					<polygon
+						points="10,0 0,20 20,20"
+						class="stroke-background fill-background"
+						stroke-width="2"
+					/>
+					<polygon
+						points="10,0 0,20 20,20"
+						class={[data.isFormedFromTrain ? 'opacity-20' : 'opacity-100']}
+						fill="white"
+						stroke={color}
+						stroke-width="2"
+					/>
 				</svg>
 			{/if}
 		</div>

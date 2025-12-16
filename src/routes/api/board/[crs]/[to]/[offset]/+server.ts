@@ -92,10 +92,10 @@ export const GET: RequestHandler = async ({ params }) => {
 			.tz('Europe/London')
 			.add(parseInt(offset || '0'), 'minute')
 			.format('YYYYMMDDTHHmmss');
-		let urlObj = new URL(
+		const urlObj = new URL(
 			`https://api1.raildata.org.uk/1010-live-departure-board---staff-version1_0/LDBSVWS/api/20220120/GetDepartureBoardByCRS/${crs}/${time}`
 		);
-		to && urlObj.searchParams.append('filterCRS', to);
+		if (to && to != 'null') urlObj.searchParams.append('filterCRS', to);
 		url = urlObj.toString();
 	} else {
 		if (to != 'null') {
@@ -104,6 +104,7 @@ export const GET: RequestHandler = async ({ params }) => {
 	}
 
 	try {
+		console.log(url);
 		const response = await fetch(url, {
 			headers: shouldUseRailData
 				? {
