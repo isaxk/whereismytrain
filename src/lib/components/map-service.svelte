@@ -73,7 +73,7 @@
 						>
 							{#if isTrainAtStation}
 								<div
-									class="flex h-full w-full grow items-center justify-center pt-1 text-current"
+									class="flex h-full w-full grow items-center justify-center pt-1 text-white"
 									style:background={serviceData.operator.color}
 								>
 									{cp.crs}

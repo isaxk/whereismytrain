@@ -168,7 +168,7 @@
 							<AlertCard
 								status={Severity[notice.severity] as 'info' | 'minor' | 'major' | 'severe'}
 							>
-								<div class="prose text-xs prose-p:text-xs">
+								<div class="prose text-xs dark:prose-invert prose-p:text-xs">
 									{@html notice.xhtmlMessage}
 								</div>
 							</AlertCard>
