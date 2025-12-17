@@ -161,7 +161,7 @@ export const POST: RequestHandler = async ({ request }) => {
 							lastDeparted.std ??
 							lastDeparted.sta ??
 							'',
-						next?.atd ?? next?.etd ?? next.ata ?? next.eta ?? next.std ?? next.sta ?? null,
+						next?.atd ?? next?.etd ?? next?.ata ?? next?.eta ?? next?.std ?? next?.sta ?? null,
 						lastDeparted.atd !== null
 					)
 				: { coords: null, bearing: null };
