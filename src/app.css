@@ -38,6 +38,10 @@
 	--color-good: oklch(62.7% 0.194 149.214);
 	--color-warning: oklch(68.1% 0.162 75.834);
 	--color-danger: oklch(57.7% 0.245 27.325);
+	--sat: env(safe-area-inset-top);
+	--sar: env(safe-area-inset-right);
+	--sab: env(safe-area-inset-bottom);
+	--sal: env(safe-area-inset-left);
 }
 
 @media (prefers-color-scheme: dark) {

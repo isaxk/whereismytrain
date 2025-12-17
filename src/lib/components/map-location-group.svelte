@@ -38,6 +38,10 @@
 			const prevCpIsCancelled = prevCP?.isCancelled ?? false;
 			const nextCpIsCancelled = nextCP?.isCancelled ?? false;
 
+			if (c.isCallingPoint && c.isCancelled) {
+				return false;
+			}
+
 			if (!c.isCancelled) {
 				return true;
 			}
@@ -57,7 +61,6 @@
 
 	const primaryCoordinates = $derived.by(() => {
 		const filtered = unCancelled;
-		console.log('filtered', filtered);
 		const focus = filtered.findIndex((l) => l.crs === crs);
 		if (focus !== -1 && filtered.find((l) => l.crs === crs)) {
 			let coords = [];
@@ -206,10 +209,10 @@
 	{#if data.isFormedFromTrain}
 		<div class="top-safe-top fixed right-3 z-[20000] lg:top-3">
 			<div
-				class="bg-background flex max-w-96 items-center gap-2 rounded-md px-2.5 py-1.5 text-[10px]/3 drop-shadow sm:text-base"
+				class="bg-background flex max-w-42 items-center gap-2 rounded-md px-2.5 py-1.5 text-[10px]/3 drop-shadow sm:max-w-full sm:text-xs"
 			>
 				<CircleAlert size={14} />
-				Location indicator is of the service your train is formed from.
+				Location is of the service your train is formed from.
 			</div>
 		</div>
 	{/if}

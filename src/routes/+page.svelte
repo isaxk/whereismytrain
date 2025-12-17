@@ -2,12 +2,13 @@
 	import { goto } from '$app/navigation';
 	import Search from '$lib/components/search.svelte';
 	import { mapData, paneHeight } from '$lib/state/map.svelte';
-	import { ChevronRight } from 'lucide-svelte';
+	import { BellRing, ChevronRight } from 'lucide-svelte';
 	import AllStations from '$lib/data/stations.json';
 	import { saved } from '$lib/state/saved.svelte';
 	import SavedTrain from '$lib/components/saved-train.svelte';
 	import { onMount } from 'svelte';
-	import { servicesSub } from '$lib/state/services-subscriber';
+	import { refreshing, servicesSub } from '$lib/state/services-subscriber.svelte';
+	import Spinner from '$lib/components/spinner.svelte';
 
 	let from = $state(null);
 	let to = $state(null);
@@ -81,7 +82,15 @@
 		>
 	</div>
 	<div class="px-4">
-		<div class="text-2xl font-medium">Subscribed trains</div>
+		<div class="flex items-center gap-2">
+			<BellRing size={20} />
+			<div class="grow text-2xl font-medium">Subscribed trains</div>
+			<div class="h-6">
+				{#if refreshing.current}
+					<Spinner />
+				{/if}
+			</div>
+		</div>
 		{#each saved.value as item}
 			<SavedTrain data={item} />
 		{/each}

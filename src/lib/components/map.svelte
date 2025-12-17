@@ -34,6 +34,8 @@
 	let center: LngLatLike = $state([-0.1278, 51.5074]);
 	let zoom = $state(5);
 
+	let safeAreaTop = $state(0);
+
 	const lg = new MediaQuery('(min-width: 1024px)');
 
 	$effect(() => {
@@ -64,8 +66,8 @@
 	explicitEffect(
 		() => {
 			const padding = {
-				top: 20,
-				bottom: paneHeight.current + 50,
+				top: lg.current ? 50 : Math.max(20, safeAreaTop + 20),
+				bottom: lg.current ? 50 : paneHeight.current + 50,
 				left: 60,
 				right: 60
 			};
@@ -75,15 +77,17 @@
 
 				const flatten = mapData.service.locations.map((l) => l.lineLocations).flat();
 
-				const focus = flatten.find((l) => l.crs === page.data.crs);
-				const filter = page.data.to
-					? flatten.find((l) => l.crs === page.data.to)
-					: flatten[flatten.length - 1];
+				const focusIndex = flatten.findIndex((l) => l.crs === page.data.crs);
+				const filterIndex = page.data.to
+					? flatten.findIndex((l) => l.crs === page.data.to)
+					: flatten.length - 1;
 				const train = mapData.service.locations[0]!.trainPosition ?? null;
 
+				const route = flatten.slice(focusIndex, filterIndex + 1);
+
 				const minimalObject = train
-					? [focus?.coords, filter?.coords, train]
-					: [focus?.coords, filter?.coords];
+					? [...route.map((l) => l.coords), train]
+					: route.map((l) => l.coords);
 
 				const data: Feature = {
 					type: 'Feature',
@@ -127,7 +131,7 @@
 				}
 			} else if (map && page.url.pathname === '/') {
 				setBounds([-8.2, 49.8, 1.9, 59.2], {
-					top: 0,
+					top: Math.max(20, safeAreaTop),
 					bottom: paneHeight.current,
 					left: 0,
 					right: 0
@@ -224,6 +228,7 @@
 		window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (event) => {
 			darkMode = event.matches;
 		});
+		safeAreaTop = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--sat'));
 	});
 
 	let bounds: LngLatBounds = $state(new LngLatBounds([-8.2, 49.8, 1.9, 59.2]));

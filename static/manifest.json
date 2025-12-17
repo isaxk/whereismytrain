@@ -4,5 +4,9 @@
   "id": "/?source=pwa",
   "start_url": "/?source=pwa",
   "display": "standalone",
-  "scope": "/"
+  "scope": "/",
+ 	"gcm_sender_id": "103953800507",
+	"permissions": [
+		"notifications"
+	]
 }

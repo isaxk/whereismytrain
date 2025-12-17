@@ -2,7 +2,7 @@
 	import type { ServiceMapData, TrainService } from '$lib/types';
 	import { onMount } from 'svelte';
 	import MapService from './map-service.svelte';
-	import { servicesSub } from '$lib/state/services-subscriber';
+	import { servicesSub } from '$lib/state/services-subscriber.svelte';
 
 	let { rid, crs, filter = null } = $props();
 

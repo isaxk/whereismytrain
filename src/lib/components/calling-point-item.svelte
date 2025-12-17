@@ -154,13 +154,17 @@
 			<div class="text-xs/4 text-red-600">Cancelled</div>
 		{:else if cp.departed}
 			<div class={['text-muted-foreground flex items-center gap-1 text-[10px]/4']}>
-				<ArrowUpRight size={12} /> Departed {(cp.delay ?? 0) > 0 ? `${cp.delay}m late` : ((cp.delay ?? 0) < 0 ? `${cp.delay} early` : 'on time')}
+				<ArrowUpRight size={12} /> Departed {(cp.delay ?? 0) > 0
+					? `${cp.delay}m late`
+					: (cp.delay ?? 0) < 0
+						? `${cp.delay} early`
+						: 'on time'}
 			</div>
 		{:else if cp.arrived}
 			<div class="flex items-center gap-1 text-[10px]/4"><ArrowDownRight size={12} /> Arrived</div>
 		{/if}
 	</div>
 	<div class={[cp.order === 'focus' ? 'text-lg font-medium' : 'text-sm text-zinc-400']}>
-		{cp.platform}
+		{cp.platform ?? '-'}
 	</div>
 </div>

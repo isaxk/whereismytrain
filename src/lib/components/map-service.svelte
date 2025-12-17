@@ -69,7 +69,7 @@
 								cp.order === 'origin' ||
 								cp.order === 'previous' ||
 								cp.order === 'further' ||
-								(cp.order === 'destination' && filter && filter !== cp.crs)
+								(cp.order === 'destination' && filter && filter !== cp.crs && !isTrainAtStation)
 									? 'opacity-50'
 									: '',
 								cp.isCancelled && 'line-through opacity-30'

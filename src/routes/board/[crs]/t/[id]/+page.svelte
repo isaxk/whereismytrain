@@ -109,8 +109,14 @@
 				{title}
 			</div>
 		</div>
-		<div class="min-w-10">
-			<SavedToggle service={serviceData} crs={data.crs} rid={data.id} filter={data.to ?? null} />
+		<div class="flex min-w-10 justify-end">
+			<SavedToggle
+				service={serviceData}
+				crs={data.crs}
+				rid={data.id}
+				focus={data.crs}
+				filter={data.to ?? null}
+			/>
 		</div>
 	</div>
 	<div in:fade|global={{ duration: 200 }} class="flex flex-col gap-4 p-4">

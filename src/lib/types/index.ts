@@ -137,6 +137,7 @@ export type SavedTrain = {
 	focusCrs: string;
 	filterCrs: string;
 	id: string;
+	subscriptionId: string | null;
 };
 
 export type ServiceLocationWithCoords = ServiceLocation & {

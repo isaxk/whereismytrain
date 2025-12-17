@@ -3,29 +3,49 @@
 	import type { TrainService } from '$lib/types';
 	import { Bell, BellRing } from 'lucide-svelte';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
+	import { subscribeToTrain, unsubscribeToTrain } from '$lib/notifications';
+	import Spinner from './spinner.svelte';
 
 	let {
 		service,
 		crs,
 		rid,
-		filter
+		filter,
+		focus
 	}: {
 		service: TrainService;
 		crs: string;
 		rid: string;
 		filter: string | null;
+		focus: string;
 	} = $props();
 
-	function save(filter: string) {
+	let loading = $state(false);
+
+	async function save(filter: string) {
+		loading = true;
+		const subscriptionId = await subscribeToTrain(
+			rid,
+			focus,
+			filter,
+			service.destination.map((d) => d.name).join(', ')
+		);
+		console.log('subscriptionId', subscriptionId);
 		saved.value.push({
 			id: rid,
 			focusCrs: crs,
 			filterCrs: filter,
-			service
+			service,
+			subscriptionId: subscriptionId
 		});
+		loading = false;
 	}
 
 	function remove() {
+		const subscriptionId = saved.value.find((s) => s.id === rid)?.subscriptionId;
+		if (subscriptionId) {
+			unsubscribeToTrain(subscriptionId);
+		}
 		saved.value = saved.value.filter((s) => s.id !== rid);
 	}
 
@@ -40,10 +60,22 @@
 {#if saved.value.some((s) => s.id === rid)}
 	<button onclick={() => remove()}><BellRing fill="currentColor" /></button>
 {:else if filter || (afterCallingPoints.length === 1 && firstAfterCallingPointCrs)}
-	<button onclick={() => save(filter ?? firstAfterCallingPointCrs!)}><Bell /></button>
+	<button onclick={() => save(filter ?? firstAfterCallingPointCrs!)}>
+		{#if loading}
+			<Spinner />
+		{:else}
+			<Bell />
+		{/if}
+	</button>
 {:else}
 	<DropdownMenu.Root>
-		<DropdownMenu.Trigger><Bell /></DropdownMenu.Trigger>
+		<DropdownMenu.Trigger
+			>{#if loading}
+				<Spinner />
+			{:else}
+				<Bell />
+			{/if}</DropdownMenu.Trigger
+		>
 		<DropdownMenu.Content align="end">
 			<DropdownMenu.Group>
 				<DropdownMenu.Label>Subscribe until when?</DropdownMenu.Label>

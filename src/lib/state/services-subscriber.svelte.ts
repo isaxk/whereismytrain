@@ -1,6 +1,7 @@
 import type { TrainService } from '$lib/types';
 
 async function refresh() {
+	refreshing.current = true;
 	for (const service of services) {
 		const response = await fetch(service.url);
 		if (response.ok) {
@@ -10,7 +11,17 @@ async function refresh() {
 			}
 		}
 	}
+	setTimeout(
+		() => {
+			refreshing.current = false;
+		},
+		services.length > 0 ? 500 : 0
+	);
 }
+
+export const refreshing = $state({
+	current: false
+});
 
 let services: {
 	url: string;

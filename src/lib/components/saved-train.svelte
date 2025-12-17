@@ -4,7 +4,7 @@
 	import { Bus, Check, ClockAlert, X } from 'lucide-svelte';
 	import { onMount } from 'svelte';
 	import BoardItem from './board-item.svelte';
-	import { servicesSub } from '$lib/state/services-subscriber';
+	import { servicesSub } from '$lib/state/services-subscriber.svelte';
 
 	let { data }: { data: SavedTrain } = $props();
 
