@@ -157,7 +157,7 @@
 				<ArrowUpRight size={12} /> Departed {(cp.delay ?? 0) > 0
 					? `${cp.delay}m late`
 					: (cp.delay ?? 0) < 0
-						? `${cp.delay} early`
+						? `${Math.abs(cp.delay ?? 0)} early`
 						: 'on time'}
 			</div>
 		{:else if cp.arrived}
