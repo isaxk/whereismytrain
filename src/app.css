@@ -124,6 +124,7 @@
 	--color-warning: var(--color-warning);
 	--color-danger: var(--color-danger);
 	--spacing-safe-top: calc(env(safe-area-inset-top));
+	--spacing-safe-bottom: calc(env(safe-area-inset-bottom));
 }
 
 @layer base {
