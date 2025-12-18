@@ -182,17 +182,6 @@ export const POST: RequestHandler = async ({ request }) => {
 		};
 	});
 
-	console.log(
-		'Test data',
-		calculateTrainPosition(
-			[-0.2900566, 51.5149231],
-			[-0.2675251, 51.5170784],
-			'2025-12-18T18:06:37',
-			'2025-12-18T18:07:07',
-			false
-		)
-	);
-
 	if (formedFrom && parsedLocations[0] && !parsedLocations.some((l) => l.trainPosition !== null)) {
 		const data = await fetchAssocService(formedFrom);
 
