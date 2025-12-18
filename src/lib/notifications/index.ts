@@ -3,6 +3,8 @@ import { getToken, onMessage } from 'firebase/messaging';
 import { browser } from '$app/environment';
 import { env } from '$env/dynamic/public';
 import { parseServiceId } from '$lib/utils';
+import { toast } from 'svelte-sonner';
+import NotificationComponent from '$lib/components/notification.svelte';
 
 let token: string | null = null;
 
@@ -136,11 +138,20 @@ export function setupForegroundMessageHandler() {
 	onMessage(messaging, (payload) => {
 		console.log('Message received in foreground:', payload);
 
-		if (Notification.permission === 'granted') {
-			new Notification(payload.notification.title, {
-				body: payload.notification.body,
-				icon: '/favicon.png'
-			});
-		}
+		// if (Notification.permission === 'granted') {
+		// 	new Notification(payload.notification.title, {
+		// 		body: payload.notification.body,
+		// 		icon: '/favicon.png'
+		// 	});
+		// }
+		//
+		toast(NotificationComponent, {
+			componentProps: {
+				title: payload.notification?.title ?? '',
+				service: payload.data?.service ?? '{}',
+				alertType: payload.data?.alertType ?? ''
+			},
+			duration: Number.POSITIVE_INFINITY
+		});
 	});
 }

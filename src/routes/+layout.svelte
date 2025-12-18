@@ -11,6 +11,7 @@
 	import { headerColor, mapData, paneHeight } from '$lib/state/map.svelte';
 	import { onNavigate } from '$app/navigation';
 	import { fade } from 'svelte/transition';
+	import { Toaster, toast } from 'svelte-sonner';
 
 	let { children } = $props();
 	let paneElm: HTMLDivElement;
@@ -97,6 +98,8 @@
 		<div class="h-safe-top"></div>
 	</div>
 {/if} -->
+
+<Toaster expand position="top-center" />
 
 <div class="fixed inset-0 flex">
 	{#if lg.current}

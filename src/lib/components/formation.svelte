@@ -15,9 +15,12 @@
 
 <div in:fade={{ duration: 200 }}>
 	<div class="flex gap-1 overflow-x-scroll">
+		<div
+			class="bg-muted border-border h-16 min-w-14 rounded-tl-[100%] rounded-r-md rounded-bl-xl border-2 drop-shadow-xs"
+		></div>
 		{#each formation as carriage, i (JSON.stringify(carriage) + i)}
 			<div
-				class="bg-background border-border relative flex h-16 min-w-16 flex-col items-center justify-center gap-0.5 rounded border drop-shadow-xs"
+				class="bg-background border-border relative flex h-16 min-w-16 flex-col items-center justify-center gap-0.5 overflow-hidden rounded-md border drop-shadow-xs"
 			>
 				{#if carriage.loading !== null}
 					<div
