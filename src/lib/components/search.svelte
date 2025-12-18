@@ -97,7 +97,7 @@
 		>
 			{#if selectedStation}
 				<div class="text-xl/5 font-semibold">{selectedStation.crsCode}</div>
-				<div class="min-h-fit w-full max-w-full truncate text-xs/4 text-zinc-500">
+				<div class="h-max min-h-4 w-full max-w-full truncate text-xs/4 text-zinc-500">
 					{selectedStation.stationName}
 				</div>
 			{:else}
