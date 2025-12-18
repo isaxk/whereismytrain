@@ -113,8 +113,6 @@ export const GET: RequestHandler = async ({ params }) => {
 				: {}
 		});
 
-		console.log(response.ok);
-
 		if (!response.ok) {
 			throw new Error('Failed to fetch station board');
 		}
@@ -134,8 +132,6 @@ export const GET: RequestHandler = async ({ params }) => {
 					.replace('Latest information can be found in', '')
 					.replace('Status and Disruptions.', 'More info')
 			}));
-
-		console.log(services.map((s) => s.uid));
 
 		const board: Board = {
 			services,

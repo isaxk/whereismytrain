@@ -33,8 +33,11 @@ let services: {
 
 export const servicesSub = {
 	init: () => {
-		const interval = setInterval(refresh, 10000);
+		const interval = setInterval(refresh, 15000);
 		return () => clearInterval(interval);
+	},
+	forceRefresh: () => {
+		refresh();
 	},
 	subscribe: (
 		id: string,

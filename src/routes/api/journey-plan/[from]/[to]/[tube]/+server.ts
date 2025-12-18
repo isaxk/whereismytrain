@@ -42,7 +42,7 @@ type ParsedTflJourney = {
 
 async function fetchTflJourneyPlan(from: string, to: string, tube: boolean = false) {
 	const url = `https://api.tfl.gov.uk/Journey/JourneyResults/${from}/to/${to}?nationalSearch=true&mode=elizabeth-line,national-rail,overground,walking${tube ? ',tube' : ''}&journeyPreference=leastTime&includeAlternativeRoutes=true`;
-	console.log(url);
+
 	const response = await fetch(url);
 	const data = await response.json();
 	if (!data) {

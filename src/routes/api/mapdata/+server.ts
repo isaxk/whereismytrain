@@ -66,31 +66,38 @@ function calculateTrainPosition(
 
 	coords = lastDepartedCoords ?? null;
 
-	if (nextDepartTime && nextCoords && lastDepartedCoords) {
+	console.log('nextDepartTime:', nextDepartTime);
+	console.log('lastDepartedTime:', lastDepartedTime);
+	console.log('lastDepartedCoords:', lastDepartedCoords);
+	console.log('nextCoords:', nextCoords);
+
+	if (nextDepartTime && nextCoords && lastDepartedCoords && lastDepartedTime) {
 		const lastTime = dayjs(lastDepartedTime, 'Europe/London').utc(false);
 		const now = dayjs();
 		const nextTime = dayjs(nextDepartTime, 'Europe/London').utc(false);
-		const timeElapsed = now.diff(lastTime, 'minutes');
-		const timeTotal = nextTime.diff(lastTime, 'minutes');
+		const timeElapsed = now.diff(lastTime, 'seconds');
+		const timeTotal = nextTime.diff(lastTime, 'seconds');
 		let progress = Math.min(0.95, Math.max(0.05, timeElapsed / timeTotal));
 
-		if (!departed) {
+		if (!departed || timeElapsed === 0) {
 			progress = 0;
 		}
 
-		if (nextCoords) {
-			coords = [
-				lastDepartedCoords[0] + (nextCoords[0] - lastDepartedCoords[0]) * progress,
-				lastDepartedCoords[1] + (nextCoords[1] - lastDepartedCoords[1]) * progress
-			];
-			bearing = calculateBearing(
-				lastDepartedCoords[1],
-				lastDepartedCoords[0],
-				nextCoords[1],
-				nextCoords[0]
-			);
-		}
+		coords = [
+			lastDepartedCoords[0] + (nextCoords[0] - lastDepartedCoords[0]) * progress,
+			lastDepartedCoords[1] + (nextCoords[1] - lastDepartedCoords[1]) * progress
+		];
+		bearing = calculateBearing(
+			lastDepartedCoords[1],
+			lastDepartedCoords[0],
+			nextCoords[1],
+			nextCoords[0]
+		);
+	} else if (lastDepartedCoords) {
+		coords = lastDepartedCoords;
 	}
+
+	console.log(coords);
 
 	return { coords, bearing };
 }
@@ -124,7 +131,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		});
 	});
 
-	console.log('formedFrom', formedFrom);
+	// console.log('formedFrom', formedFrom);
 
 	const tiplocsData = await getTiplocs(tiplocs);
 	const parsedLocations: MapDataLocationGroup[] = locations.map((group) => {
@@ -174,6 +181,17 @@ export const POST: RequestHandler = async ({ request }) => {
 			destination: groupWithCoords[groupWithCoords.length - 1]
 		};
 	});
+
+	console.log(
+		'Test data',
+		calculateTrainPosition(
+			[-0.2900566, 51.5149231],
+			[-0.2675251, 51.5170784],
+			'2025-12-18T18:06:37',
+			'2025-12-18T18:07:07',
+			false
+		)
+	);
 
 	if (formedFrom && parsedLocations[0] && !parsedLocations.some((l) => l.trainPosition !== null)) {
 		const data = await fetchAssocService(formedFrom);

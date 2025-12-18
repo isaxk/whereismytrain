@@ -4,7 +4,16 @@ import { browser } from '$app/environment';
 import { env } from '$env/dynamic/public';
 import { parseServiceId } from '$lib/utils';
 
-let token = null;
+let token: string | null = null;
+
+function fnTimeout(fn: () => Promise<any>, delay: number) {
+	return new Promise<string | null>((resolve, reject) => {
+		setTimeout(() => {
+			resolve(null);
+		}, delay);
+		fn().then(resolve);
+	});
+}
 
 export async function subscribeToTrain(
 	service_id: string,
@@ -13,33 +22,36 @@ export async function subscribeToTrain(
 	destination: string
 ) {
 	if (!token) {
-		token = await initializeNotifications();
+		token = await fnTimeout(initializeNotifications, 2000);
 	}
 	console.log('Token:', token);
 
 	const { destCrsList, id } = parseServiceId(service_id);
 
-	const body = {
-		fcmToken: token,
-		serviceId: id,
-		focusCrs: focusCrs,
-		filterCrs: filterCrs,
-		destination: destination,
-		destCrs: destCrsList[0]
-	};
-	const response = await fetch('https://pqwbjxgovvgpxmccjsdw.supabase.co/functions/v1/register', {
-		method: 'POST',
-		headers: {
-			'Content-Type': 'application/json',
-			Authorization: `Bearer ${env.PUBLIC_SUPABASE_ANON_KEY}`
-		},
-		body: JSON.stringify(body)
-	});
-
-	if (response.ok) {
-		const data = await response.json();
-		console.log(data);
-		return data.id;
+	if (token) {
+		const body = {
+			fcmToken: token,
+			serviceId: id,
+			focusCrs: focusCrs,
+			filterCrs: filterCrs,
+			destination: destination,
+			destCrs: destCrsList[0]
+		};
+		const response = await fetch('https://pqwbjxgovvgpxmccjsdw.supabase.co/functions/v1/register', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				Authorization: `Bearer ${env.PUBLIC_SUPABASE_ANON_KEY}`
+			},
+			body: JSON.stringify(body)
+		});
+		if (response.ok) {
+			const data = await response.json();
+			console.log(data);
+			return data.id;
+		} else {
+			return null;
+		}
 	} else {
 		return null;
 	}

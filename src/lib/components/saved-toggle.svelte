@@ -1,10 +1,11 @@
 <script lang="ts">
 	import { saved } from '$lib/state/saved.svelte';
 	import type { TrainService } from '$lib/types';
-	import { Bell, BellRing } from 'lucide-svelte';
+	import { Bell, BellOff, BellRing, BookmarkIcon, X } from 'lucide-svelte';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 	import { subscribeToTrain, unsubscribeToTrain } from '$lib/notifications';
-	import Spinner from './spinner.svelte';
+	import { Spinner } from './ui/spinner/index';
+	import dayjs from 'dayjs';
 
 	let {
 		service,
@@ -21,6 +22,7 @@
 	} = $props();
 
 	let loading = $state(false);
+	let failedToSubscribe = $state(false);
 
 	async function save(filter: string) {
 		loading = true;
@@ -31,12 +33,25 @@
 			service.destination.map((d) => d.name).join(', ')
 		);
 		console.log('subscriptionId', subscriptionId);
-		saved.value.push({
-			id: rid,
-			focusCrs: crs,
-			filterCrs: filter,
-			service,
-			subscriptionId: subscriptionId
+		if (subscriptionId === null) {
+			failedToSubscribe = true;
+			console.log(failedToSubscribe);
+		}
+		saved.value = [
+			...saved.value,
+			{
+				id: rid,
+				focusCrs: crs,
+				filterCrs: filter,
+				service,
+				subscriptionId: subscriptionId
+			}
+		].toSorted((a, b) => {
+			const aFocus = a.service.callingPoints.find((cp) => cp.order === 'focus');
+			const bFocus = b.service.callingPoints.find((cp) => cp.order === 'focus');
+			if (!aFocus || !bFocus) return 0;
+			const diff = dayjs(aFocus?.times.plan.dep).diff(dayjs(bFocus?.times.plan.dep));
+			return diff === 0 ? 0 : diff > 0 ? 1 : -1;
 		});
 		loading = false;
 	}
@@ -58,11 +73,31 @@
 </script>
 
 {#if saved.value.some((s) => s.id === rid)}
-	<button onclick={() => remove()}><BellRing fill="currentColor" /></button>
+	<button onclick={() => remove()} class="relative">
+		{#if saved.value.find((s) => s.id === rid)?.subscriptionId}
+			<BellRing fill="currentColor" />
+		{:else}
+			<BookmarkIcon fill="currentColor" />
+			<div
+				class="absolute -right-1 -bottom-1 rounded-full p-0.5"
+				style:background={service.operator.color}
+			>
+				<BellOff size={12} fill="currentColor" />
+			</div>
+		{/if}
+	</button>
+	{#if failedToSubscribe}
+		<div
+			class="bg-background text-foreground border-border absolute top-14 right-4 z-[20] flex items-center gap-1 rounded border px-1.5 py-0.5 text-xs drop-shadow"
+		>
+			Failed to setup notifications
+			<button onclick={() => (failedToSubscribe = false)}><X size={14} /></button>
+		</div>
+	{/if}
 {:else if filter || (afterCallingPoints.length === 1 && firstAfterCallingPointCrs)}
-	<button onclick={() => save(filter ?? firstAfterCallingPointCrs!)}>
+	<button class="" onclick={() => save(filter ?? firstAfterCallingPointCrs!)}>
 		{#if loading}
-			<Spinner />
+			<Spinner class="size-6" />
 		{:else}
 			<Bell />
 		{/if}
@@ -71,7 +106,7 @@
 	<DropdownMenu.Root>
 		<DropdownMenu.Trigger
 			>{#if loading}
-				<Spinner />
+				<Spinner size="size-6" />
 			{:else}
 				<Bell />
 			{/if}</DropdownMenu.Trigger

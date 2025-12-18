@@ -42,7 +42,9 @@
 	let beforeBreak: 'top' | 'middle' | 'bottom' | null = null;
 
 	function openSearch() {
+		value = '';
 		active = true;
+
 		beforeBreak = paneHeight.break !== 'bottom' ? paneHeight.break : 'middle';
 		paneHeight.break = 'top';
 		setTimeout(() => elm.focus(), 50);
@@ -77,34 +79,33 @@
 	const formatted = $derived(browser ? format(results) : []);
 </script>
 
-<div class={className}>
-	{#if !active}
-		{#if trigger}
-			{@render trigger?.({
-				send,
-				receive,
-				selected: selectedStation ?? null,
-				onclick: () => openSearch()
-			})}
-		{:else}
-			<button
-				out:send|global={{ key }}
-				in:receive|global={{ key }}
-				onclick={() => openSearch()}
-				class="border-border bg-background flex h-14 w-full flex-col justify-center rounded-lg border px-4 text-left drop-shadow-sm"
-			>
-				{#if selectedStation}
-					<div class="text-lg/5 font-semibold">{selectedStation.crsCode}</div>
-					<div class="text-xs/4 text-zinc-500">
-						{selectedStation.stationName}
-					</div>
-				{:else}
-					{key}
-				{/if}
-			</button>
-		{/if}
+<!-- z -->
+{#if !active}
+	{#if trigger}
+		{@render trigger?.({
+			send,
+			receive,
+			selected: selectedStation ?? null,
+			onclick: () => openSearch()
+		})}
+	{:else}
+		<button
+			out:send|global={{ key }}
+			in:receive|global={{ key }}
+			onclick={() => openSearch()}
+			class="group/input-group border-input dark:bg-input/30 bg-background flex h-14 flex-col justify-center overflow-hidden rounded-md border p-4 text-left shadow-xs transition-[color,box-shadow] outline-none"
+		>
+			{#if selectedStation}
+				<div class="text-xl/5 font-semibold">{selectedStation.crsCode}</div>
+				<div class="min-h-fit w-full max-w-full truncate text-xs/4 text-zinc-500">
+					{selectedStation.stationName}
+				</div>
+			{:else}
+				{key}
+			{/if}
+		</button>
 	{/if}
-</div>
+{/if}
 
 {#if active}
 	<form

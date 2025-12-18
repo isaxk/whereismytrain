@@ -8,7 +8,10 @@
 	import SavedTrain from '$lib/components/saved-train.svelte';
 	import { onMount } from 'svelte';
 	import { refreshing, servicesSub } from '$lib/state/services-subscriber.svelte';
-	import Spinner from '$lib/components/spinner.svelte';
+	import Spinner from '$lib/components/ui/spinner/spinner.svelte';
+	import { fly } from 'svelte/transition';
+	import { flip } from 'svelte/animate';
+	import Button from '$lib/components/ui/button/button.svelte';
 
 	let from = $state(null);
 	let to = $state(null);
@@ -49,11 +52,14 @@
 
 	onMount(() => {
 		const clear = servicesSub.init();
+		setTimeout(() => {
+			servicesSub.forceRefresh();
+		}, 200);
 		return () => clear();
 	});
 </script>
 
-<div class="flex flex-col gap-4">
+<div class="flex w-full flex-col gap-4">
 	<div class="border-b-border bg-background sticky top-0 z-20 rounded-t-xl border-b p-4 pt-6">
 		<div class="text-3xl font-bold">Where is my train?</div>
 		<div class="flex *:text-blue-400 hover:underline">
@@ -61,25 +67,23 @@
 		</div>
 	</div>
 
-	<div class="border-b-border border-b px-4 pb-4">
-		<div class="flex items-center gap-2 pb-4">
-			<Search class="h-14 w-full" key="from" bind:selected={from}></Search>
-			<div class="flex min-w-8 justify-center">
+	<div class="border-b-border w-full border-b px-4 pb-4">
+		<div class="grid w-full max-w-full grid-cols-[1fr_32px_1fr] items-center gap-2 pb-4">
+			<Search class="" key="from" bind:selected={from}></Search>
+			<div class="flex justify-center">
 				<ChevronRight />
 			</div>
-			<Search class="h-14 w-full" key="to" bind:selected={to}></Search>
+			<Search class="" key="to" bind:selected={to}></Search>
 		</div>
 		<a
 			aria-disabled={from && from !== to}
-			class={[
-				'block rounded-lg py-2 text-center',
-				from && from !== to ? 'bg-primary text-primary-invert' : 'bg-muted text-white'
-			]}
 			onclick={() => {
 				paneHeight.break = 'middle';
 			}}
-			href={from && from !== to ? (to ? `/board/${from}?to=${to}` : `/board/${from}`) : '#'}>Go</a
+			href={from && from !== to ? (to ? `/board/${from}?to=${to}` : `/board/${from}`) : '#'}
 		>
+			<Button class="w-full">Go</Button>
+		</a>
 	</div>
 	<div class="px-4">
 		<div class="flex items-center gap-2">
@@ -91,8 +95,10 @@
 				{/if}
 			</div>
 		</div>
-		{#each saved.value as item}
-			<SavedTrain data={item} />
+		{#each saved.value as item (item.id + item.filterCrs + item.focusCrs + item.subscriptionId)}
+			<div transition:fly={{ duration: 200, x: -100 }} animate:flip={{ duration: 200 }}>
+				<SavedTrain data={item} />
+			</div>
 		{/each}
 	</div>
 </div>

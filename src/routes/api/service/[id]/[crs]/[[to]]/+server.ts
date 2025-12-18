@@ -300,8 +300,8 @@ export const GET = async ({ params }) => {
 	);
 	let filterIndex = to ? callingPoints.findIndex((l, i) => l.crs === to && i > focusIndex) : null;
 
-	console.log('focusIndex', focusIndex);
-	console.log('filterIndex', filterIndex);
+	// console.log('focusIndex', focusIndex);
+	// console.log('filterIndex', filterIndex);
 
 	if ((!filterIndex || filterIndex === -1) && to) {
 		console.log('Could not find filter, retrying');
