@@ -6,6 +6,7 @@
 	import { subscribeToTrain, unsubscribeToTrain } from '$lib/notifications';
 	import { Spinner } from './ui/spinner/index';
 	import dayjs from 'dayjs';
+	import { dayjsFromHHmm } from '$lib/utils';
 
 	let {
 		service,
@@ -49,8 +50,16 @@
 		].toSorted((a, b) => {
 			const aFocus = a.service.callingPoints.find((cp) => cp.order === 'focus');
 			const bFocus = b.service.callingPoints.find((cp) => cp.order === 'focus');
+			// console.log('aFocus', aFocus);
+			// console.log('bFocus', bFocus);
 			if (!aFocus || !bFocus) return 0;
-			const diff = dayjs(aFocus?.times.plan.dep).diff(dayjs(bFocus?.times.plan.dep));
+			console.log('aFocus', aFocus?.times.plan.dep);
+			console.log('bFocus', bFocus?.times.plan.dep);
+			if (!aFocus?.times.plan.dep || !bFocus?.times.plan.dep) return 0;
+			const diff = dayjsFromHHmm(aFocus?.times.plan.dep).diff(
+				dayjsFromHHmm(bFocus?.times.plan.dep)
+			);
+			console.log('diff', diff);
 			return diff === 0 ? 0 : diff > 0 ? 1 : -1;
 		});
 		loading = false;

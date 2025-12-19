@@ -1,7 +1,8 @@
 import { untrack } from 'svelte';
 import type { LngLatLike, MapLibre } from 'svelte-maplibre';
-import { clsx, type ClassValue } from "clsx";
-import { twMerge } from "tailwind-merge";
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+import dayjs from 'dayjs';
 
 export function calculateBearing(lat1: number, lon1: number, lat2: number, lon2: number) {
 	// Convert degrees to radians
@@ -60,16 +61,14 @@ export function cameraForBoundsCustom(
 	return { center: [lng, lat] as LngLatLike, zoom };
 }
 
-
-
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type WithoutChild<T> = T extends { child?: any } ? Omit<T, "child"> : T;
+export type WithoutChild<T> = T extends { child?: any } ? Omit<T, 'child'> : T;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type WithoutChildren<T> = T extends { children?: any } ? Omit<T, "children"> : T;
+export type WithoutChildren<T> = T extends { children?: any } ? Omit<T, 'children'> : T;
 export type WithoutChildrenOrChild<T> = WithoutChildren<WithoutChild<T>>;
 export type WithElementRef<T, U extends HTMLElement = HTMLElement> = T & { ref?: U | null };
 
@@ -80,4 +79,9 @@ export function parseServiceId(rawid: string) {
 	const destCrsList = splitten.slice(1);
 
 	return { id, destCrsList };
+}
+
+export function dayjsFromHHmm(hhmm: string) {
+	const [hh, mm] = hhmm.split(':').map(Number);
+	return dayjs().hour(hh).minute(mm).second(0).millisecond(0);
 }
