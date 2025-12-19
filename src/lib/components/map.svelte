@@ -113,7 +113,13 @@
 
 					setBounds(bbox, padding);
 				}
-			} else if (map && mapData.board && navigating.to?.url.pathname !== '/' && !page.data.id) {
+			} else if (
+				map &&
+				mapData.board &&
+				page.data.crs &&
+				navigating.to?.url.pathname !== '/' &&
+				!page.data.id
+			) {
 				if (mapData.board.length === 1) {
 					easeToIfChanged(
 						{
@@ -129,7 +135,7 @@
 						setBounds(bbox, padding);
 					}
 				}
-			} else if (map && page.url.pathname === '/') {
+			} else if (map) {
 				setBounds([-8.2, 49.8, 1.9, 59.2], {
 					top: Math.max(20, safeAreaTop),
 					bottom: paneHeight.current,
