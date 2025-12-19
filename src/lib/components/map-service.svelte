@@ -66,10 +66,11 @@
 							class={[
 								'flex flex-col items-center justify-center overflow-hidden rounded-full text-[10px]/3 text-white',
 								isTrainAtStation ? 'h-10 w-10 border-2' : 'h-7 w-7',
-								cp.order === 'origin' ||
-								cp.order === 'previous' ||
-								cp.order === 'further' ||
-								(cp.order === 'destination' && filter && filter !== cp.crs && !isTrainAtStation)
+								(cp.order === 'origin' ||
+									cp.order === 'previous' ||
+									cp.order === 'further' ||
+									(cp.isDestination && filter && filter !== cp.crs)) &&
+								!isTrainAtStation
 									? 'opacity-50'
 									: '',
 								cp.isCancelled && 'line-through opacity-30'
@@ -77,7 +78,7 @@
 						>
 							{#if isTrainAtStation}
 								<div
-									class="flex w-full grow items-center justify-center pt-0.5 text-white"
+									class={['flex w-full grow items-center justify-center pt-0.5 text-white']}
 									style:background={serviceData.operator.color}
 								>
 									{cp.crs}

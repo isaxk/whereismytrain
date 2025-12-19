@@ -34,6 +34,7 @@ export type BoardItem = {
 	times: TimeObject;
 	departed: boolean;
 	isCancelled: boolean;
+	isFilterCancelled: boolean;
 	platform: string | null;
 	operator: Operator;
 	position: Position;

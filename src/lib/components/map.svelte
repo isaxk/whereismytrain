@@ -304,6 +304,7 @@
 		{#each filteredStations as station, i ((station?.crsCode ?? Date.now().toString()) + i)}
 			{#if station}
 				<Marker
+					class="bg-background rounded-full"
 					zIndex={favourites.includes(station.crsCode) ? 1000 : 100}
 					lngLat={[station.long, station.lat]}
 					onclick={(e) => {
@@ -313,8 +314,10 @@
 				>
 					<div
 						class={[
-							'flex h-7 w-7 items-center justify-center rounded-full bg-zinc-700 text-[10px] text-white dark:bg-zinc-600',
-							page.data.crs ? 'opacity-30' : 'opacity-100'
+							'flex h-7 w-7 items-center justify-center rounded-full  text-[10px] text-white ',
+							page.data.crs
+								? 'bg-neutral-900 opacity-20 dark:bg-neutral-700'
+								: 'bg-zinc-700 opacity-100 dark:bg-zinc-600'
 						]}
 					>
 						{station.crsCode}

@@ -72,6 +72,7 @@ function parseBoardItem(item: any): BoardItem {
 			color: operatorList[item.operatorCode]?.bg ?? '#000000'
 		},
 		isCancelled: item.isCancelled ?? false,
+		isFilterCancelled: item.filterLocationCancelled ?? false,
 		position: item.isCancelled ? 'Cancelled' : null,
 		delayReason: null,
 		cancelReason: null
@@ -86,7 +87,7 @@ export const GET: RequestHandler = async ({ params }) => {
 		shouldUseRailData = true;
 	}
 
-	let url = `https://huxley2.azurewebsites.net/staffdepartures/${crs}?timeOffset=${offset}&timeWindow=120&expand=true&access_token=${ACCESS_TOKEN}`;
+	let url = `https://huxley2.azurewebsites.net/staffdepartures/${crs}/20?timeOffset=${offset}&timeWindow=120&access_token=${ACCESS_TOKEN}`;
 	if (shouldUseRailData) {
 		const time = dayjs()
 			.tz('Europe/London')
@@ -99,7 +100,7 @@ export const GET: RequestHandler = async ({ params }) => {
 		url = urlObj.toString();
 	} else {
 		if (to != 'null') {
-			url = `https://huxley2.azurewebsites.net/staffdepartures/${crs}/to/${to}?timeOffset=${offset}&timeWindow=120&expand=true&access_token=${ACCESS_TOKEN}`;
+			url = `https://huxley2.azurewebsites.net/staffdepartures/${crs}/to/${to}/20?timeOffset=${offset}&timeWindow=120&access_token=${ACCESS_TOKEN}`;
 		}
 	}
 
@@ -118,6 +119,7 @@ export const GET: RequestHandler = async ({ params }) => {
 		}
 
 		const data = await response.json();
+		console.log(data);
 
 		const services = (data.trainServices ?? [])
 			.concat(data.busServices ?? [])

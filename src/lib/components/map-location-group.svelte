@@ -152,7 +152,7 @@
 		paint={{
 			'line-width': 5,
 			'line-color': color,
-			'line-opacity': page.data.id === rid ? 1 : 0.05
+			'line-opacity': page.data.id === rid ? 0.2 : 0.05
 		}}
 	/>
 </GeoJSON>
@@ -168,7 +168,7 @@
 		paint={{
 			'line-width': 5,
 			'line-color': color,
-			'line-opacity': page.data.id === rid ? 1 : 0.8
+			'line-opacity': page.data.crs ? (page.data.id === rid ? 1 : 0.2) : 0.8
 		}}
 	/>
 </GeoJSON>

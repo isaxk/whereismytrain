@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto, preloadData } from '$app/navigation';
 	import { resolve } from '$app/paths';
+	import * as Tabs from '$lib/components/ui/tabs';
 	import { page } from '$app/state';
 	import {
 		ArrowDown,
@@ -14,6 +15,8 @@
 		Clock,
 		ClockAlert,
 		Plus,
+		Rows2,
+		Rows4,
 		X
 	} from 'lucide-svelte';
 	import { onMount } from 'svelte';
@@ -115,6 +118,8 @@
 		data.offset && search.set('offset', data.offset.toString());
 		return `/board/${data.crs}/t/${rid}?${search.toString()}`;
 	}
+
+	let expanded = $state(false);
 </script>
 
 <!-- <pre>{JSON.stringify(await getBoard({ crs: data.crs }), null, 2)}</pre> -->
@@ -175,13 +180,13 @@
 						{/each}
 					</div>
 				{/if}
-				<div class="px-2 py-2" in:fade|global={{ duration: 200 }}>
-					<div class="border-border flex border-b px-3">
+				<Tabs.Root class="gap-0" value="expanded">
+					<div class="border-border flex items-center gap-4 border-b px-5 py-2">
 						{#if page.data.offset !== -119}
 							{#await earlierUrl}
 								loading...
 							{:then earlierUrl}
-								<a href={earlierUrl} class="text-foreground/60 flex items-center gap-1 py-3">
+								<a href={earlierUrl} class="text-foreground/60 flex h-full items-center gap-1">
 									<ArrowUp size={18} />
 									Earlier trains
 								</a>
@@ -189,75 +194,79 @@
 						{/if}
 						<div class="grow"></div>
 						{#if page.data.offset != 0}
-							<a href={offsetUrl(0)} class="text-foreground/60 flex items-center gap-1 py-3">
+							<a href={offsetUrl(0)} class="text-foreground/60 flex h-full items-center gap-1">
 								<Clock size={18} />
 								Now
 							</a>
 						{/if}
+						<Tabs.List>
+							<Tabs.Trigger value="expanded"><Rows2 /></Tabs.Trigger>
+							<Tabs.Trigger value="collapsed"><Rows4 /></Tabs.Trigger>
+						</Tabs.List>
 					</div>
 					{#if services.length === 0}
 						<div class="p-4">No services found</div>
 					{/if}
-					{#each services as service, index (service.rid)}
-						<BoardItemComponent
-							href={serviceUrl(service.rid)}
-							id={service.rid}
-							planDep={service.times.plan.dep ?? 'N/A'}
-							rtDep={service.times.rt.dep}
-							departed={service.departed}
-							isCancelled={service.isCancelled}
-							destination={service.destination}
-							platform={service.platform}
-							crs={data.crs}
-							operator={service.operator}
-						/>
-						<!-- <a
-							href={serviceUrl(service.rid)}
-							class="border-border flex h-20 w-full flex-col gap-1 border-b p-4 text-left"
-						>
-							<div class="flex items-center">
-								<div class="w-16 font-medium">{service.times.plan.dep}</div>
-								<div class="min-w-0 grow truncate font-semibold">
-									{service.destination.map((d) => d.name).join(', ')}
-								</div>
-								<div class="w-16 text-right">
-									{service.platform !== 'BUS' ? service.platform : ''}
-								</div>
-								{#if service.platform === 'BUS'}
-									<div class="flex items-center gap-1 text-xs text-yellow-600">
-										<Bus size={16} /> Rail Replacement Bus
-									</div>
-								{/if}
+					<Tabs.Content value="expanded" class="flex flex-col">
+						{#each services as service, index (service.rid)}
+							<div class="odd:bg-muted/30 px-4">
+								<BoardItemComponent
+									href={serviceUrl(service.rid)}
+									id={service.rid}
+									planDep={service.times.plan.dep ?? 'N/A'}
+									rtDep={service.times.rt.dep}
+									delay={service.delay}
+									departed={service.departed}
+									isCancelled={service.isCancelled}
+									isFilterCancelled={service.isFilterCancelled}
+									destination={service.destination}
+									platform={service.platform}
+									crs={data.crs}
+									operator={service.operator}
+									filterName={details?.filterName}
+								/>
 							</div>
-							<div class="flex items-center gap-4 text-sm">
-								{#if service.times.rt.dep == service.times.plan.dep}
-									<div class="text-good flex items-center gap-1">
-										<Check size={16} /> On time
-									</div>
-								{:else if service.isCancelled}
-									<div class="flex items-center gap-1 text-red-600"><X size={16} /> Cancelled</div>
-								{:else if service.times.rt.dep}
-									<div class="flex items-center gap-1 text-yellow-600">
-										<ClockAlert size={16} />
-										Expected {service.times.rt.dep}
-									</div>
-								{:else}
-									<div class="flex items-center gap-1 text-yellow-600">
-										<ClockAlert size={16} />
-										Delayed
-									</div>
-								{/if}
-
-								<div class="grow"></div>
+						{/each}
+					</Tabs.Content>
+					<Tabs.Content value="collapsed" class="flex flex-col py-2">
+						<div class="flex items-center gap-2 px-4 py-1 text-xs">
+							<div class="w-10">TOC</div>
+							<div class="w-10">Time</div>
+							<div class="grow">Destination</div>
+							<div class="">Expected</div>
+							<div class="w-5 text-right">Plat</div>
+						</div>
+						{#each services as service (service.rid)}
+							<div class="odd:bg-accent flex items-center gap-2 rounded px-4 py-1">
 								<div
-									class="h-max rounded-md px-1.5 py-0.5 text-[10px] text-white"
 									style:background={service.operator.color}
+									class="min-w-10 rounded text-center text-white"
 								>
-									{service.operator.name}
+									{service.operator.id}
 								</div>
+								<div class="w-10 font-medium">{service.times.plan.dep}</div>
+								<div class="min-w-0 grow truncate">
+									{service.destination.map((d) => d.name).join(', ')}
+
+									{#if service.destination[0]?.via}
+										<span class="text-muted-foreground text-xs">
+											{service.destination[0].via}
+										</span>
+									{/if}
+								</div>
+								{#if service.isCancelled}
+									<div class="text-nowrap text-red-600">Cancelled</div>
+								{:else if service.times.plan.dep === service.times.rt.dep}
+									<div class="text-nowrap text-green-600">On time</div>
+								{:else}
+									<div class="text-nowrap text-yellow-600">
+										{service.times.rt.dep ?? 'Delayed'}
+									</div>
+								{/if}
+								<div class="min-w-5 text-right text-nowrap">{service.platform ?? '-'}</div>
 							</div>
-						</a> -->
-					{/each}
+						{/each}
+					</Tabs.Content>
 					<div class="px-3 pt-1">
 						{#await laterUrl}
 							loading...
@@ -268,7 +277,7 @@
 							</a>
 						{/await}
 					</div>
-				</div>
+				</Tabs.Root>
 			{/if}
 		</div>
 	{/if}

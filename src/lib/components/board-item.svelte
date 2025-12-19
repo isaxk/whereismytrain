@@ -11,21 +11,26 @@
 		id,
 		href,
 		isCancelled,
+		isFilterCancelled = false,
 		rtDep,
 		planDep,
+		delay = null,
 		departed,
 		focus = null,
 		destination,
 		platform,
 		filter,
-		operator
+		operator,
+		filterName = null
 	}: {
 		crs: string;
 		id: string;
 		href: string;
 		isCancelled: boolean;
+		isFilterCancelled: boolean;
 		rtDep: string | null;
 		planDep: string;
+		delay?: number | null;
 		departed: boolean;
 		focus?: string | null;
 		destination: DestinationOrigin[];
@@ -38,21 +43,22 @@
 			arrived: boolean;
 		} | null;
 		operator: Operator;
+		filterName?: string | null;
 	} = $props();
 </script>
 
 <a
 	{href}
 	class={[
-		'border-border flex w-full flex-col justify-center border-b p-4 px-2 text-left',
-		filter ? 'h-32 gap-1' : 'h-22 gap-0.5'
+		'border-border flex w-full flex-col justify-center rounded border-b text-left',
+		filter ? 'h-32 gap-1' : 'h-22'
 	]}
 >
 	<div class="flex h-max items-center gap-2">
 		<div class="font-medium">
 			{planDep || 'N/A'}
 		</div>
-		<div class="text-[10px]">
+		<div class="text-[11px]">
 			{#if isCancelled}
 				<div class="flex items-center gap-1 text-red-600"><X size={14} /> Cancelled</div>
 			{:else if rtDep == planDep}
@@ -85,6 +91,7 @@
 		<div class="flex items-center justify-center">
 			<div class="min-w-18 text-right">
 				<span class="text-muted-foreground text-xs">Platform </span>
+
 				{platform !== 'BUS' ? (platform ?? '-') : ''}
 			</div>
 			{#if platform === 'BUS'}
@@ -113,12 +120,13 @@
 			{/if}
 		</div>
 		<div
-			class="h-max rounded-md px-1.5 py-0.5 text-[10px] text-white"
+			class="mt-0.5 h-max rounded-md px-1.5 py-0.5 text-[10px] text-white"
 			style:background={operator.color}
 		>
 			{operator.name}
 		</div>
 	</div>
+
 	{#if filter}
 		<div class="flex items-center gap-0">
 			{#if filter.isCancelled}
@@ -135,7 +143,9 @@
 						{:else}
 							Expected arrival
 						{/if}
-						at {filter.name}
+						{#if filter.name !== destination[0].name}
+							at {filter.name}
+						{/if}
 					</div>
 					{#if filter.planArr === filter.rtArr}
 						<div class="text-good flex items-center gap-0.5">
@@ -151,6 +161,12 @@
 				</div>
 			{/if}
 			<div class="grow"></div>
+		</div>
+	{:else if isFilterCancelled}
+		<div class="flex items-center gap-0">
+			<div class="text-danger flex items-center gap-1 pt-0.5 text-xs">
+				<X size={14} /> Cancelled to {filterName}
+			</div>
 		</div>
 	{/if}
 </a>

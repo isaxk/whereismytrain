@@ -95,10 +95,16 @@
 				{/if}
 			</div>
 		</div>
-		{#each saved.value as item (item.id + item.filterCrs + item.focusCrs + item.subscriptionId)}
-			<div transition:fly={{ duration: 200, x: -100 }} animate:flip={{ duration: 200 }}>
-				<SavedTrain data={item} />
-			</div>
-		{/each}
+		<div class="flex flex-col">
+			{#each saved.value as item (item.id + item.filterCrs + item.focusCrs + item.subscriptionId)}
+				<div
+					class="odd:bg-muted px-4"
+					transition:fly={{ duration: 200, x: -100 }}
+					animate:flip={{ duration: 200 }}
+				>
+					<SavedTrain data={item} />
+				</div>
+			{/each}
+		</div>
 	</div>
 </div>
