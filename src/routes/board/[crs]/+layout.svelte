@@ -120,6 +120,14 @@
 	let expanded = $state(false);
 </script>
 
+<svelte:head>
+	{#if details}
+		<title>{details.name} to {details.filterName} - Departures</title>
+	{:else}
+		<title>Where is my train?</title>
+	{/if}
+</svelte:head>
+
 <!-- <pre>{JSON.stringify(await getBoard({ crs: data.crs }), null, 2)}</pre> -->
 
 <div class="flex w-full pb-10" in:fade|global={{ duration: 200 }}>

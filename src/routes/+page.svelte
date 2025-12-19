@@ -59,6 +59,10 @@
 	});
 </script>
 
+<svelte:head>
+	<title>Where is my train?</title>
+</svelte:head>
+
 <div class="flex w-full flex-col">
 	<div class="border-b-border bg-background sticky top-0 z-20 rounded-t-xl p-4 pt-6">
 		<div class="text-3xl font-bold">Where is my train?</div>

@@ -96,6 +96,16 @@
 	</button>
 {/snippet}
 
+<svelte:head>
+	{#if serviceData}
+		<title>
+			{serviceData.title}</title
+		>
+	{:else}
+		<title>Where is my train?</title>
+	{/if}
+</svelte:head>
+
 {#if serviceData}
 	{@const { operator, title, callingPoints, isBus, destination } = serviceData as TrainService}
 

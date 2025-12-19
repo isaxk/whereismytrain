@@ -330,7 +330,7 @@ export const GET = async ({ params }) => {
 		console.log('filterIndex', filterIndex);
 	}
 
-	const title = `to ${destination.map((l) => l.name).join(', ')}`;
+	const title = `${dayjs(callingPoints[focusIndex].std).format('HH:mm')} to ${destination.map((l) => l.name).join(', ')}`;
 
 	let formationLengthOnly: boolean = data.locations[focusIndex]?.length ? true : false;
 
