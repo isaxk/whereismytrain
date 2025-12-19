@@ -24,7 +24,7 @@ export async function subscribeToTrain(
 	destination: string
 ) {
 	if (!token) {
-		token = await fnTimeout(initializeNotifications, 2000);
+		token = await initializeNotifications();
 	}
 	console.log('Token:', token);
 
@@ -115,9 +115,16 @@ export async function initializeNotifications() {
 		// Try getting token without any options first
 		try {
 			console.log('8. Failed without VAPID, trying with VAPID key...');
-			token = await getToken(messaging, {
-				vapidKey: env.PUBLIC_VAPID_KEY // Replace with your actual VAPID key
-			});
+			token = await fnTimeout(
+				() =>
+					getToken(messaging!, {
+						vapidKey: env.PUBLIC_VAPID_KEY // Replace with your actual VAPID key
+					}),
+				2000
+			);
+			if (!token) {
+				throw new Error('Failed to get token');
+			}
 
 			console.log('9. Token with VAPID:', token);
 			setupForegroundMessageHandler();
