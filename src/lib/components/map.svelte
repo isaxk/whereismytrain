@@ -139,7 +139,7 @@
 						setBounds(bbox, padding);
 					}
 				}
-			} else if (map) {
+			} else if (map && !page.data.crs && !page.data.id) {
 				setBounds([-8.2, 49.8, 1.9, 59.2], {
 					top: Math.max(20, safeAreaTop),
 					bottom: paneHeight.current,
