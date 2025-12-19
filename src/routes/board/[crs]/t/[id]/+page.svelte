@@ -24,6 +24,7 @@
 	import ThirdPartyFormation from '$lib/components/third-party-formation.svelte';
 	import SavedToggle from '$lib/components/saved-toggle.svelte';
 	import AlertCard from '$lib/components/alert-card.svelte';
+	import Button from '$lib/components/ui/button/button.svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -118,7 +119,9 @@
 			<div class="bg-background/40 h-[5px] w-10 rounded-sm"></div>
 		</div>
 		<div class="w-10">
-			<a href={data.backTo ?? `../${page.url.search}`} class="p-4 text-white"><ArrowLeft /></a>
+			<Button size="icon" variant="outline" href={data.backTo ?? `../${page.url.search}`}
+				><ArrowLeft /></Button
+			>
 		</div>
 		<div class="min-w-0 grow text-center">
 			<div class="text-xs">

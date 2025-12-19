@@ -7,6 +7,7 @@
 	import { Spinner } from './ui/spinner/index';
 	import dayjs from 'dayjs';
 	import { dayjsFromHHmm } from '$lib/utils';
+	import Button from './ui/button/button.svelte';
 
 	let {
 		service,
@@ -77,19 +78,19 @@
 </script>
 
 {#if saved.value.some((s) => s.id === rid)}
-	<button onclick={() => remove()} class="relative">
+	<Button size="icon" variant="outline" onclick={() => remove()} class="relative">
 		{#if saved.value.find((s) => s.id === rid)?.subscriptionId}
 			<BellRing fill="currentColor" />
 		{:else}
 			<BookmarkIcon fill="currentColor" />
 			<div
-				class="absolute -right-1 -bottom-1 rounded-full p-0.5"
+				class="absolute right-0 bottom-0 scale-60 rounded-full p-0.5"
 				style:background={service.operator.color}
 			>
-				<BellOff size={12} fill="currentColor" />
+				<BellOff size={5} fill="currentColor" />
 			</div>
 		{/if}
-	</button>
+	</Button>
 	{#if failedToSubscribe}
 		<div
 			class="bg-background text-foreground border-border absolute top-14 right-4 z-[20] flex items-center gap-1 rounded border px-1.5 py-0.5 text-xs drop-shadow"
@@ -99,22 +100,29 @@
 		</div>
 	{/if}
 {:else if filter || (afterCallingPoints.length === 1 && firstAfterCallingPointCrs)}
-	<button class="" onclick={() => save(filter ?? firstAfterCallingPointCrs!)}>
+	<Button
+		size="icon"
+		variant="outline"
+		class=""
+		onclick={() => save(filter ?? firstAfterCallingPointCrs!)}
+	>
 		{#if loading}
 			<Spinner class="size-6" />
 		{:else}
 			<Bell />
 		{/if}
-	</button>
+	</Button>
 {:else}
 	<DropdownMenu.Root>
-		<DropdownMenu.Trigger
-			>{#if loading}
-				<Spinner size="size-6" />
-			{:else}
-				<Bell />
-			{/if}</DropdownMenu.Trigger
-		>
+		<DropdownMenu.Trigger>
+			<Button size="icon" variant="outline">
+				{#if loading}
+					<Spinner size="size-6" />
+				{:else}
+					<Bell />
+				{/if}
+			</Button>
+		</DropdownMenu.Trigger>
 		<DropdownMenu.Content align="end">
 			<DropdownMenu.Group>
 				<DropdownMenu.Label>Subscribe until when?</DropdownMenu.Label>
