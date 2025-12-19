@@ -52,7 +52,7 @@
 					<div out:send|global={{ key: 'destination' }} in:receive|global={{ key: 'destination' }}>
 						<Button variant="outline" {onclick}>
 							<Plus size={14} />
-							Destination
+							To
 						</Button>
 					</div>
 				{/snippet}
