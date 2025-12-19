@@ -8,7 +8,11 @@
 		GeoJSON,
 		type LngLatBoundsLike,
 		type LngLatLike,
-		LineLayer
+		LineLayer,
+		NavigationControl,
+		GeolocateControl,
+		FullscreenControl,
+		ScaleControl
 	} from 'svelte-maplibre';
 	import { LngLatBounds } from 'maplibre-gl';
 	import MapLocationGroup from './map-location-group.svelte';
@@ -272,7 +276,6 @@
 	onzoom={(e) => {
 		updateBounds();
 	}}
-	standardControls
 	onload={(e) => {
 		map = e;
 		const bbox: LngLatBoundsLike = [-8.2, 49.8, 1.9, 59.2];
@@ -281,6 +284,10 @@
 		}
 	}}
 >
+	{#if lg.current}
+		<NavigationControl position="top-left" />
+	{/if}
+	<GeolocateControl position="top-left" fitBoundsOptions={{ maxZoom: 12 }} />
 	{#if !mapData.service}
 		{#each saved.value as item, i (item.id)}
 			{#if !page.data.id || page.data.id === item.id}
