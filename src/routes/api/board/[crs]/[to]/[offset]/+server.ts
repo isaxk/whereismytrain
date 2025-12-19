@@ -95,7 +95,7 @@ export const GET: RequestHandler = async ({ params }) => {
 			.add(parseInt(offset || '0'), 'minute')
 			.format('YYYYMMDDTHHmmss');
 		const urlObj = new URL(
-			`https://api1.raildata.org.uk/1010-live-departure-board---staff-version1_0/LDBSVWS/api/20220120/GetDepartureBoardByCRS/${crs}/${time}`
+			`https://api1.raildata.org.uk/1010-live-departure-board---staff-version1_0/LDBSVWS/api/20220120/GetDepartureBoardByCRS/${crs}/${time}?numRows=20`
 		);
 		if (to && to != 'null') urlObj.searchParams.append('filterCRS', to);
 		url = urlObj.toString();

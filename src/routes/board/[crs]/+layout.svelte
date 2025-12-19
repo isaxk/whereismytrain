@@ -35,12 +35,16 @@
 	import BoardHeader from '$lib/components/board-header.svelte';
 	import Skeleton from '$lib/components/skeleton.svelte';
 	import BoardItemComponent from '$lib/components/board-item.svelte';
+	import { localStore } from '$lib/state/saved.svelte.js';
+	import Button from '$lib/components/ui/button/button.svelte';
 
 	let { data, children } = $props();
 
 	let details: BoardDetails | null = $state(null);
 	let services: BoardItem[] | null = $state(null);
 	let error: string | null = $state(null);
+
+	const view = localStore<'expanded' | 'collapsed'>('board-view-style', 'expanded');
 
 	$effect(() => {
 		const station = StationsJSON.find((s) => s.crsCode === data.crs);
@@ -118,7 +122,7 @@
 
 <!-- <pre>{JSON.stringify(await getBoard({ crs: data.crs }), null, 2)}</pre> -->
 
-<div class="flex w-full" in:fade|global={{ duration: 200 }}>
+<div class="flex w-full pb-10" in:fade|global={{ duration: 200 }}>
 	{#if !page.data.service}
 		<div class={['min-w-full']}>
 			{#if !services}
@@ -174,24 +178,24 @@
 						{/each}
 					</div>
 				{/if}
-				<Tabs.Root class="gap-0" value="expanded">
-					<div class="border-border flex items-center gap-4 border-b px-5 py-2">
+				<Tabs.Root class="gap-0" bind:value={view.value}>
+					<div class="border-border flex items-center gap-2 border-b px-4 py-2">
 						{#if page.data.offset !== -119}
 							{#await earlierUrl}
 								loading...
 							{:then earlierUrl}
-								<a href={earlierUrl} class="text-foreground/60 flex h-full items-center gap-1">
+								<Button href={earlierUrl} variant="secondary">
 									<ArrowUp size={18} />
 									Earlier trains
-								</a>
+								</Button>
 							{/await}
 						{/if}
 						<div class="grow"></div>
 						{#if page.data.offset != 0}
-							<a href={offsetUrl(0)} class="text-foreground/60 flex h-full items-center gap-1">
+							<Button href={offsetUrl(0)} variant="secondary">
 								<Clock size={18} />
 								Now
-							</a>
+							</Button>
 						{/if}
 						<Tabs.List>
 							<Tabs.Trigger value="expanded"><Rows2 /></Tabs.Trigger>
@@ -272,14 +276,14 @@
 							</a>
 						{/each}
 					</Tabs.Content>
-					<div class="px-3 pt-1">
+					<div class="border-border border-t px-3 py-2">
 						{#await laterUrl}
 							loading...
 						{:then laterUrl}
-							<a href={laterUrl} class="text-foreground/60 flex items-center gap-1 py-2">
+							<Button href={laterUrl} variant="secondary">
 								<ArrowDown size={18} />
 								Later trains
-							</a>
+							</Button>
 						{/await}
 					</div>
 				</Tabs.Root>

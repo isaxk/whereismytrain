@@ -4,6 +4,7 @@
 	import { ArrowLeft, ChevronRight, Plus } from 'lucide-svelte';
 	import Search from './search.svelte';
 	import Skeleton from './skeleton.svelte';
+	import Button from './ui/button/button.svelte';
 
 	let {
 		from,
@@ -49,15 +50,15 @@
 			{:else}
 				<Search key="destination" onSelect={(crs) => crs && crs !== from && goto('?to=' + crs)}>
 					{#snippet trigger({ send, receive, selected, onclick })}
-						<button
+						<div
 							out:send|global={{ key: 'destination' }}
 							in:receive|global={{ key: 'destination' }}
-							{onclick}
-							class="bg-foreground-muted flex w-max items-center gap-1 rounded-sm p-0.5 px-1.5 text-xs"
 						>
-							<Plus size={14} />
-							Destination
-						</button>
+							<Button variant="outline" size="sm" {onclick}>
+								<Plus size={14} />
+								Destination
+							</Button>
+						</div>
 					{/snippet}
 				</Search>
 			{/if}

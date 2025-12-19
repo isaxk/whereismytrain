@@ -116,7 +116,7 @@
 		<div
 			style:background={paneHeaderColour ?? ''}
 			bind:this={paneElm}
-			class={['bg-background w-full rounded-t-2xl']}
+			class={['bg-background w-full rounded-t-2xl ']}
 		>
 			{@render children()}
 		</div>
