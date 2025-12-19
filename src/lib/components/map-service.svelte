@@ -28,7 +28,7 @@
 				{rid}
 				{crs}
 				{filter}
-				href="/board/{crs}/t/{rid}?{filter ? `to=${filter}&` : ''}returnToHome=1"
+				href="/board/{crs}/t/{rid}?{filter ? `to=${filter}&` : ''}backTo=/"
 				isAtStation={false}
 				showDestination={mapData.locations.reduce(
 					(acc, curr) => acc + (curr.trainPosition ? 1 : 0),

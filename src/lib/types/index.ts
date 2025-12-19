@@ -83,10 +83,9 @@ export type CallingPointOrder =
 	| 'origin'
 	| 'previous'
 	| 'focus'
-	| 'filter'
 	| 'subsequent'
+	| 'filter'
 	| 'further'
-	| 'destination'
 	| 'post-destination';
 
 export type CallingPoint = {
@@ -105,6 +104,7 @@ export type CallingPoint = {
 	order: CallingPointOrder;
 	departed: boolean;
 	arrived: boolean;
+	isDestination: boolean;
 };
 
 export type Carriage = {
@@ -148,6 +148,8 @@ export type MapDataLocationGroup = {
 	lineLocations: ServiceLocationWithCoords[];
 	trainPosition: [number, number] | null;
 	isFormedFromTrain: boolean;
+	formedFromId: string | null;
+	formedFromOrigin: string | null;
 	trainBearing: number | null;
 	destination: ServiceLocationWithCoords;
 };

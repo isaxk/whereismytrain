@@ -97,9 +97,7 @@
 			<div class="bg-background/40 h-[5px] w-10 rounded-sm"></div>
 		</div>
 		<div class="w-10">
-			<a href={data.returnToHome ? '/' : `../${page.url.search}`} class="p-4 text-white"
-				><ArrowLeft /></a
-			>
+			<a href={data.backTo ?? `../${page.url.search}`} class="p-4 text-white"><ArrowLeft /></a>
 		</div>
 		<div class="min-w-0 grow text-center">
 			<div class="text-xs">

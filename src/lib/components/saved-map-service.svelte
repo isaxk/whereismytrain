@@ -20,7 +20,7 @@
 			serviceData = data;
 			const response = await fetch(`/api/mapdata`, {
 				method: 'POST',
-				body: JSON.stringify({ locations: data.locations }),
+				body: JSON.stringify({ locations: data.locations, formedFrom: data.formedFrom }),
 				headers: {
 					'Content-Type': 'application/json'
 				}
@@ -37,7 +37,7 @@
 			console.log('map-service', rid, crs, filter);
 			const response = await fetch(`/api/mapdata`, {
 				method: 'POST',
-				body: JSON.stringify({ locations: s.locations }),
+				body: JSON.stringify({ locations: s.locations, formedFrom: s.formedFrom }),
 				headers: {
 					'Content-Type': 'application/json'
 				}

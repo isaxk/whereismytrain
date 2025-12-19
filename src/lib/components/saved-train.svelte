@@ -71,7 +71,7 @@
 >
 	{#if focus}
 		<BoardItem
-			href={`/board/${data.focusCrs}/t/${data.id}?to=${data.filterCrs}&returnToHome=1`}
+			href={`/board/${data.focusCrs}/t/${data.id}?to=${data.filterCrs}&backTo=/`}
 			id={data.id}
 			planDep={focus?.times.plan.dep ?? 'N/A'}
 			rtDep={focus?.times.rt.dep ?? null}

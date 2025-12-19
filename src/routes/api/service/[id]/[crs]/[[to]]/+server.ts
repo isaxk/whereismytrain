@@ -103,14 +103,18 @@ function parseCallingPoint(
 		prev && prev.indexInCPs > current.indexInCPs ? prev : current
 	);
 
+	let isDestination = false;
+
+	if (dest.some((d) => d.indexInCPs === index)) {
+		isDestination = true;
+	}
+
 	if (index === focusIndex) {
 		order = 'focus';
 	} else if (index === 0) {
 		order = 'origin';
 	} else if (index === filterIndex) {
 		order = 'filter';
-	} else if (dest.some((d) => d.indexInCPs === index)) {
-		order = 'destination';
 	} else if (index < focusIndex) {
 		order = 'previous';
 	} else if (index > max.indexInCPs) {
@@ -140,7 +144,8 @@ function parseCallingPoint(
 		startDivide: item.startDivide ?? false,
 		endDivide: item.endDivide ?? false,
 		platform: item.platform ?? null,
-		order
+		order,
+		isDestination
 	};
 }
 
@@ -180,7 +185,7 @@ export const GET = async ({ params }) => {
 		const nextAssoc = hasNextAssoc.associations.find(
 			(l: any) => l.category === 4 || l.category === 'next'
 		);
-		formedFrom = nextAssoc?.rid;
+		formedFrom = `${nextAssoc?.rid}d${nextAssoc.destination?.[0]?.crs || rawCallingPoints[0].crs}`;
 	}
 
 	// Division logic
@@ -298,7 +303,9 @@ export const GET = async ({ params }) => {
 	let focusIndex = callingPoints.findLastIndex(
 		(l, i) => l.crs === crs && i < destination[0].indexInCPs
 	);
-	let filterIndex = to ? callingPoints.findIndex((l, i) => l.crs === to && i > focusIndex) : null;
+	let filterIndex = to
+		? callingPoints.findIndex((l, i) => l.crs === to && i > focusIndex)
+		: callingPoints.findIndex((l, i) => destCrsList.includes(l.crs));
 
 	// console.log('focusIndex', focusIndex);
 	// console.log('filterIndex', filterIndex);

@@ -9,6 +9,7 @@
 		ArrowUpRight
 	} from 'lucide-svelte';
 	import { slide } from 'svelte/transition';
+	import { isDirty } from 'zod/v3';
 
 	let {
 		cp,
@@ -112,7 +113,7 @@
 			<div style:background={operator.color} class="w-1.5 grow bg-black"></div>
 			<div style:background={operator.color} class="h-1.5 w-4"></div>
 			<div class="grow"></div>
-		{:else if cp.order === 'destination'}
+		{:else if cp.isDestination}
 			<div style:background={operator.color} class="w-1.5 grow bg-black"></div>
 			<div style:background={operator.color} class="h-1.5 w-4"></div>
 			<div style:background={operator.color} class="w-1.5 grow bg-black opacity-50"></div>
@@ -130,7 +131,7 @@
 			<div
 				class={[
 					'min-w-0 overflow-hidden text-nowrap text-ellipsis',
-					cp.order === 'focus' || cp.order === 'destination' || cp.order === 'filter'
+					cp.order === 'focus' || cp.isDestination || cp.order === 'filter'
 						? 'text-base/5 font-semibold'
 						: cp.order === 'further'
 							? 'text-muted-foreground/60 text-sm/4'
@@ -142,7 +143,7 @@
 			<div
 				class={[
 					'text-zinc-400',
-					cp.order === 'focus' || cp.order === 'destination' || cp.order === 'filter'
+					cp.order === 'focus' || cp.isDestination || cp.order === 'filter'
 						? 'text-[10px]/4'
 						: 'text-[10px]/3'
 				]}

@@ -10,7 +10,7 @@ import timezone from 'dayjs/plugin/timezone';
 import type { RequestHandler } from './$types';
 import { createClient } from '@supabase/supabase-js';
 import { json } from '@sveltejs/kit';
-import { calculateBearing } from '$lib/utils';
+import { calculateBearing, parseServiceId } from '$lib/utils';
 import { parse } from 'zod/v4-mini';
 
 const nullTime = '0001-01-01T00:00:00';
@@ -125,6 +125,10 @@ export const POST: RequestHandler = async ({ request }) => {
 
 	const tiplocs: string[] = [];
 
+	const { id: formedFromId, destCrsList: formedFromDest } = formedFrom
+		? parseServiceId(formedFrom)
+		: { id: null, destCrsList: [] };
+
 	locations.forEach((group) => {
 		group.forEach((location) => {
 			tiplocs.push(location.tiploc);
@@ -178,12 +182,18 @@ export const POST: RequestHandler = async ({ request }) => {
 			trainPosition: coords,
 			trainBearing: bearing,
 			isFormedFromTrain: false,
+			formedFromId: null,
+			formedFromOrigin: null,
 			destination: groupWithCoords[groupWithCoords.length - 1]
 		};
 	});
 
-	if (formedFrom && parsedLocations[0] && !parsedLocations.some((l) => l.trainPosition !== null)) {
-		const data = await fetchAssocService(formedFrom);
+	if (
+		formedFromId &&
+		parsedLocations[0] &&
+		!parsedLocations.some((l) => l.trainPosition !== null)
+	) {
+		const data = await fetchAssocService(formedFromId);
 
 		if (data && data.locations) {
 			const parsed: ServiceLocation[] = data.locations.map(parseLocation);
@@ -228,6 +238,8 @@ export const POST: RequestHandler = async ({ request }) => {
 				parsedLocations[0].trainBearing = bearing;
 				if (parsedLocations[0].lineLocations[0].crs !== lastDeparted.crs) {
 					parsedLocations[0].isFormedFromTrain = true;
+					parsedLocations[0].formedFromId = formedFrom;
+					parsedLocations[0].formedFromOrigin = data.locations[0].crs;
 				}
 			}
 		}

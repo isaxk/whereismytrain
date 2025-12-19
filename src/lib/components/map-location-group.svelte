@@ -205,14 +205,17 @@
 	/>
 </GeoJSON>
 
-{#if data.trainPosition && coordsTween?.current}
+{#if data.trainPosition && coordsTween?.current && page.data.id === rid}
 	{#if data.isFormedFromTrain}
 		<div class="top-safe-top fixed right-3 z-[20000] lg:top-3">
 			<div
 				class="bg-background flex max-w-42 items-center gap-2 rounded-md px-2.5 py-1.5 text-[10px]/3 drop-shadow sm:max-w-full sm:text-xs"
 			>
 				<CircleAlert size={14} />
-				Location is of the service your train is formed from.
+				Location is of
+				<a href="/board/{data.formedFromOrigin}/t/{data.formedFromId}?backTo={page.url.pathname}"
+					>the service your train is formed from.</a
+				>
 			</div>
 		</div>
 	{/if}
