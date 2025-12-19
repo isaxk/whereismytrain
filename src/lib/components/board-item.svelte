@@ -27,7 +27,7 @@
 		id: string;
 		href: string;
 		isCancelled: boolean;
-		isFilterCancelled: boolean;
+		isFilterCancelled?: boolean;
 		rtDep: string | null;
 		planDep: string;
 		delay?: number | null;
@@ -49,10 +49,7 @@
 
 <a
 	{href}
-	class={[
-		'border-border flex w-full flex-col justify-center rounded border-b text-left',
-		filter ? 'h-32 gap-1' : 'h-22'
-	]}
+	class={['flex w-full flex-col justify-center rounded  text-left', filter ? 'h-30 gap-1' : 'h-22']}
 >
 	<div class="flex h-max items-center gap-2">
 		<div class="font-medium">
@@ -60,7 +57,7 @@
 		</div>
 		<div class="text-[11px]">
 			{#if isCancelled}
-				<div class="flex items-center gap-1 text-red-600"><X size={14} /> Cancelled</div>
+				<div class="text-danger flex items-center gap-1"><X size={14} /> Cancelled</div>
 			{:else if rtDep == planDep}
 				<div class="text-good flex items-center gap-1">
 					<Check size={14} />
@@ -71,7 +68,7 @@
 					{/if}
 				</div>
 			{:else if rtDep}
-				<div class="flex items-center gap-1 text-yellow-600">
+				<div class="text-warning flex items-center gap-1">
 					<ClockAlert size={14} />
 					{#if departed}
 						Departed
@@ -81,7 +78,7 @@
 					{rtDep}
 				</div>
 			{:else}
-				<div class="flex items-center gap-1 text-yellow-600">
+				<div class="text-warning flex items-center gap-1">
 					<ClockAlert size={14} />
 					Delayed
 				</div>
@@ -89,14 +86,15 @@
 		</div>
 		<div class="grow"></div>
 		<div class="flex items-center justify-center">
-			<div class="min-w-18 text-right">
-				<span class="text-muted-foreground text-xs">Platform </span>
-
-				{platform !== 'BUS' ? (platform ?? '-') : ''}
-			</div>
 			{#if platform === 'BUS'}
-				<div class="flex items-center gap-1 text-xs text-yellow-600">
-					<Bus size={16} /> Rail Replacement Bus
+				<div class="text-warning flex items-center gap-1 text-xs">
+					<Bus size={16} /> Bus service
+				</div>
+			{:else}
+				<div class="min-w-18 text-right">
+					<span class="text-muted-foreground text-xs">Platform </span>
+
+					{platform !== 'BUS' ? (platform ?? '-') : ''}
 				</div>
 			{/if}
 		</div>
@@ -162,7 +160,7 @@
 			{/if}
 			<div class="grow"></div>
 		</div>
-	{:else if isFilterCancelled}
+	{:else if isFilterCancelled && !isCancelled}
 		<div class="flex items-center gap-0">
 			<div class="text-danger flex items-center gap-1 pt-0.5 text-xs">
 				<X size={14} /> Cancelled to {filterName}

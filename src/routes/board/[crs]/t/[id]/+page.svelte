@@ -1,7 +1,17 @@
 <script lang="ts">
 	import CallingPointItem from '$lib/components/calling-point-item.svelte';
 	import { headerColor, mapData, paneHeight } from '$lib/state/map.svelte.js';
-	import { ArrowLeft, Bell, BellRing, Bookmark, ChevronDown, ChevronLeft } from 'lucide-svelte';
+	import {
+		ArrowLeft,
+		Bell,
+		BellRing,
+		Bookmark,
+		Bus,
+		ChevronDown,
+		ChevronLeft,
+		GitBranchIcon,
+		Split
+	} from 'lucide-svelte';
 	import type { PageData } from './$types';
 	import { invalidate, invalidateAll } from '$app/navigation';
 	import type { Operator, TrainService } from '$lib/types';
@@ -13,6 +23,7 @@
 	import Formation from '$lib/components/formation.svelte';
 	import ThirdPartyFormation from '$lib/components/third-party-formation.svelte';
 	import SavedToggle from '$lib/components/saved-toggle.svelte';
+	import AlertCard from '$lib/components/alert-card.svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -86,7 +97,7 @@
 {/snippet}
 
 {#if serviceData}
-	{@const { operator, title, callingPoints } = serviceData as TrainService}
+	{@const { operator, title, callingPoints, isBus, destination } = serviceData as TrainService}
 
 	<div
 		in:fade|global={{ duration: 200 }}
@@ -103,7 +114,10 @@
 			<div class="text-xs">
 				{operator.name}
 			</div>
-			<div class="w-full overflow-hidden text-sm font-medium text-nowrap text-ellipsis">
+			<div
+				class="flex w-full items-center justify-center gap-1 overflow-hidden text-sm font-medium text-nowrap text-ellipsis"
+			>
+				<!-- {#if isBus}<Bus size={16} />{/if} -->
 				{title}
 			</div>
 		</div>
@@ -118,13 +132,29 @@
 		</div>
 	</div>
 	<div in:fade|global={{ duration: 200 }} class="flex flex-col gap-4 p-4">
-		{#if serviceData.reasonCode}
-			{@const focus = callingPoints.find((l) => l.crs === data.crs)}
-			<Disruption type={focus?.isCancelled ? 'cancel' : 'delay'} code={serviceData.reasonCode} />
+		{#if isBus || destination.length > 1 || serviceData.reasonCode}
+			<div class="flex flex-col gap-2">
+				{#if isBus}
+					<AlertCard Icon={Bus} status="info">This is a bus service.</AlertCard>
+				{/if}
+				{#if destination.length > 1}
+					<AlertCard Icon={Split} status="info"
+						>This service divides. Check you are in the correct carriage.</AlertCard
+					>
+				{/if}
+				{#if serviceData.reasonCode}
+					{@const focus = callingPoints.find((l) => l.crs === data.crs)}
+					<Disruption
+						type={focus?.isCancelled ? 'cancel' : 'delay'}
+						code={serviceData.reasonCode}
+					/>
+				{/if}
+			</div>
 		{/if}
+
 		{#if serviceData.formation && !serviceData.formationLengthOnly}
 			<Formation formation={serviceData.formation} />
-		{:else}
+		{:else if !isBus}
 			<ThirdPartyFormation
 				placeholder={serviceData.formation ?? null}
 				op={operator.id}

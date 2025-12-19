@@ -2,8 +2,15 @@
 	import { CircleAlert, Info } from 'lucide-svelte';
 	import type { Snippet } from 'svelte';
 
-	let { status, children }: { status: 'info' | 'minor' | 'major' | 'severe'; children?: Snippet } =
-		$props();
+	let {
+		status,
+		children,
+		Icon = CircleAlert
+	}: {
+		status: 'info' | 'minor' | 'major' | 'severe';
+		children?: Snippet;
+		Icon?: typeof CircleAlert;
+	} = $props();
 </script>
 
 <div
@@ -19,7 +26,7 @@
 	]}
 >
 	<div>
-		<CircleAlert size={14} />
+		<Icon size={14} />
 	</div>
 	<div class="grow text-xs text-current">
 		{@render children?.()}

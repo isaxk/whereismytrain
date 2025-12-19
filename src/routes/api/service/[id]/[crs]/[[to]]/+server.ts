@@ -170,6 +170,7 @@ export const GET = async ({ params }) => {
 		`https://huxley2.azurewebsites.net/service/${id}?access_token=${ACCESS_TOKEN}`
 	);
 	const data = await response.json();
+	console.log(data);
 	const locations: ServiceLocation[] = [data.locations.map(parseLocation)];
 	const rawCallingPoints = data.locations.filter((l: any) => !l.isPass && l.crs);
 
@@ -386,6 +387,7 @@ export const GET = async ({ params }) => {
 			)
 		),
 		locations,
+		isBus: data.serviceType === 'bus' || data.serviceType === 1,
 		operator: {
 			id: data.operatorCode,
 			name: operatorList[data.operatorCode].name ?? data.operator ?? 'Unknown',

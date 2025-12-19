@@ -87,12 +87,9 @@
 			if (d.services.length < 2) return offsetUrl(data.offset + 20);
 			const first = d.services[0];
 			const last = d.services[d.services.length - 1];
-			if (!last.times.plan.dep || !first.times.plan.dep) return offsetUrl(data.offset + 20);
-			const diff = timeToDayjs(last.times.plan.dep).diff(
-				timeToDayjs(first.times.plan.dep),
-				'minute'
-			);
-			// console.log(diff);
+			if (!last.rawTime || !first.rawTime) return offsetUrl(data.offset + 20);
+			const diff = dayjs(last.rawTime).diff(dayjs(first.rawTime), 'minute');
+			console.log(diff);
 			return offsetUrl(data.offset + diff);
 		});
 	});
@@ -102,11 +99,8 @@
 			if (d.services.length < 2) return offsetUrl(data.offset - 20);
 			const first = d.services[0];
 			const last = d.services[d.services.length - 1];
-			if (!last.times.plan.dep || !first.times.plan.dep) return offsetUrl(data.offset - 20);
-			const diff = timeToDayjs(last.times.plan.dep).diff(
-				timeToDayjs(first.times.plan.dep),
-				'minute'
-			);
+			if (!last.rawTime || !first.rawTime) return offsetUrl(data.offset - 20);
+			const diff = dayjs(last.rawTime).diff(dayjs(first.rawTime), 'minute');
 			// console.log(diff);
 			return offsetUrl(data.offset - diff);
 		});
@@ -209,7 +203,7 @@
 					{/if}
 					<Tabs.Content value="expanded" class="flex flex-col">
 						{#each services as service, index (service.rid)}
-							<div class="odd:bg-muted/30 px-4">
+							<div class="odd:bg-muted/40 border-border border-b px-4">
 								<BoardItemComponent
 									href={serviceUrl(service.rid)}
 									id={service.rid}
@@ -229,7 +223,7 @@
 						{/each}
 					</Tabs.Content>
 					<Tabs.Content value="collapsed" class="flex flex-col py-2">
-						<div class="flex items-center gap-2 px-4 py-1 text-xs">
+						<div class="text-muted-foreground flex items-center gap-2 px-4 py-1 text-xs">
 							<div class="w-10">TOC</div>
 							<div class="w-10">Time</div>
 							<div class="grow">Destination</div>
@@ -237,7 +231,10 @@
 							<div class="w-5 text-right">Plat</div>
 						</div>
 						{#each services as service (service.rid)}
-							<div class="odd:bg-accent flex items-center gap-2 rounded px-4 py-1">
+							<a
+								href="/board/{data.crs}/t/{service.rid}?{page.url.search}"
+								class="even:bg-muted/40 border-border flex items-center gap-2 rounded border-t px-4 py-1"
+							>
 								<div
 									style:background={service.operator.color}
 									class="min-w-10 rounded text-center text-white"
@@ -255,16 +252,24 @@
 									{/if}
 								</div>
 								{#if service.isCancelled}
-									<div class="text-nowrap text-red-600">Cancelled</div>
+									<div class="text-danger text-nowrap">Cancelled</div>
 								{:else if service.times.plan.dep === service.times.rt.dep}
-									<div class="text-nowrap text-green-600">On time</div>
+									<div class="text-good text-nowrap">On time</div>
 								{:else}
-									<div class="text-nowrap text-yellow-600">
+									<div class="text-warning text-nowrap">
 										{service.times.rt.dep ?? 'Delayed'}
 									</div>
 								{/if}
-								<div class="min-w-5 text-right text-nowrap">{service.platform ?? '-'}</div>
-							</div>
+								{#if service.platform === 'BUS'}
+									<div class="text-warning -mr-1 flex min-w-5 justify-end text-right text-nowrap">
+										<Bus size={18} />
+									</div>
+								{:else}
+									<div class="min-w-5 text-right text-nowrap">
+										{service.platform ?? '-'}
+									</div>
+								{/if}
+							</a>
 						{/each}
 					</Tabs.Content>
 					<div class="px-3 pt-1">

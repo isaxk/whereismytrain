@@ -59,15 +59,17 @@
 	});
 </script>
 
-<div class="flex w-full flex-col gap-4">
-	<div class="border-b-border bg-background sticky top-0 z-20 rounded-t-xl border-b p-4 pt-6">
+<div class="flex w-full flex-col">
+	<div class="border-b-border bg-background sticky top-0 z-20 rounded-t-xl p-4 pt-6">
 		<div class="text-3xl font-bold">Where is my train?</div>
-		<div class="flex *:text-blue-400 hover:underline">
-			<a href="/about">About & data sources</a>
+		<div class="flex gap-2 *:text-blue-400 *:underline">
+			<a href="/about">About & Data Sources</a>
+			<a href="https://github.com/isaxk/whereismytrain">GitHub</a>
+			<a href="https://www.isaxk.com">isaxk.com</a>
 		</div>
 	</div>
 
-	<div class="border-b-border w-full border-b px-4 pb-4">
+	<div class="border-b-border bg-muted/40 w-full border-y p-4">
 		<div class="grid w-full max-w-full grid-cols-[1fr_32px_1fr] items-center gap-2 pb-4">
 			<Search class="" key="from" bind:selected={from}></Search>
 			<div class="flex justify-center">
@@ -85,26 +87,33 @@
 			<Button class="w-full">Go</Button>
 		</a>
 	</div>
-	<div class="px-4">
-		<div class="flex items-center gap-2">
+	<div class="">
+		<div class="flex items-center gap-2 px-4 py-4">
 			<BellRing size={20} />
 			<div class="grow text-2xl font-medium">Subscribed trains</div>
-			<div class="h-6">
-				{#if refreshing.current}
-					<Spinner />
-				{/if}
-			</div>
+			{#if refreshing.current}
+				<Spinner />
+			{/if}
 		</div>
 		<div class="flex flex-col">
-			{#each saved.value as item (item.id + item.filterCrs + item.focusCrs + item.subscriptionId)}
+			{#if saved.value.length === 0}
 				<div
-					class="odd:bg-muted px-4"
-					transition:fly={{ duration: 200, x: -100 }}
-					animate:flip={{ duration: 200 }}
+					class="text-muted-foreground border-border flex items-center border-t px-4 pt-2 text-sm"
 				>
-					<SavedTrain data={item} />
+					No subscribed trains. Tap the bell on a service page to subscribe to it and receive
+					notifications.
 				</div>
-			{/each}
+			{:else}
+				{#each saved.value as item (item.id + item.filterCrs + item.focusCrs + item.subscriptionId)}
+					<div
+						class="odd:bg-muted/40 border-border border-t px-4"
+						transition:fly={{ duration: 200, x: -100 }}
+						animate:flip={{ duration: 200 }}
+					>
+						<SavedTrain data={item} />
+					</div>
+				{/each}
+			{/if}
 		</div>
 	</div>
 </div>

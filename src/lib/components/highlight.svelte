@@ -5,7 +5,7 @@
 {#if Array.isArray(value)}
 	{#each value as { matches, text }, i (i)}
 		{#if matches}
-			<span class="text-foreground bg-zinc-200/80 font-semibold">{text}</span>
+			<span class="text-foreground bg-border font-semibold">{text}</span>
 		{:else}
 			{text}
 		{/if}

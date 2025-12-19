@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { AlertCircle } from 'lucide-svelte';
+	import { AlertCircle, ClockAlertIcon, X, XIcon } from 'lucide-svelte';
 	import AlertCard from './alert-card.svelte';
 	import Skeleton from './skeleton.svelte';
 
@@ -23,7 +23,10 @@
 	/>
 {/await} -->
 
-<AlertCard status={type === 'cancel' ? 'major' : 'minor'}>
+<AlertCard
+	Icon={type === 'delay' ? ClockAlertIcon : XIcon}
+	status={type === 'cancel' ? 'major' : 'minor'}
+>
 	{#await data}
 		<Skeleton class="h-8 w-full bg-zinc-200/50" />
 	{:then data}

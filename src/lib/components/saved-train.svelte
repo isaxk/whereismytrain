@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { saved } from '$lib/state/saved.svelte';
 	import type { SavedTrain } from '$lib/types';
-	import { Bus, Check, ClockAlert, Trash, X } from 'lucide-svelte';
+	import { BellOff, Bus, Check, ClockAlert, Trash, X } from 'lucide-svelte';
 	import { onMount } from 'svelte';
 	import BoardItem from './board-item.svelte';
 	import { refreshing, servicesSub } from '$lib/state/services-subscriber.svelte';
@@ -95,7 +95,7 @@
 	{/if}
 	<button
 		onclick={remove}
-		class="absolute right-0 bottom-0 flex gap-1 pr-2 pb-6 text-xs text-red-500"
-		><Trash size={15} /> Delete</button
+		class="absolute right-0 bottom-0 flex gap-1 pr-2 pb-5 text-xs text-red-500"
+		><BellOff size={15} /> Remove</button
 	>
 </div>

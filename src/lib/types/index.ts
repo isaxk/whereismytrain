@@ -32,6 +32,7 @@ export type BoardItem = {
 	destination: DestinationOrigin[];
 	origin: DestinationOrigin[];
 	times: TimeObject;
+	rawTime: string;
 	departed: boolean;
 	isCancelled: boolean;
 	isFilterCancelled: boolean;
@@ -122,6 +123,7 @@ export type TrainService = {
 	rid: string;
 	uid: string;
 	sdd: string;
+	isBus: boolean;
 	formedFrom: string | null;
 	locations: ServiceLocation[];
 	callingPoints: CallingPoint[];

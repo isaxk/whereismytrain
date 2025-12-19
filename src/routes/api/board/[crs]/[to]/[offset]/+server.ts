@@ -63,6 +63,7 @@ function parseBoardItem(item: any): BoardItem {
 			via: o.via
 		})),
 		times,
+		rawTime: item.std,
 		departed: item.atd && item.atd !== nullTime,
 		delay,
 		platform: item.platform ?? null,
@@ -119,10 +120,10 @@ export const GET: RequestHandler = async ({ params }) => {
 		}
 
 		const data = await response.json();
-		console.log(data);
 
 		const services = (data.trainServices ?? [])
 			.concat(data.busServices ?? [])
+			.toSorted((a: any, b: any) => dayjs(a.std).diff(dayjs(b.std)))
 			.map((s: any) => parseBoardItem(s));
 
 		const nrccMessages: Notice[] = (data.nrccMessages ?? [])
