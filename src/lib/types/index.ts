@@ -148,6 +148,7 @@ export type SavedTrain = {
 	filterCrs: string;
 	id: string;
 	subscriptionId: string | null;
+	lastRefreshed: number;
 };
 
 export type PinnedBoard = {

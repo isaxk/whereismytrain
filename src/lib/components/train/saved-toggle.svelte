@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { saved } from '$lib/state/saved.svelte';
-	import type { TrainService } from '$lib/types';
+	import type { TrainService, SavedTrain as SavedTrainType } from '$lib/types';
 	import { Bell, BellOff, BellRing, BookmarkIcon, X } from 'lucide-svelte';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 	import { subscribeToTrain, unsubscribeToTrain } from '$lib/notifications';
@@ -28,6 +28,13 @@
 
 	async function save(filter: string) {
 		loading = true;
+		let newItem: SavedTrainType = {
+			id: rid,
+			focusCrs: crs,
+			filterCrs: filter,
+			service,
+			lastRefreshed: Date.now()
+		};
 		const subscriptionId = await subscribeToTrain(
 			rid,
 			focus,
@@ -39,16 +46,7 @@
 			failedToSubscribe = true;
 			console.log(failedToSubscribe);
 		}
-		saved.value = [
-			...saved.value,
-			{
-				id: rid,
-				focusCrs: crs,
-				filterCrs: filter,
-				service,
-				subscriptionId: subscriptionId
-			}
-		].toSorted((a, b) => {
+		saved.value = [...saved.value, { ...newItem, subscriptionId }].toSorted((a, b) => {
 			const aFocus = a.service.callingPoints.find((cp) => cp.order === 'focus');
 			const bFocus = b.service.callingPoints.find((cp) => cp.order === 'focus');
 			if (!aFocus || !bFocus) return 0;

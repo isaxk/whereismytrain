@@ -6,12 +6,21 @@
 	import BoardItem from '$lib/components/board/board-item.svelte';
 	import { refreshing, servicesSub } from '$lib/state/services-subscriber.svelte';
 	import { unsubscribeToTrain } from '$lib/notifications';
+	import { derived } from 'svelte/store';
+	import dayjs from 'dayjs';
 
 	let { data }: { data: SavedTrain } = $props();
 
 	let service = $derived(data.service);
-	let refreshed = $state(false);
-	let lastRefreshed: number | null = $state(null);
+	let lastRefreshed = $state(null);
+
+	const refreshed = $derived.by(() => {
+		console.log(Date.now() - data.lastRefreshed);
+		if (data.lastRefreshed && Date.now() - data.lastRefreshed > 20000) {
+			return false;
+		}
+		return true;
+	});
 
 	async function refetch() {
 		const res = await fetch(`/api/service/${data.id}/${data.focusCrs}`);
@@ -40,21 +49,26 @@
 	onMount(() => {
 		// refetch();
 		const unsubscribe = servicesSub.subscribe(data.id, data.focusCrs, data.filterCrs, (s) => {
-			refreshed = true;
-			lastRefreshed = Date.now();
 			if (s) {
 				service = s;
-				saved.value.find((s) => s.id === data.id)!.service = s;
+				const item = saved.value.findIndex((s) => s.id === data.id);
+				if (item !== -1) {
+					saved.value[item] = {
+						...saved.value[item],
+						service: s,
+						lastRefreshed: Date.now()
+					};
+				}
 			}
 		});
-		const interval = setInterval(() => {
-			if (lastRefreshed && Date.now() - lastRefreshed! > 20000) {
-				refreshed = false;
-			}
-		}, 200);
+		// const interval = setInterval(() => {
+		// 	if (lastRefreshed && Date.now() - lastRefreshed! > 20000) {
+		// 		refreshed = false;
+		// 	}
+		// }, 200);
 		return () => {
 			unsubscribe();
-			clearInterval(interval);
+			// clearInterval(interval);
 		};
 	});
 
@@ -65,7 +79,7 @@
 <div
 	class={[
 		'relative transition-all duration-300',
-		!refreshed && 'opacity-80',
+		!refreshed && 'opacity-40',
 		refreshing.current && !refreshed && 'animate-pulse'
 	]}
 >
