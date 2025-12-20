@@ -4,7 +4,7 @@ import { browser } from '$app/environment';
 import { env } from '$env/dynamic/public';
 import { parseServiceId } from '$lib/utils';
 import { toast } from 'svelte-sonner';
-import NotificationComponent from '$lib/components/notification.svelte';
+import NotificationComponent from '$lib/components/home/notification.svelte';
 
 let token: string | null = null;
 

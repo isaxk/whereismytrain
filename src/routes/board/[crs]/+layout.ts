@@ -6,11 +6,11 @@ export const load = async ({ params, fetch, url }) => {
 
 	const search = url.searchParams;
 	const to = search.get('to') ?? null;
-	const offset = search.get('offset') ?? '0';
+	const offset = parseInt(search.get('offset') ?? '0');
 
 	async function getBoard(): Promise<Board> {
 		try {
-			const response = await fetch(`/api/board/${crs}/${to ?? 'null'}/${offset}`);
+			const response = await fetch(`/api/board/${crs.toUpperCase()}/${to ?? 'null'}/${offset}`);
 			if (response.ok) {
 				const data = await response.json();
 				return data;
@@ -26,8 +26,8 @@ export const load = async ({ params, fetch, url }) => {
 
 	return {
 		crs: crs.toUpperCase(),
-		to: to?.toUpperCase(),
+		to: to?.toUpperCase() ?? null,
 		board: getBoard(),
-		offset: parseInt(offset)
+		offset
 	};
 };

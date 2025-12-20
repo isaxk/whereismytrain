@@ -1,54 +1,21 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import Search from '$lib/components/search.svelte';
+	import Search from '$lib/components/search/search.svelte';
 	import { mapData, paneHeight } from '$lib/state/map.svelte';
 	import { BellRing, ChevronRight, Pin, X } from 'lucide-svelte';
 	import AllStations from '$lib/data/stations.json';
 	import { pinned, saved } from '$lib/state/saved.svelte';
-	import SavedTrain from '$lib/components/saved-train.svelte';
+	import SavedTrain from '$lib/components/home/saved-train.svelte';
 	import { onMount } from 'svelte';
 	import { refreshing, servicesSub } from '$lib/state/services-subscriber.svelte';
 	import Spinner from '$lib/components/ui/spinner/spinner.svelte';
 	import { fly } from 'svelte/transition';
 	import { flip } from 'svelte/animate';
 	import Button from '$lib/components/ui/button/button.svelte';
+	import PinnedBoardItem from '$lib/components/home/pinned-board-item.svelte';
 
 	let from = $state(null);
 	let to = $state(null);
-
-	// $effect(() => {
-	// 	if (from && to) {
-	// 		const origin = AllStations.find((s) => s.crs === from);
-	// 		const destination = AllStations.find((s) => s.crs === to);
-	// 		if(origin && destination)
-	// 		mapData.board = [[origin?.long, origin?.lat], [destination?.long, destination?.lat]];
-	// 	} else if (from) {
-	// 		const origin = AllStations.find((s) => s.crs === from);
-	// 		if(origin)
-	// 		mapData.board = [[origin?.long, origin?.lat]];
-	// 	}
-	// });
-
-	// async function refreshSavedService(id: string, focus: string, filter: string) {
-	// 	const response = await fetch(`/api/service/${id}/${focus}/${filter}`);
-	// 	if (response.ok) {
-	// 		const data = await response.json();
-	// 		if (data) {
-	// 			const index = saved.value.findIndex((s) => s.id === id);
-	// 			if (index !== -1) {
-	// 				saved.value[index].service = data;
-	// 			}
-	// 		} else {
-	// 			saved.value = saved.value.filter((s) => s.id !== id);
-	// 		}
-	// 	}
-	// }
-
-	// function refresh() {
-	// 	saved.value.forEach((item) => {
-	// 		refreshSavedService(item.id, item.focusCrs, item.filterCrs);
-	// 	});
-	// }
 
 	onMount(() => {
 		const clear = servicesSub.init();
@@ -86,7 +53,7 @@
 			onclick={() => {
 				paneHeight.break = 'middle';
 			}}
-			href={from && from !== to ? (to ? `/board/${from}?to=${to}` : `/board/${from}`) : '#'}
+			href={from && from !== to ? (to ? `/board/${from}?to=${to}&offset=0` : `/board/${from}?offset=0`) : '#'}
 		>
 			<Button class="w-full">Go</Button>
 		</a>
@@ -105,42 +72,13 @@
 				</div>
 			{:else}
 				{#each pinned.value as item (item.fromCrs + item.toCrs)}
-					<a
-						href={item.toCrs ? `/board/${item.fromCrs}?to=${item.toCrs}` : `/board/${item.fromCrs}`}
-						class="even:bg-muted/20 border-border flex w-full items-center gap-4 border-t px-4 py-2"
+					<div
+						class="odd:bg-muted/20 border-border border-t"
 						transition:fly={{ duration: 200, x: -100 }}
 						animate:flip={{ duration: 200 }}
 					>
-						<div class="w-full grow">
-							<div class="text-xl/5 font-medium">{item.fromCrs}</div>
-							<div class="text-xs">{item.fromName}</div>
-						</div>
-
-						<div>
-							<ChevronRight />
-						</div>
-
-						{#if item.toCrs}
-							<div class="w-full grow">
-								<div class="text-xl/5 font-medium">{item.toCrs}</div>
-								<div class="text-xs">{item.toName}</div>
-							</div>
-						{:else}
-							<div class="w-full grow">
-								<div class="text-muted-foreground text-xs">Anywhere</div>
-							</div>
-						{/if}
-						<Button
-							onclick={() =>
-								(pinned.value = pinned.value.filter(
-									(p) => !(p.fromCrs === item.fromCrs && p.toCrs === item.toCrs)
-								))}
-							size="icon"
-							variant="outline"
-						>
-							<X />
-						</Button>
-					</a>
+						<PinnedBoardItem {...item} />
+					</div>
 				{/each}
 			{/if}
 		</div>

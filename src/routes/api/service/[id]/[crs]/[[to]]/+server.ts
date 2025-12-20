@@ -104,9 +104,13 @@ function parseCallingPoint(
 	);
 
 	let isDestination = false;
+	let isPostDestination = false;
 
 	if (dest.some((d) => d.indexInCPs === index)) {
 		isDestination = true;
+	}
+	if (index > max.indexInCPs) {
+		isPostDestination = true;
 	}
 
 	if (index === focusIndex) {
@@ -145,7 +149,8 @@ function parseCallingPoint(
 		endDivide: item.endDivide ?? false,
 		platform: item.platform ?? null,
 		order,
-		isDestination
+		isDestination,
+		isPostDestination
 	};
 }
 
@@ -293,23 +298,39 @@ export const GET = async ({ params }) => {
 	// );
 
 	destination = destCrsList.map((item) => {
-		const cp = callingPoints.find((loc: any) => loc.crs === item);
+		const cp = callingPoints.find((loc: any, i) => loc.crs === item);
 		return {
 			crs: cp.crs,
 			name: cp.locationName,
-			indexInCPs: callingPoints.findLastIndex((l, i) => l.crs === item)
+			indexInCPs: callingPoints.findIndex((l, i) => l.crs === item)
 		};
 	});
 
 	let focusIndex = callingPoints.findLastIndex(
 		(l, i) => l.crs === crs && i < destination[0].indexInCPs
 	);
+
+	const allThatMatchFilter = callingPoints
+		.map((loc, i) => ({
+			...loc,
+			indexInCPs: i
+		}))
+		.filter((l, i) => l.crs === to)
+		.toSorted((a, b) => dayjs(a.sta).diff(dayjs(b.sta)));
+
+	console.log(
+		'allThatMatchFilter',
+		allThatMatchFilter.map((loc) => `${loc.indexInCPs} ${loc.std}`)
+	);
+
+	console.log('focusIndex', focusIndex);
+
 	let filterIndex = to
-		? callingPoints.findIndex((l, i) => l.crs === to && i > focusIndex)
+		? allThatMatchFilter.find((l) => l.indexInCPs > focusIndex)?.indexInCPs
 		: callingPoints.findIndex((l, i) => destCrsList.includes(l.crs));
 
-	// console.log('focusIndex', focusIndex);
-	// console.log('filterIndex', filterIndex);
+	console.log('focusIndex', focusIndex);
+	console.log('filterIndex', filterIndex);
 
 	if ((!filterIndex || filterIndex === -1) && to) {
 		console.log('Could not find filter, retrying');

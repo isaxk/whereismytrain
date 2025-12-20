@@ -83,6 +83,10 @@ function parseBoardItem(item: any): BoardItem {
 export const GET: RequestHandler = async ({ params }) => {
 	const { crs, to, offset } = params;
 
+	if (!crs) {
+		return new Response('CRS is required', { status: 400 });
+	}
+
 	let shouldUseRailData = false;
 	if (parseInt(offset || '0') > 119) {
 		shouldUseRailData = true;
@@ -140,7 +144,10 @@ export const GET: RequestHandler = async ({ params }) => {
 			services,
 			details: {
 				name: data.locationName,
+				crs: crs,
 				filterName: data.filterLocationName ?? null,
+				filterCrs: to && to != 'null' ? to : null,
+				offset: parseInt(offset ?? '0'),
 				notices: nrccMessages
 			}
 		};

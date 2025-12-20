@@ -3,7 +3,7 @@
 	import type { SavedTrain } from '$lib/types';
 	import { BellOff, Bus, Check, ClockAlert, Trash, X } from 'lucide-svelte';
 	import { onMount } from 'svelte';
-	import BoardItem from './board-item.svelte';
+	import BoardItem from '$lib/components/board/board-item.svelte';
 	import { refreshing, servicesSub } from '$lib/state/services-subscriber.svelte';
 	import { unsubscribeToTrain } from '$lib/notifications';
 

@@ -4,10 +4,10 @@
 	import { Bell, BellOff, BellRing, BookmarkIcon, X } from 'lucide-svelte';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 	import { subscribeToTrain, unsubscribeToTrain } from '$lib/notifications';
-	import { Spinner } from './ui/spinner/index';
+	import { Spinner } from '../ui/spinner/index';
 	import dayjs from 'dayjs';
 	import { dayjsFromHHmm } from '$lib/utils';
-	import Button from './ui/button/button.svelte';
+	import Button from '../ui/button/button.svelte';
 
 	let {
 		service,
@@ -78,7 +78,12 @@
 </script>
 
 {#if saved.value.some((s) => s.id === rid)}
-	<Button size="icon" variant="outline" onclick={() => remove()} class="relative">
+	<Button
+		size="icon"
+		class="relative bg-input/30 hover:bg-input/50"
+		variant="outline"
+		onclick={() => remove()}
+	>
 		{#if saved.value.find((s) => s.id === rid)?.subscriptionId}
 			<BellRing fill="currentColor" />
 		{:else}
@@ -93,7 +98,7 @@
 	</Button>
 	{#if failedToSubscribe}
 		<div
-			class="bg-background text-foreground border-border absolute top-14 right-4 z-[20] flex items-center gap-1 rounded border px-1.5 py-0.5 text-xs drop-shadow"
+			class="absolute top-14 right-4 z-[20] flex items-center gap-1 rounded border border-border bg-background px-1.5 py-0.5 text-xs text-foreground drop-shadow"
 		>
 			Failed to setup notifications
 			<button onclick={() => (failedToSubscribe = false)}><X size={14} /></button>
@@ -103,7 +108,7 @@
 	<Button
 		size="icon"
 		variant="outline"
-		class=""
+		class="bg-input/30 hover:bg-input/50"
 		onclick={() => save(filter ?? firstAfterCallingPointCrs!)}
 	>
 		{#if loading}
@@ -115,7 +120,7 @@
 {:else}
 	<DropdownMenu.Root>
 		<DropdownMenu.Trigger>
-			<Button size="icon" variant="outline">
+			<Button size="icon" class="bg-input/30 hover:bg-input/50" variant="outline">
 				{#if loading}
 					<Spinner size="size-6" />
 				{:else}

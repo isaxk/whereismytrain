@@ -1,5 +1,5 @@
 <script lang="ts">
-	import CallingPointItem from '$lib/components/calling-point-item.svelte';
+	import CallingPointItem from '$lib/components/train/calling-point-item.svelte';
 	import { headerColor, mapData, paneHeight } from '$lib/state/map.svelte.js';
 	import {
 		ArrowLeft,
@@ -17,14 +17,16 @@
 	import type { Operator, TrainService } from '$lib/types';
 	import { onDestroy, onMount } from 'svelte';
 	import { fade, slide } from 'svelte/transition';
-	import Skeleton from '$lib/components/skeleton.svelte';
+	import Skeleton from '$lib/components/ui/skeleton.svelte';
 	import { page } from '$app/state';
-	import Disruption from '$lib/components/disruption.svelte';
-	import Formation from '$lib/components/formation.svelte';
-	import ThirdPartyFormation from '$lib/components/third-party-formation.svelte';
-	import SavedToggle from '$lib/components/saved-toggle.svelte';
-	import AlertCard from '$lib/components/alert-card.svelte';
+	import Disruption from '$lib/components/train/disruption.svelte';
+	import Formation from '$lib/components/train/formation.svelte';
+	import ThirdPartyFormation from '$lib/components/train/third-party-formation.svelte';
+	import SavedToggle from '$lib/components/train/saved-toggle.svelte';
+	import AlertCard from '$lib/components/ui/alert-card.svelte';
 	import Button from '$lib/components/ui/button/button.svelte';
+	import Spinner from '$lib/components/ui/spinner/spinner.svelte';
+	import { refreshing } from '$lib/state/services-subscriber.svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -50,10 +52,10 @@
 	});
 
 	onMount(() => {
-		const interval = setInterval(() => {
-			invalidateAll();
-		}, 10000);
-		return () => clearInterval(interval);
+		// const interval = setInterval(() => {
+		// 	invalidateAll();
+		// }, 10000);
+		// return () => clearInterval(interval);
 	});
 
 	let serviceData: TrainService | null = $state(null);
@@ -112,29 +114,35 @@
 
 	<div
 		in:fade|global={{ duration: 200 }}
-		class="sticky dark top-0 z-20 flex h-18 w-full items-center p-4 pt-6 text-white"
+		class="dark sticky top-0 z-20 flex h-18 w-full items-center p-4 pt-6 text-white lg:pt-4"
 		style:background-color={operator.color}
 	>
-		<div class="absolute top-1.5 right-0 left-0 flex h-2 justify-center">
-			<div class="bg-background/40 h-[5px] w-10 rounded-sm"></div>
+		<div class="absolute top-1.5 right-0 left-0 flex h-2 justify-center lg:hidden">
+			<div class="h-[5px] w-10 rounded-sm bg-input"></div>
 		</div>
-		<div class="w-10">
-			<Button size="icon" variant="outline" href={data.backTo ?? `../${page.url.search}`}
-				><ArrowLeft /></Button
+		<div class="min-w-10 bg-transparent">
+			<Button
+				size="icon"
+				class="bg-input/30 hover:bg-input/50"
+				variant="outline"
+				href={data.backTo ?? `../${page.url.search}`}><ArrowLeft /></Button
 			>
 		</div>
 		<div class="min-w-0 grow text-center">
-			<div class="text-xs">
+			<div class="flex items-center justify-center gap-1 text-xs">
+				<div class="w-3">
+					{#if refreshing.current}
+						<Spinner class="size-3" />
+					{/if}
+				</div>
 				{operator.name}
+				<div class="w-3"></div>
 			</div>
-			<div
-				class="flex w-full items-center justify-center gap-1 overflow-hidden text-sm font-medium text-nowrap text-ellipsis"
-			>
-				<!-- {#if isBus}<Bus size={16} />{/if} -->
+			<div class="w-full gap-1 overflow-hidden text-sm font-medium text-nowrap text-ellipsis">
 				{title}
 			</div>
 		</div>
-		<div class="flex min-w-10 justify-end">
+		<div class="flex min-w-10 items-center justify-end">
 			<SavedToggle
 				service={serviceData}
 				crs={data.crs}
@@ -178,7 +186,7 @@
 			/>
 		{/if}
 		<div class="flex flex-col">
-			<div class="text-muted-foreground flex gap-4 text-xs">
+			<div class="flex gap-4 text-xs text-muted-foreground">
 				<div class="flex w-28 gap-2">
 					<div class="w-10">Arr.</div>
 					<div class="w-10">Dep.</div>
@@ -290,10 +298,10 @@
 {:else}
 	<div
 		in:fade|global={{ duration: 100, delay: 150 }}
-		class="border-border sticky top-0 flex h-18 items-center border-b p-4 pt-6"
+		class="sticky top-0 flex h-18 items-center border-b border-border p-4 pt-6"
 	>
 		<div class="absolute top-1.5 right-0 left-0 flex h-2 w-full items-center">
-			<div class="bg-background/40 h-[5px] w-10 rounded-sm"></div>
+			<div class="h-[5px] w-10 rounded-sm bg-background/40"></div>
 		</div>
 		<a href="../{page.url.search}" class="w-10"><ArrowLeft /></a>
 		<div class="flex h-[36px] grow flex-col items-center justify-center gap-1">

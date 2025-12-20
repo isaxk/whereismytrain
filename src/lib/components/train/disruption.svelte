@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { AlertCircle, ClockAlertIcon, X, XIcon } from 'lucide-svelte';
-	import AlertCard from './alert-card.svelte';
-	import Skeleton from './skeleton.svelte';
+	import AlertCard from '$lib/components/ui/alert-card.svelte';
+	import Skeleton from '../ui/skeleton.svelte';
 
 	let { code, type = 'delay' }: { code: string; type?: 'delay' | 'cancel' } = $props();
 

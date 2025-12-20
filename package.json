@@ -58,6 +58,7 @@
 		"geojson": "^0.5.0",
 		"lucide-svelte": "^0.554.0",
 		"maplibre-gl": "^5.14.0",
+		"mode-watcher": "^1.1.0",
 		"svelte-maplibre": "^1.2.5",
 		"svelte-sonner": "^1.0.7",
 		"ts-node": "^10.9.2",

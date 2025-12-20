@@ -28,10 +28,11 @@
 	import type { Feature, FeatureCollection } from 'geojson';
 	import { MediaQuery } from 'svelte/reactivity';
 	import { onMount, untrack } from 'svelte';
-	import { explicitEffect, throttle } from '$lib/utils/index.svelte';
+	import { throttle } from '$lib/utils';
 	import { cameraForBoundsCustom } from '$lib/utils';
 	import { saved } from '$lib/state/saved.svelte';
 	import { favourites } from '$lib/data/favourites';
+	import { explicitEffect } from '$lib/state/utils.svelte';
 
 	let serviceData: TrainService | null = $state(null);
 	let map: maplibregl.Map;

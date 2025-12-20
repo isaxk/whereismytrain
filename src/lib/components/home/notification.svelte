@@ -1,6 +1,6 @@
 <script lang="ts">
 	import dayjs from 'dayjs';
-	import BoardItem from './board-item.svelte';
+	import BoardItem from '$lib/components/board/board-item.svelte';
 	import Check from '@lucide/svelte/icons/check';
 	import { Bus, ClockAlert, X } from 'lucide-svelte';
 

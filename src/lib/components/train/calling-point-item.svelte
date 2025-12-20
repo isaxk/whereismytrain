@@ -28,18 +28,26 @@
 	} = $props();
 </script>
 
-<div class={['flex h-12 items-center gap-2', cp.order === 'post-destination' ? 'opacity-50' : '']}>
+<div class={['flex h-12 items-center gap-2']}>
 	<div
 		class={[
 			'z-0 flex gap-4',
+
 			cp.order === 'focus' || cp.order === 'filter'
 				? 'font-medium'
 				: cp.order === 'further'
 					? 'opacity-40'
-					: 'opacity-80'
+					: cp.order === 'post-destination'
+						? 'opacity-25'
+						: 'opacity-50'
 		]}
 	>
-		<div class={['w-8 min-w-8']}>
+		<div
+			class={[
+				'w-8 min-w-8 origin-left',
+				cp.order === 'focus' || cp.order === 'filter' ? 'scale-100' : 'scale-95'
+			]}
+		>
 			<div
 				class={[
 					cp.isCancelled || cp.arrivalCancelled
@@ -48,7 +56,7 @@
 							? cp.times.rt.arr
 								? 'text-xs/3 line-through'
 								: 'text-xs/3'
-							: 'text-good text-sm'
+							: 'text-sm text-good'
 				]}
 			>
 				{cp.times.plan.arr}
@@ -65,7 +73,12 @@
 				{/if}
 			{/if}
 		</div>
-		<div class={['w-8 min-w-8']}>
+		<div
+			class={[
+				'w-8 min-w-8 origin-left',
+				cp.order === 'focus' || cp.order === 'filter' ? 'scale-100' : 'scale-95'
+			]}
+		>
 			<div
 				class={[
 					cp.isCancelled || cp.departureCancelled
@@ -74,7 +87,7 @@
 							? cp.times.rt.dep
 								? 'text-xs/3 line-through'
 								: 'text-xs/3'
-							: 'text-good text-sm'
+							: 'text-sm text-good'
 				]}
 			>
 				{cp.times.plan.dep}
@@ -102,7 +115,8 @@
 	<div
 		class={[
 			'flex h-full flex-col items-center justify-center',
-			cp.inDivision ? 'min-w-12 pl-5' : 'min-w-8 pl-1'
+			cp.inDivision ? 'min-w-12 pl-5' : 'min-w-8 pl-1',
+			cp.isPostDestination ? 'opacity-50' : ''
 		]}
 	>
 		{#if index === 0}
@@ -126,16 +140,18 @@
 			<div style:background={operator.color} class="w-1.5 grow bg-black"></div>
 		{/if}
 	</div>
-	<div class="min-w-0 grow">
+	<div class={['min-w-0 grow', cp.order === 'post-destination' ? 'opacity-40' : '']}>
 		<div class="flex items-end gap-1">
 			<div
 				class={[
 					'min-w-0 overflow-hidden text-nowrap text-ellipsis',
-					cp.order === 'focus' || cp.isDestination || cp.order === 'filter'
-						? 'text-base/5 font-semibold'
-						: cp.order === 'further'
-							? 'text-muted-foreground/60 text-sm/4'
-							: 'text-muted-foreground text-sm/4'
+					{
+						'font-semibold': cp.order === 'focus' || cp.order === 'filter' || cp.isDestination,
+						'text-base-5': cp.order === 'further' || cp.order === 'filter',
+						'text-muted-foreground/60': cp.order === 'further' && !cp.isDestination,
+						'text-muted-foreground': cp.order === 'subsequent' && !cp.isDestination,
+						'text-sm/4': cp.order !== 'focus' && cp.order !== 'filter'
+					}
 				]}
 			>
 				{cp.name}
@@ -154,7 +170,7 @@
 		{#if cp.isCancelled}
 			<div class="text-xs/4 text-red-600">Cancelled</div>
 		{:else if cp.departed}
-			<div class={['text-muted-foreground flex items-center gap-1 text-[10px]/4']}>
+			<div class={['flex items-center gap-1 text-[10px]/4 text-muted-foreground']}>
 				<ArrowUpRight size={12} /> Departed {(cp.delay ?? 0) > 0
 					? `${cp.delay}m late`
 					: (cp.delay ?? 0) < 0
@@ -165,7 +181,12 @@
 			<div class="flex items-center gap-1 text-[10px]/4"><ArrowDownRight size={12} /> Arrived</div>
 		{/if}
 	</div>
-	<div class={[cp.order === 'focus' ? 'text-lg font-medium' : 'text-sm text-zinc-400']}>
+	<div
+		class={[
+			cp.order === 'focus' ? 'text-lg font-medium' : 'text-sm text-zinc-400',
+			cp.order === 'post-destination' ? 'opacity-25' : ''
+		]}
+	>
 		{cp.platform ?? '-'}
 	</div>
 </div>

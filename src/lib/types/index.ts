@@ -1,3 +1,5 @@
+import type { is } from 'zod/v4/locales';
+
 export type DestinationOrigin = {
 	crs: string;
 	name: string;
@@ -46,7 +48,10 @@ export type BoardItem = {
 
 export type BoardDetails = {
 	name: string;
+	crs: string;
 	filterName: string | null;
+	filterCrs: string | null;
+	offset: number;
 	notices: Notice[];
 };
 
@@ -73,6 +78,7 @@ export type ServiceLocation = {
 	tiploc: string;
 	isCancelled: boolean;
 	isCallingPoint: boolean;
+
 	atd: string | null;
 	ata: string | null;
 	etd: string | null;
@@ -107,6 +113,7 @@ export type CallingPoint = {
 	departed: boolean;
 	arrived: boolean;
 	isDestination: boolean;
+	isPostDestination: boolean;
 };
 
 export type Carriage = {

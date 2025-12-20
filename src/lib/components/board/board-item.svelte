@@ -4,7 +4,6 @@
 	import type { BoardItem, DestinationOrigin, Operator, SavedTrain } from '$lib/types';
 	import { Bus, Check, ClockAlert, X } from 'lucide-svelte';
 	import { onMount } from 'svelte';
-	import Page from '../../routes/+page.svelte';
 
 	let {
 		crs,
