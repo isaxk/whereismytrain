@@ -112,7 +112,7 @@
 
 	<div
 		in:fade|global={{ duration: 200 }}
-		class="sticky top-0 z-20 flex h-18 w-full items-center p-4 pt-6 text-white"
+		class="sticky dark top-0 z-20 flex h-18 w-full items-center p-4 pt-6 text-white"
 		style:background-color={operator.color}
 	>
 		<div class="absolute top-1.5 right-0 left-0 flex h-2 justify-center">
