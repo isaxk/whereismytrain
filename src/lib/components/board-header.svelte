@@ -5,12 +5,30 @@
 	import Search from './search.svelte';
 	import Skeleton from './skeleton.svelte';
 	import Button from './ui/button/button.svelte';
+	import { pinned } from '$lib/state/saved.svelte';
 
 	let {
 		from,
 		to,
 		details = null
 	}: { from: string; to: string; details?: BoardDetails | null } = $props();
+
+	const isPinned = $derived(
+		pinned.value.some((board) => board.fromCrs === from && board.toCrs === to)
+	);
+
+	function pin() {
+		if (pinned.value.some((board) => board.fromCrs === from && board.toCrs === to)) {
+			pinned.value = pinned.value.filter((board) => board.fromCrs !== from || board.toCrs !== to);
+		} else {
+			pinned.value.push({
+				fromCrs: from,
+				fromName: details?.name || '',
+				toCrs: to,
+				toName: details?.filterName ?? null
+			});
+		}
+	}
 </script>
 
 <div
@@ -59,5 +77,7 @@
 			</Search>
 		{/if}
 	</div>
-	<Button size="icon" variant="outline"><Pin /></Button>
+	<Button size="icon" onclick={pin} variant="outline"
+		><Pin fill={isPinned ? 'currentColor' : 'none'} /></Button
+	>
 </div>

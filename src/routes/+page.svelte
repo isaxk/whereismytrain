@@ -2,9 +2,9 @@
 	import { goto } from '$app/navigation';
 	import Search from '$lib/components/search.svelte';
 	import { mapData, paneHeight } from '$lib/state/map.svelte';
-	import { BellRing, ChevronRight } from 'lucide-svelte';
+	import { BellRing, ChevronRight, Pin, X } from 'lucide-svelte';
 	import AllStations from '$lib/data/stations.json';
-	import { saved } from '$lib/state/saved.svelte';
+	import { pinned, saved } from '$lib/state/saved.svelte';
 	import SavedTrain from '$lib/components/saved-train.svelte';
 	import { onMount } from 'svelte';
 	import { refreshing, servicesSub } from '$lib/state/services-subscriber.svelte';
@@ -91,7 +91,61 @@
 			<Button class="w-full">Go</Button>
 		</a>
 	</div>
-	<div class="">
+	<div class="w-full pt-4">
+		<div class="flex items-center gap-2 px-4 py-4">
+			<Pin size={20} />
+			<div class="grow text-2xl font-medium">Pinned boards</div>
+		</div>
+		<div class="border-border flex w-full flex-col border-b">
+			{#if pinned.value.length === 0}
+				<div
+					class="text-muted-foreground border-border flex items-center border-t px-4 py-2 text-sm"
+				>
+					No pinned boards. Tap the pin on a board page to pin it here.
+				</div>
+			{:else}
+				{#each pinned.value as item (item.fromCrs + item.toCrs)}
+					<a
+						href={item.toCrs ? `/board/${item.fromCrs}?to=${item.toCrs}` : `/board/${item.fromCrs}`}
+						class="even:bg-muted/20 border-border flex w-full items-center gap-4 border-t px-4 py-2"
+						transition:fly={{ duration: 200, x: -100 }}
+						animate:flip={{ duration: 200 }}
+					>
+						<div class="w-full grow">
+							<div class="text-xl/5 font-medium">{item.fromCrs}</div>
+							<div class="text-xs">{item.fromName}</div>
+						</div>
+
+						<div>
+							<ChevronRight />
+						</div>
+
+						{#if item.toCrs}
+							<div class="w-full grow">
+								<div class="text-xl/5 font-medium">{item.toCrs}</div>
+								<div class="text-xs">{item.toName}</div>
+							</div>
+						{:else}
+							<div class="w-full grow">
+								<div class="text-muted-foreground text-xs">Anywhere</div>
+							</div>
+						{/if}
+						<Button
+							onclick={() =>
+								(pinned.value = pinned.value.filter(
+									(p) => !(p.fromCrs === item.fromCrs && p.toCrs === item.toCrs)
+								))}
+							size="icon"
+							variant="outline"
+						>
+							<X />
+						</Button>
+					</a>
+				{/each}
+			{/if}
+		</div>
+	</div>
+	<div class="pt-4">
 		<div class="flex items-center gap-2 px-4 py-4">
 			<BellRing size={20} />
 			<div class="grow text-2xl font-medium">Subscribed trains</div>
@@ -102,7 +156,7 @@
 		<div class="flex flex-col">
 			{#if saved.value.length === 0}
 				<div
-					class="text-muted-foreground border-border flex items-center border-t px-4 pt-2 text-sm"
+					class="text-muted-foreground border-border flex items-center border-t px-4 py-2 text-sm"
 				>
 					No subscribed trains. Tap the bell on a service page to subscribe to it and receive
 					notifications.
@@ -110,7 +164,7 @@
 			{:else}
 				{#each saved.value as item (item.id + item.filterCrs + item.focusCrs + item.subscriptionId)}
 					<div
-						class="odd:bg-muted/40 border-border border-t px-4"
+						class="even:bg-muted/20 border-border border-t px-4"
 						transition:fly={{ duration: 200, x: -100 }}
 						animate:flip={{ duration: 200 }}
 					>

@@ -143,6 +143,13 @@ export type SavedTrain = {
 	subscriptionId: string | null;
 };
 
+export type PinnedBoard = {
+	fromCrs: string;
+	fromName: string;
+	toCrs: string | null;
+	toName: string | null;
+};
+
 export type ServiceLocationWithCoords = ServiceLocation & {
 	coords: [number, number];
 };
