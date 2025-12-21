@@ -319,7 +319,14 @@
 						</div>
 						{#if services}
 							<div class="" in:fade|global={{ duration: 200 }}>
-								{#each services as service (service.rid)}
+								{#each services as service, index (service.rid)}
+									{#if (index === 0 && !dayjs(service.rawTime).isSame(dayjs(), 'day')) || (index > 0 && !dayjs(service.rawTime).isSame(dayjs(services[index - 1].rawTime), 'day'))}
+										<div
+											class="border-b border-border px-4 py-2 text-lg font-semibold odd:bg-muted/40"
+										>
+											{dayjs(service.rawTime).format('ddd DD MMM')}
+										</div>
+									{/if}
 									<a
 										href="/board/{data.crs}/t/{service.rid}?{page.url.search}"
 										class="flex items-center gap-2 rounded border-t border-border px-4 py-1 even:bg-muted/40"

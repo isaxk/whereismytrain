@@ -52,7 +52,7 @@
 			if (!aFocus || !bFocus) return 0;
 
 			if (!aFocus?.times.plan.dep || !bFocus?.times.plan.dep) return 0;
-			const diff = dayjs(aFocus?.times.plan.dep).diff(dayjsFromHHmm(bFocus?.times.plan.dep));
+			const diff = dayjs(a.service.date).diff(b.service.date);
 			console.log('diff', diff);
 			return diff === 0 ? 0 : diff > 0 ? 1 : -1;
 		});
