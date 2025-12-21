@@ -81,6 +81,13 @@
 	--color-good: oklch(62.7% 0.194 149.214);
 	--color-warning: oklch(68.1% 0.162 75.834);
 	--color-danger: oklch(57.7% 0.245 27.325);
+	--mobile-offset-top: 500px !important;
+}
+
+@media (max-width: 600px) {
+	[data-sonner-toaster][data-y-position='top'] {
+		top: env(safe-area-inset-top) !important;
+	}
 }
 
 @theme inline {

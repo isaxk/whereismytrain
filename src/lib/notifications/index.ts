@@ -158,7 +158,7 @@ export function setupForegroundMessageHandler() {
 				service: payload.data?.service ?? '{}',
 				alertType: payload.data?.alertType ?? ''
 			},
-			duration: 5000
+			duration: Number.POSITIVE_INFINITY
 		});
 	});
 }
