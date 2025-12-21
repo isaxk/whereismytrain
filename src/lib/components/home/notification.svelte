@@ -39,7 +39,7 @@
 </div> -->
 <a
 	href="/board/{data.focus_crs}/t/{data.service_id}d{data.destination_crs}?to={data.filter_crs}"
-	class={['flex h-16 w-[320px] flex-col justify-center gap-0.5 border-border text-left']}
+	class={['flex h-16 w-[320px] flex-col justify-center gap-0.5 border-border text-left text-base']}
 >
 	<div class="flex h-max w-full items-center gap-2">
 		<div class="font-medium">
