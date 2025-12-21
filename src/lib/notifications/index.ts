@@ -11,7 +11,7 @@ let token: string | null = null;
 function fnTimeout(fn: () => Promise<any>, delay: number) {
 	return new Promise<string | null>((resolve, reject) => {
 		setTimeout(() => {
-			resolve(null);
+			reject(null);
 		}, delay);
 		fn().then(resolve);
 	});
@@ -120,7 +120,7 @@ export async function initializeNotifications() {
 					getToken(messaging!, {
 						vapidKey: env.PUBLIC_VAPID_KEY // Replace with your actual VAPID key
 					}),
-				2000
+				10000
 			);
 			if (!token) {
 				throw new Error('Failed to get token');
