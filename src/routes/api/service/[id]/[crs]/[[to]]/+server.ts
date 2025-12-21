@@ -175,7 +175,7 @@ export const GET = async ({ params }) => {
 		`https://huxley2.azurewebsites.net/service/${id}?access_token=${ACCESS_TOKEN}`
 	);
 	const data = await response.json();
-	console.log(data);
+	// console.log(data);
 	const locations: ServiceLocation[] = [data.locations.map(parseLocation)];
 	const rawCallingPoints = data.locations.filter((l: any) => !l.isPass && l.crs);
 
@@ -318,12 +318,12 @@ export const GET = async ({ params }) => {
 		.filter((l, i) => l.crs === to)
 		.toSorted((a, b) => dayjs(a.sta).diff(dayjs(b.sta)));
 
-	console.log(
-		'allThatMatchFilter',
-		allThatMatchFilter.map((loc) => `${loc.indexInCPs} ${loc.std}`)
-	);
+	// console.log(
+	// 	'allThatMatchFilter',
+	// 	allThatMatchFilter.map((loc) => `${loc.indexInCPs} ${loc.std}`)
+	// );
 
-	console.log('focusIndex', focusIndex);
+	// console.log('focusIndex', focusIndex);
 
 	let filterIndex = to
 		? allThatMatchFilter.find((l) => l.indexInCPs > focusIndex)?.indexInCPs

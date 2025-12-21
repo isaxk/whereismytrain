@@ -169,7 +169,7 @@
 		</div>
 		{#if cp.isCancelled}
 			<div class="text-xs/4 text-red-600">Cancelled</div>
-		{:else if cp.departed}
+		{:else if cp.departed && cp.order === 'focus'}
 			<div class={['flex items-center gap-1 text-[10px]/4 text-muted-foreground']}>
 				<ArrowUpRight size={12} /> Departed {(cp.delay ?? 0) > 0
 					? `${cp.delay}m late`
@@ -177,7 +177,7 @@
 						? `${Math.abs(cp.delay ?? 0)}m early`
 						: 'on time'}
 			</div>
-		{:else if cp.arrived}
+		{:else if cp.arrived && cp.order === 'focus'}
 			<div class="flex items-center gap-1 text-[10px]/4"><ArrowDownRight size={12} /> Arrived</div>
 		{/if}
 	</div>

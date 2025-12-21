@@ -1,6 +1,6 @@
 import { ACCESS_TOKEN } from '$env/static/private';
 import { operatorList } from '$lib/data/operators';
-import { Severity, type Board, type BoardItem, type Notice } from '$lib/types';
+import { Category, Severity, type Board, type BoardItem, type Notice } from '$lib/types';
 import { json, type RequestHandler, error as kitError } from '@sveltejs/kit';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
@@ -110,7 +110,7 @@ export const GET: RequestHandler = async ({ params }) => {
 	}
 
 	try {
-		console.log(url);
+		// console.log(url);
 		const response = await fetch(url, {
 			headers: shouldUseRailData
 				? {
@@ -134,11 +134,15 @@ export const GET: RequestHandler = async ({ params }) => {
 			.toSorted((a: any, b: any) => b.severity - a.severity)
 			.map((m: any) => ({
 				...m,
-				severity: typeof m.severity === 'number' ? m.severity : Severity[m.severity.toLowerCase()],
+				category: typeof m.category === 'number' ? m.category : Category[m.category],
+				severity:
+					typeof m.severity === 'number' ? m.severity : (Severity[m.severity.toLowerCase()] ?? 0),
 				xhtmlMessage: m.xhtmlMessage
 					.replace('Latest information can be found in', '')
 					.replace('Status and Disruptions.', 'More info')
 			}));
+
+		console.log(data.nrccMessages);
 
 		const board: Board = {
 			services,

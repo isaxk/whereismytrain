@@ -12,8 +12,11 @@
 		ChevronLast,
 		ChevronLeft,
 		ChevronRight,
+		CircleAlertIcon,
 		Clock,
 		ClockAlert,
+		GitCompareArrowsIcon,
+		House,
 		Plus,
 		Rows2,
 		Rows4,
@@ -26,6 +29,7 @@
 	import Search from '$lib/components/search/search.svelte';
 	import AlertCard from '$lib/components/ui/alert-card.svelte';
 	import {
+		Category,
 		Severity,
 		type BoardDetails,
 		type BoardItem,
@@ -212,7 +216,18 @@
 			{#if details && details.notices.length > 0}
 				<div class="flex flex-col gap-2 px-4 pt-4" in:fade|global={{ duration: 200 }}>
 					{#each details.notices as notice, index}
-						<AlertCard status={Severity[notice.severity] as 'info' | 'minor' | 'major' | 'severe'}>
+						<AlertCard
+							Icon={notice.category === Category.Connectingservice
+								? GitCompareArrowsIcon
+								: notice.category === Category.Station
+									? House
+									: CircleAlertIcon}
+							status={(Severity[notice.severity] ?? 'info') as
+								| 'info'
+								| 'minor'
+								| 'major'
+								| 'severe'}
+						>
 							<div class="prose text-xs dark:prose-invert prose-p:text-xs">
 								{@html notice.xhtmlMessage}
 							</div>

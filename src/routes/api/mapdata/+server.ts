@@ -212,9 +212,9 @@ export const POST: RequestHandler = async ({ request }) => {
 			);
 			const lastDeparted: ServiceLocationWithCoords | undefined =
 				groupWithCoords[lastDepartedIndex];
-			console.log('lastDeparted', lastDeparted);
+			// console.log('lastDeparted', lastDeparted);
 			const next = groupWithCoords[lastDepartedIndex + 1];
-			console.log('nexr', next);
+			// console.log('nexr', next);
 			const { coords, bearing }: { coords: [number, number] | null; bearing: number | null } =
 				lastDeparted
 					? calculateTrainPosition(
@@ -233,7 +233,7 @@ export const POST: RequestHandler = async ({ request }) => {
 					: { coords: null, bearing: null };
 
 			if (coords) {
-				console.log(coords);
+				// console.log(coords);
 				parsedLocations[0].trainPosition = coords;
 				parsedLocations[0].trainBearing = bearing;
 				if (parsedLocations[0].lineLocations[0].crs !== lastDeparted.crs) {

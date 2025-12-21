@@ -15,7 +15,7 @@
 	let lastRefreshed = $state(null);
 
 	const refreshed = $derived.by(() => {
-		console.log(Date.now() - data.lastRefreshed);
+		// console.log(Date.now() - data.lastRefreshed);
 		if (data.lastRefreshed && Date.now() - data.lastRefreshed > 20000) {
 			return false;
 		}

@@ -61,9 +61,14 @@ export enum Severity {
 	major = 2,
 	severe = 3
 }
+export enum Category {
+	Trainservice = 0,
+	Station = 1,
+	Connectingservices = 2
+}
 
 export type Notice = {
-	category: number;
+	category: Category;
 	severity: Severity;
 	xhtmlMessage: string;
 };
