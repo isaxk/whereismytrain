@@ -68,8 +68,9 @@
 	}
 
 	const afterCallingPoints = $derived.by(() => {
-		const focus = service.callingPoints.findIndex((cp) => cp.crs === crs);
-		return focus >= 0 ? service.callingPoints.slice(focus + 1) : service.callingPoints;
+		const withArrivals = service.callingPoints.filter((cp) => cp.times.plan.arr);
+		const focus = withArrivals.findIndex((cp) => cp.crs === crs);
+		return focus >= 0 ? withArrivals.slice(focus + 1) : withArrivals;
 	});
 
 	const firstAfterCallingPointCrs = $derived.by(() => afterCallingPoints[0]?.crs);
