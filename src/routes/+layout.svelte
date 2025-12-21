@@ -6,7 +6,7 @@
 	import { ModeWatcher } from 'mode-watcher';
 	import Pane from '$lib/components/pane/pane.svelte';
 	import { onMount } from 'svelte';
-	import { initializeNotifications } from '$lib/notifications';
+	import { initializeNotifications, setupForegroundMessageHandler } from '$lib/notifications';
 
 	let { children } = $props();
 
@@ -15,6 +15,7 @@
 
 	onMount(() => {
 		mounted = true;
+		setupForegroundMessageHandler();
 		initializeNotifications();
 	});
 </script>

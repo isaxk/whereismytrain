@@ -6,6 +6,6 @@ import { defineConfig } from 'vite';
 export default defineConfig({
 	plugins: [tailwindcss(), sveltekit(), devtoolsJson()],
 	server: {
-		allowedHosts: ['falling-boxing-solution-duplicate.trycloudflare.com']
+		allowedHosts: ['jefferson-lbs-coins-wed.trycloudflare.com']
 	}
 });
