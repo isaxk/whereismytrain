@@ -3,6 +3,7 @@
 	import BoardItem from '$lib/components/board/board-item.svelte';
 	import Check from '@lucide/svelte/icons/check';
 	import { Bus, ClockAlert, X } from 'lucide-svelte';
+	import { saved } from '$lib/state/saved.svelte';
 
 	let {
 		title,
@@ -28,13 +29,18 @@
 	const rtDep = $derived(dayjs(data.estimated_departure).format('HH:mm'));
 	const planArr = $derived(dayjs(data.scheduled_arrival).format('HH:mm'));
 	const rtArr = $derived(dayjs(data.estimated_arrival).format('HH:mm'));
+
+	const savedItem = $derived(saved.value.find((item) => item.subscriptionId === data.id));
 </script>
 
 <!-- <div class="text-xl">
 	{title}
 	{alertType}
 </div> -->
-<div class={['border-border flex h-16 w-[320px] flex-col justify-center gap-0.5 text-left']}>
+<a
+	href="/board/{data.focus_crs}/t/{data.service_id}d{data.destination_crs}?to={data.filter_crs}"
+	class={['flex h-16 w-[320px] flex-col justify-center gap-0.5 border-border text-left']}
+>
 	<div class="flex h-max w-full items-center gap-2">
 		<div class="font-medium">
 			{planDep || 'N/A'}
@@ -45,7 +51,7 @@
 					class={[
 						'flex items-center gap-1 text-red-600',
 						alertType === 'cancelled'
-							? 'animate-pulse rounded bg-red-200 p-1 px-1.5 dark:bg-red-900'
+							? 'animate-pulse rounded bg-red-200 px-1.5 py-0.5 dark:bg-red-900'
 							: ''
 					]}
 				>
@@ -54,9 +60,9 @@
 			{:else if rtDep == planDep}
 				<div
 					class={[
-						'text-good flex items-center gap-1',
+						'flex items-center gap-1 text-good',
 						alertType === 'delay' || alertType === 'departed'
-							? 'animate-pulse rounded bg-red-200 p-1 px-1.5 dark:bg-red-900'
+							? 'animate-pulse rounded bg-red-200 px-1.5 py-0.5 dark:bg-red-900'
 							: ''
 					]}
 				>
@@ -72,7 +78,7 @@
 					class={[
 						'flex items-center gap-1 text-yellow-600',
 						alertType === 'delay' || alertType === 'departed'
-							? 'animate-pulse rounded bg-red-200 p-1 px-1.5 dark:bg-red-900'
+							? 'animate-pulse rounded bg-red-200 px-1.5 py-0.5 dark:bg-red-900'
 							: ''
 					]}
 				>
@@ -89,7 +95,7 @@
 					class={[
 						'flex items-center gap-1 text-yellow-600',
 						alertType === 'delay'
-							? 'animate-pulse rounded bg-red-200 p-1 px-1.5 dark:bg-red-900'
+							? 'animate-pulse rounded bg-red-200 px-1.5 py-0.5 dark:bg-red-900'
 							: ''
 					]}
 				>
@@ -103,12 +109,12 @@
 			class={[
 				'flex items-center justify-center',
 				alertType === 'platform'
-					? 'animate-pulse rounded bg-red-200 p-1 px-1.5 dark:bg-red-900'
+					? 'animate-pulse rounded bg-red-200 px-1.5 py-0.5 dark:bg-red-900'
 					: ''
 			]}
 		>
 			<div class="text-right">
-				<span class="text-muted-foreground text-xs">Platform </span>
+				<span class="text-xs text-muted-foreground">Platform </span>
 				{data.platform !== 'BUS' ? (data.platform ?? '-') : ''}
 			</div>
 			{#if data.platform === 'BUS'}
@@ -120,13 +126,13 @@
 	</div>
 	<div class="flex items-start">
 		<div class="min-w-0 grow overflow-hidden">
-			<!-- {#if focus}
-				<div class="text-muted-foreground text-xs/3 font-light">
+			{#if savedItem?.service?.callingPoints.find((point) => point.crs === data.focus_crs)}
+				<div class="text-xs/3 font-light text-muted-foreground">
 					<span class="font-medium">
-						{focus}
+						{savedItem?.service?.callingPoints.find((point) => point.crs === data.focus_crs)?.name}
 					</span> to
 				</div>
-			{/if} -->
+			{/if}
 			<div class={['truncate text-base/5 font-semibold']}>
 				{data.destination}
 			</div>
@@ -136,12 +142,12 @@
 				</div>
 			{/if} -->
 		</div>
-		<!-- <div
-			class="h-max rounded-md px-1.5 py-0.5 text-[10px] text-white"
-			style:background={operator.color}
+		<div
+			class="mt-1 h-max rounded-md px-1.5 py-0.5 text-[10px] text-white"
+			style:background={savedItem?.service.operator.color}
 		>
-			{operator.name}
-		</div> -->
+			{savedItem?.service.operator.name}
+		</div>
 	</div>
 	{#if data.filter_crs}
 		<div class="flex items-center gap-0">
@@ -149,9 +155,9 @@
 				{#if !data.isCancelled}
 					<div
 						class={[
-							'text-danger flex items-center gap-1 text-xs',
+							'flex items-center gap-1 text-xs text-danger',
 							alertType === 'filter-cancelled'
-								? 'animate-pulse rounded bg-red-200 p-1 px-1.5 dark:bg-red-900'
+								? 'animate-pulse rounded bg-red-200 px-1.5 py-0.5 dark:bg-red-900'
 								: ''
 						]}
 					>
@@ -169,12 +175,12 @@
 						<!-- at {data.filter.name} -->
 					</div>
 					{#if rtArr === planArr}
-						<div class={['text-good flex items-center gap-0.5']}>
+						<div class={['flex items-center gap-0.5 text-good']}>
 							<Check size={12} />
 							{rtArr}
 						</div>
 					{:else}
-						<div class={['text-warning flex items-center gap-1']}>
+						<div class={['flex items-center gap-1 text-warning']}>
 							<ClockAlert size={12} />
 							{rtArr ?? 'Unknown'}
 						</div>
@@ -184,4 +190,4 @@
 			<div class="grow"></div>
 		</div>
 	{/if}
-</div>
+</a>
