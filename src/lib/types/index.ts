@@ -135,6 +135,8 @@ export type TrainService = {
 	locations: ServiceLocation[];
 	callingPoints: CallingPoint[];
 	operator: Operator;
+	isToday: boolean;
+	date: string;
 	title: string;
 	reasonCode: string | null;
 	formation: Carriage[] | null;

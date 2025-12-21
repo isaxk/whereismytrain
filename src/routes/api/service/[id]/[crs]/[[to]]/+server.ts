@@ -351,7 +351,9 @@ export const GET = async ({ params }) => {
 		console.log('filterIndex', filterIndex);
 	}
 
-	const title = `${dayjs(callingPoints[focusIndex].std).format('HH:mm')} to ${destination.map((l) => l.name).join(', ')}`;
+	const date = callingPoints[focusIndex].std;
+
+	const title = `${dayjs(date).format('HH:mm')} to ${destination.map((l) => l.name).join(', ')}`;
 
 	let formationLengthOnly: boolean = data.locations[focusIndex]?.length ? true : false;
 
@@ -421,6 +423,8 @@ export const GET = async ({ params }) => {
 		formationLengthOnly,
 		uid: data.uid,
 		sdd: data.sdd,
+		date,
+		isToday: dayjs().isSame(date, 'day'),
 		reasonCode: data.delayReason?.value ?? data.cancelReason?.value ?? null
 	};
 

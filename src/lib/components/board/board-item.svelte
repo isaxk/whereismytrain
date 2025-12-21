@@ -2,6 +2,7 @@
 	import { page } from '$app/state';
 	import { saved } from '$lib/state/saved.svelte';
 	import type { BoardItem, DestinationOrigin, Operator, SavedTrain } from '$lib/types';
+	import dayjs from 'dayjs';
 	import { Bus, Check, ClockAlert, X } from 'lucide-svelte';
 	import { onMount } from 'svelte';
 
@@ -20,6 +21,8 @@
 		platform,
 		filter,
 		operator,
+		date = null,
+		isToday = true,
 		filterName = null
 	}: {
 		crs: string;
@@ -42,6 +45,8 @@
 			arrived: boolean;
 		} | null;
 		operator: Operator;
+		date?: string | null;
+		isToday?: boolean;
 		filterName?: string | null;
 	} = $props();
 </script>
@@ -52,13 +57,21 @@
 >
 	<div class="flex h-max items-center gap-2">
 		<div class="font-medium">
-			{planDep || 'N/A'}
+			{#if isToday}
+				{planDep || 'N/A'}
+			{:else}
+				<span class="text-muted-foreground">
+					{dayjs(date).format('ddd DD MMM')} -
+				</span>
+
+				{planDep}
+			{/if}
 		</div>
 		<div class="text-[11px]">
 			{#if isCancelled}
-				<div class="text-danger flex items-center gap-1"><X size={14} /> Cancelled</div>
+				<div class="flex items-center gap-1 text-danger"><X size={14} /> Cancelled</div>
 			{:else if rtDep == planDep}
-				<div class="text-good flex items-center gap-1">
+				<div class="flex items-center gap-1 text-good">
 					<Check size={14} />
 					{#if departed}
 						Departed on time
@@ -67,7 +80,7 @@
 					{/if}
 				</div>
 			{:else if rtDep}
-				<div class="text-warning flex items-center gap-1">
+				<div class="flex items-center gap-1 text-warning">
 					<ClockAlert size={14} />
 					{#if departed}
 						Departed
@@ -77,7 +90,7 @@
 					{rtDep}
 				</div>
 			{:else}
-				<div class="text-warning flex items-center gap-1">
+				<div class="flex items-center gap-1 text-warning">
 					<ClockAlert size={14} />
 					Delayed
 				</div>
@@ -86,12 +99,12 @@
 		<div class="grow"></div>
 		<div class="flex items-center justify-center">
 			{#if platform === 'BUS'}
-				<div class="text-warning flex items-center gap-1 text-xs">
+				<div class="flex items-center gap-1 text-xs text-warning">
 					<Bus size={16} /> Bus service
 				</div>
 			{:else}
 				<div class="min-w-18 text-right">
-					<span class="text-muted-foreground text-xs">Platform </span>
+					<span class="text-xs text-muted-foreground">Platform </span>
 
 					{platform !== 'BUS' ? (platform ?? '-') : ''}
 				</div>
@@ -101,7 +114,7 @@
 	<div class="flex items-start">
 		<div class="min-w-0 grow overflow-hidden">
 			{#if focus}
-				<div class="text-muted-foreground text-xs/3 font-light">
+				<div class="text-xs/3 font-light text-muted-foreground">
 					<span class="font-medium">
 						{focus}
 					</span> to
@@ -111,7 +124,7 @@
 				{destination.map((d) => d.name).join(', ')}
 			</div>
 			{#if destination[0].via}
-				<div class="text-muted-foreground text-xs/3 font-light">
+				<div class="text-xs/3 font-light text-muted-foreground">
 					{destination[0].via}
 				</div>
 			{/if}
@@ -128,7 +141,7 @@
 		<div class="flex items-center gap-0">
 			{#if filter.isCancelled}
 				{#if !isCancelled}
-					<div class="text-danger flex items-center gap-1 text-xs">
+					<div class="flex items-center gap-1 text-xs text-danger">
 						<X size={14} /> Cancelled to {filter.name}
 					</div>
 				{/if}
@@ -145,12 +158,12 @@
 						{/if}
 					</div>
 					{#if filter.planArr === filter.rtArr}
-						<div class="text-good flex items-center gap-0.5">
+						<div class="flex items-center gap-0.5 text-good">
 							<Check size={12} />
 							{filter.rtArr}
 						</div>
 					{:else}
-						<div class="text-warning flex items-center gap-1">
+						<div class="flex items-center gap-1 text-warning">
 							<ClockAlert size={12} />
 							{filter.rtArr ?? 'Unknown'}
 						</div>
@@ -161,7 +174,7 @@
 		</div>
 	{:else if isFilterCancelled && !isCancelled}
 		<div class="flex items-center gap-0">
-			<div class="text-danger flex items-center gap-1 pt-0.5 text-xs">
+			<div class="flex items-center gap-1 pt-0.5 text-xs text-danger">
 				<X size={14} /> Cancelled to {filterName}
 			</div>
 		</div>

@@ -96,6 +96,8 @@
 			platform={focus.platform}
 			crs={focus.crs ?? ''}
 			operator={data.service.operator}
+			isToday={data.service.isToday ?? false}
+			date={data.service.date}
 			filter={filter
 				? {
 						name: filter.name,

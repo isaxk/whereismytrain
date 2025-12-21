@@ -7,6 +7,8 @@
 		BellRing,
 		Bookmark,
 		Bus,
+		Calendar1,
+		CalendarIcon,
 		ChevronDown,
 		ChevronLeft,
 		GitBranchIcon,
@@ -27,6 +29,7 @@
 	import Button from '$lib/components/ui/button/button.svelte';
 	import Spinner from '$lib/components/ui/spinner/spinner.svelte';
 	import { refreshing } from '$lib/state/services-subscriber.svelte';
+	import dayjs from 'dayjs';
 
 	let { data }: { data: PageData } = $props();
 
@@ -110,7 +113,8 @@
 </svelte:head>
 
 {#if serviceData}
-	{@const { operator, title, callingPoints, isBus, destination } = serviceData as TrainService}
+	{@const { operator, title, callingPoints, isBus, destination, isToday, date } =
+		serviceData as TrainService}
 
 	<div
 		in:fade|global={{ duration: 200 }}
@@ -153,16 +157,24 @@
 		</div>
 	</div>
 	<div in:fade|global={{ duration: 200 }} class="flex flex-col gap-4 p-4">
-		{#if isBus || destination.length > 1 || serviceData.reasonCode}
+		{#if isBus || destination.length > 1 || serviceData.reasonCode || !isToday}
 			<div class="flex flex-col gap-2">
 				{#if isBus}
 					<AlertCard Icon={Bus} status="info">This is a bus service.</AlertCard>
+				{/if}
+				{#if !isToday}
+					<AlertCard Icon={CalendarIcon} status="info"
+						>This service departs <span class="font-semibold"
+							>{dayjs(date).format('ddd DD MMM')}</span
+						>
+					</AlertCard>
 				{/if}
 				{#if destination.length > 1}
 					<AlertCard Icon={Split} status="info"
 						>This service divides. Check you are in the correct carriage.</AlertCard
 					>
 				{/if}
+
 				{#if serviceData.reasonCode}
 					{@const focus = callingPoints.find((l) => l.crs === data.crs)}
 					<Disruption
@@ -175,7 +187,7 @@
 
 		{#if serviceData.formation && !serviceData.formationLengthOnly}
 			<Formation formation={serviceData.formation} />
-		{:else if !isBus}
+		{:else if !isBus && isToday}
 			<ThirdPartyFormation
 				placeholder={serviceData.formation ?? null}
 				op={operator.id}
