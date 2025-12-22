@@ -6,6 +6,9 @@
 	import { Tween } from 'svelte/motion';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
+	import { refreshing } from '$lib/state/services-subscriber.svelte';
+	import Spinner from '../ui/spinner/spinner.svelte';
+	import { fade } from 'svelte/transition';
 	let {
 		href,
 		crs,
@@ -207,9 +210,9 @@
 
 {#if data.trainPosition && coordsTween?.current && page.data.id === rid}
 	{#if data.isFormedFromTrain}
-		<div class="top-safe-top fixed right-3 z-[20000] lg:top-3">
+		<div class="fixed top-safe-top right-3 z-[20000] lg:top-3">
 			<div
-				class="bg-background flex max-w-42 items-center gap-2 rounded-md px-2.5 py-1.5 text-[10px]/3 drop-shadow sm:max-w-full sm:text-xs"
+				class="flex max-w-42 items-center gap-2 rounded-md bg-background px-2.5 py-1.5 text-[10px]/3 drop-shadow sm:max-w-full sm:text-xs"
 			>
 				<CircleAlert size={14} />
 				Location is of
@@ -235,16 +238,28 @@
 		zIndex={data.isFormedFromTrain ? 0 : 2000}
 		opacity={page.data.crs && page.data.id !== rid ? 0.2 : 1}
 	>
-		<div class="bg-background relative rounded-full">
+		<div class="relative rounded-full bg-background">
 			<div
 				style:border-color={color}
 				style:color
 				class={[
-					'a relative z-20 flex  flex-col items-center justify-center rounded-full border-2 bg-white',
+					'a relative z-20 flex flex-col items-center justify-center rounded-full border-2 bg-white',
 					data.isFormedFromTrain ? 'h-8 w-8 opacity-20' : 'h-9 w-9 opacity-100'
 				]}
 			>
-				<TrainFront size={showDestination || data.isFormedFromTrain ? 14 : 18} />
+				<div class="relative">
+					{#if refreshing.current}
+						<div
+							transition:fade={{ duration: 150 }}
+							class="absolute inset-0 flex items-center justify-center"
+						>
+							<Spinner class="size-20 scale-120" />
+						</div>
+					{/if}
+					<div class={['transition-all', refreshing.current ? 'scale-60' : 'scale-100']}>
+						<TrainFront size={showDestination || data.isFormedFromTrain ? 14 : 18} />
+					</div>
+				</div>
 				{#if showDestination}
 					<div class="text-[8px]/3">
 						to {data.destination.crs}
@@ -266,7 +281,7 @@
 				>
 					<polygon
 						points="10,0 0,20 20,20"
-						class="stroke-background fill-background"
+						class="fill-background stroke-background"
 						stroke-width="2"
 					/>
 					<polygon

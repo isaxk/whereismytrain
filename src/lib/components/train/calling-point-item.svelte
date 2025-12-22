@@ -1,15 +1,24 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import { explicitEffect } from '$lib/state/utils.svelte';
 	import type { CallingPoint, Operator } from '$lib/types';
 	import Check from '@lucide/svelte/icons/check';
 	import {
 		ArrowDownRight,
 		ArrowDownRightFromCircle,
 		ArrowRight,
-		ArrowUpRight
+		ArrowUpRight,
+		ClockAlertIcon,
+		Train,
+		TrainFront,
+		X
 	} from 'lucide-svelte';
 	import { slide } from 'svelte/transition';
 	import { isDirty } from 'zod/v3';
+	import ChangeNotifier from '../board/change-notifier.svelte';
+	import Button from '../ui/button/button.svelte';
+	import { dayjsFromHHmm, t } from '$lib/utils';
+	import * as DropdownMenu from '../ui/dropdown-menu';
 
 	let {
 		cp,
@@ -17,7 +26,8 @@
 		index,
 		length,
 		nextCancelled = false,
-		prevCancelled = false
+		prevCancelled = false,
+		showTrain = false
 	}: {
 		cp: CallingPoint;
 		operator: Operator;
@@ -25,7 +35,20 @@
 		length: number;
 		nextCancelled?: boolean;
 		prevCancelled?: boolean;
+		showTrain?: boolean;
 	} = $props();
+
+	let oldCp = $state({ ...cp });
+	let newCp = $derived({ ...cp });
+
+	explicitEffect(
+		() => {
+			setTimeout(() => {
+				oldCp = { ...newCp };
+			}, 2500);
+		},
+		() => [newCp]
+	);
 </script>
 
 <div class={['flex h-12 items-center gap-2']}>
@@ -33,11 +56,11 @@
 		class={[
 			'z-0 flex gap-4',
 
-			cp.order === 'focus' || cp.order === 'filter'
+			newCp.order === 'focus' || newCp.order === 'filter'
 				? 'font-medium'
-				: cp.order === 'further'
+				: newCp.order === 'further'
 					? 'opacity-40'
-					: cp.order === 'post-destination'
+					: newCp.order === 'post-destination'
 						? 'opacity-25'
 						: 'opacity-50'
 		]}
@@ -45,62 +68,82 @@
 		<div
 			class={[
 				'w-8 min-w-8 origin-left',
-				cp.order === 'focus' || cp.order === 'filter' ? 'scale-100' : 'scale-95'
+				newCp.order === 'focus' || newCp.order === 'filter' ? 'scale-100' : 'scale-95'
 			]}
 		>
-			<div
+			<ChangeNotifier
+				changed={newCp.times.plan.arr === newCp.times.rt.arr &&
+					oldCp.times.plan.arr !== oldCp.times.rt.arr}
 				class={[
-					cp.isCancelled || cp.arrivalCancelled
+					newCp.isCancelled || newCp.arrivalCancelled
 						? 'text-sm text-red-600 line-through'
-						: cp.times.rt.arr !== cp.times.plan.arr
-							? cp.times.rt.arr
+						: newCp.times.rt.arr !== newCp.times.plan.arr
+							? newCp.times.rt.arr
 								? 'text-xs/3 line-through'
 								: 'text-xs/3'
 							: 'text-sm text-good'
 				]}
 			>
-				{cp.times.plan.arr}
-			</div>
-			{#if cp.times.rt.arr !== cp.times.plan.arr && !cp.isCancelled && !cp.arrivalCancelled}
-				{#if cp.times.rt.arr}
-					<div class="flex items-center gap-1 text-sm/3 text-yellow-500">
-						{cp.times.rt.arr ?? 'Delayed'}
-					</div>
+				{newCp.times.plan.arr}
+			</ChangeNotifier>
+			{#if newCp.times.rt.arr !== newCp.times.plan.arr && !newCp.isCancelled && !newCp.arrivalCancelled}
+				{#if newCp.times.rt.arr}
+					<ChangeNotifier
+						changed={newCp.times.rt.arr !== oldCp.times.rt.arr}
+						class="text-sm/3 text-warning"
+					>
+						{newCp.times.rt.arr ?? 'Delayed'}
+					</ChangeNotifier>
 					<!-- {:else if cp.times.rt.arrSource === 'none'}
 					<div class="text-foreground text-[10px]/3">Unknown</div> -->
 				{:else}
-					<div class="text-[10px]/3 text-yellow-500">Delayed</div>
+					<ChangeNotifier
+						changed={newCp.times.rt.arr !== oldCp.times.rt.arr}
+						class="text-[10px]/3 text-warning"
+					>
+						Delayed
+					</ChangeNotifier>
 				{/if}
 			{/if}
 		</div>
 		<div
 			class={[
 				'w-8 min-w-8 origin-left',
-				cp.order === 'focus' || cp.order === 'filter' ? 'scale-100' : 'scale-95'
+				newCp.order === 'focus' || newCp.order === 'filter' ? 'scale-100' : 'scale-95'
 			]}
 		>
-			<div
+			<ChangeNotifier
+				changed={newCp.times.plan.dep === newCp.times.rt.dep &&
+					oldCp.times.plan.dep !== oldCp.times.rt.dep}
 				class={[
-					cp.isCancelled || cp.departureCancelled
+					newCp.isCancelled || newCp.departureCancelled
 						? 'text-sm text-red-600 line-through'
-						: cp.times.rt.dep !== cp.times.plan.dep
-							? cp.times.rt.dep
+						: newCp.times.rt.dep !== newCp.times.plan.dep
+							? newCp.times.rt.dep
 								? 'text-xs/3 line-through'
 								: 'text-xs/3'
 							: 'text-sm text-good'
 				]}
 			>
-				{cp.times.plan.dep}
-			</div>
-			{#if cp.times.rt.dep !== cp.times.plan.dep && !cp.isCancelled && !cp.departureCancelled}
-				{#if cp.times.rt.dep}
-					<div class="text-sm/3 text-yellow-500">
-						{cp.times.rt.dep}
-					</div>
-					<!-- {:else if cp.times.rt.depSource === 'none'}
+				{newCp.times.plan.dep}
+			</ChangeNotifier>
+			{#if newCp.times.rt.dep !== newCp.times.plan.dep && !newCp.isCancelled && !newCp.departureCancelled}
+				{#if newCp.times.rt.dep}
+					<ChangeNotifier
+						changed={newCp.times.rt.dep !== oldCp.times.rt.dep}
+						class="w-max text-sm/3 text-warning"
+					>
+						{newCp.times.rt.dep ?? 'Delayed'}
+					</ChangeNotifier>
+					<!-- {:else if newCp.times.rt.depSource === 'none'}
 					<div class="text-foreground text-[10px]/3">Unknown</div> -->
 				{:else}
-					<div class="text-[10px]/3 text-yellow-500">Delayed</div>
+					<ChangeNotifier
+						changed={newCp.times.rt.dep !== oldCp.times.rt.dep}
+						class="w-max text-[10px]/3 text-warning"
+					>
+						Delayed
+					</ChangeNotifier>
 				{/if}
 			{/if}
 		</div>
@@ -114,20 +157,20 @@
 
 	<div
 		class={[
-			'flex h-full flex-col items-center justify-center',
-			cp.inDivision ? 'min-w-12 pl-5' : 'min-w-8 pl-1',
-			cp.isPostDestination ? 'opacity-50' : ''
+			'relative flex h-full flex-col items-center justify-center',
+			newCp.inDivision ? 'min-w-12 pl-5' : 'min-w-8 pl-1',
+			newCp.isPostDestination ? 'opacity-50' : ''
 		]}
 	>
 		{#if index === 0}
 			<div class="grow"></div>
 			<div style:background={operator.color} class="h-1.5 w-4"></div>
 			<div style:background={operator.color} class="w-1.5 grow bg-black"></div>
-		{:else if index === length - 1 || cp.endDivide}
+		{:else if index === length - 1 || newCp.endDivide}
 			<div style:background={operator.color} class="w-1.5 grow bg-black"></div>
 			<div style:background={operator.color} class="h-1.5 w-4"></div>
 			<div class="grow"></div>
-		{:else if cp.isDestination}
+		{:else if newCp.isDestination}
 			<div style:background={operator.color} class="w-1.5 grow bg-black"></div>
 			<div style:background={operator.color} class="h-1.5 w-4"></div>
 			<div style:background={operator.color} class="w-1.5 grow bg-black opacity-50"></div>
@@ -139,54 +182,131 @@
 			</div>
 			<div style:background={operator.color} class="w-1.5 grow bg-black"></div>
 		{/if}
+		{#if (newCp.departed || newCp.isCancelled) && showTrain}
+			<div
+				class="absolute top-9 z-10"
+				in:t.receive={{ key: 'train-pos-icon' }}
+				out:t.send={{ key: 'train-pos-icon' }}
+			>
+				<div
+					style:border-color={operator.color}
+					style:color={operator.color}
+					class="flex h-6 w-6 items-center justify-center rounded-full border-2 bg-white"
+				>
+					<TrainFront size={14} />
+				</div>
+			</div>
+		{:else if newCp.arrived && showTrain}
+			<div
+				class="absolute top-1/2 z-10 -translate-y-1/2"
+				in:t.receive={{ key: 'train-pos-icon' }}
+				out:t.send={{ key: 'train-pos-icon' }}
+			>
+				<div
+					style:border-color={operator.color}
+					style:color={operator.color}
+					class="flex h-6 w-6 items-center justify-center rounded-full border-2 bg-white"
+				>
+					<TrainFront size={14} />
+				</div>
+			</div>
+		{/if}
 	</div>
-	<div class={['min-w-0 grow', cp.order === 'post-destination' ? 'opacity-40' : '']}>
+	<div class={['min-w-0 grow', newCp.order === 'post-destination' ? 'opacity-40' : '']}>
 		<div class="flex items-end gap-1">
 			<div
 				class={[
 					'min-w-0 overflow-hidden text-nowrap text-ellipsis',
 					{
-						'font-semibold': cp.order === 'focus' || cp.order === 'filter' || cp.isDestination,
-						'text-base-5': cp.order === 'further' || cp.order === 'filter',
-						'text-muted-foreground/60': cp.order === 'further' && !cp.isDestination,
-						'text-muted-foreground': cp.order === 'subsequent' && !cp.isDestination,
-						'text-sm/4': cp.order !== 'focus' && cp.order !== 'filter'
+						'font-semibold':
+							newCp.order === 'focus' || newCp.order === 'filter' || newCp.isDestination,
+						'text-base-5': newCp.order === 'further' || newCp.order === 'filter',
+						'text-muted-foreground/60': newCp.order === 'further' && !newCp.isDestination,
+						'text-muted-foreground': newCp.order === 'subsequent' && !newCp.isDestination,
+						'text-sm/4': newCp.order !== 'focus' && newCp.order !== 'filter'
 					}
 				]}
 			>
-				{cp.name}
+				{newCp.name}
 			</div>
 			<div
 				class={[
 					'text-zinc-400',
-					cp.order === 'focus' || cp.isDestination || cp.order === 'filter'
+					newCp.order === 'focus' || newCp.isDestination || newCp.order === 'filter'
 						? 'text-[10px]/4'
 						: 'text-[10px]/3'
 				]}
 			>
-				({cp.crs})
+				({newCp.crs})
 			</div>
 		</div>
-		{#if cp.isCancelled}
-			<div class="text-xs/4 text-red-600">Cancelled</div>
-		{:else if cp.departed && cp.order === 'focus'}
-			<div class={['flex items-center gap-1 text-[10px]/4 text-muted-foreground']}>
-				<ArrowUpRight size={12} /> Departed {(cp.delay ?? 0) > 0
-					? `${cp.delay}m late`
-					: (cp.delay ?? 0) < 0
-						? `${Math.abs(cp.delay ?? 0)}m early`
+		{#if newCp.isCancelled}
+			<ChangeNotifier
+				changed={newCp.isCancelled !== oldCp.isCancelled}
+				class="w-max text-xs/4 text-red-600"><X size={16} /> Cancelled</ChangeNotifier
+			>
+		{:else if newCp.departed}
+			<ChangeNotifier
+				changed={newCp.departed !== oldCp.departed}
+				class={['flex w-max items-center gap-1 text-[10px]/4 text-muted-foreground']}
+			>
+				<ArrowUpRight size={12} /> Departed {(newCp.delay ?? 0) > 0
+					? `${newCp.delay}m late`
+					: (newCp.delay ?? 0) < 0
+						? `${Math.abs(newCp.delay ?? 0)}m early`
 						: 'on time'}
+			</ChangeNotifier>
+		{:else if newCp.arrived}
+			<div class="flex items-center gap-1 text-[10px]/4 text-muted-foreground">
+				<ArrowDownRight size={12} /> Arrived
 			</div>
-		{:else if cp.arrived && cp.order === 'focus'}
-			<div class="flex items-center gap-1 text-[10px]/4"><ArrowDownRight size={12} /> Arrived</div>
+		{:else if (newCp.delay ?? 0) > 5}
+			<div class="flex items-center gap-1 text-[10px]/4 text-muted-foreground">
+				<ClockAlertIcon size={12} /> Expected departure {newCp.delay}m late
+			</div>
 		{/if}
 	</div>
-	<div
+	<ChangeNotifier
+		changed={newCp.platform !== oldCp.platform}
 		class={[
-			cp.order === 'focus' ? 'text-lg font-medium' : 'text-sm text-zinc-400',
-			cp.order === 'post-destination' ? 'opacity-25' : ''
+			newCp.order === 'focus' ? 'text-lg font-medium' : 'text-sm text-zinc-400',
+			newCp.order === 'post-destination' ? 'opacity-25' : ''
 		]}
 	>
-		{cp.platform ?? '-'}
-	</div>
+		{newCp.platform ?? '-'}
+	</ChangeNotifier>
+	<!-- <DropdownMenu.Root>
+		<DropdownMenu.Trigger>
+			<Button size="sm">Edit</Button>
+		</DropdownMenu.Trigger>
+		<DropdownMenu.Content>
+			<Button
+				size="sm"
+				onclick={() => {
+					newCp.times.rt.arr = dayjsFromHHmm(newCp.times.rt.arr).add(5, 'minutes').format('HH:mm');
+					newCp.times.rt.dep = dayjsFromHHmm(newCp.times.rt.dep).add(5, 'minutes').format('HH:mm');
+				}}>Delay</Button
+			>
+			<Button
+				size="sm"
+				onclick={() => {
+					newCp.platform = prompt('Enter new platform') || '';
+				}}>Platform</Button
+			>
+			<Button
+				size="sm"
+				onclick={() => {
+					newCp.isCancelled = true;
+					newCp.arrivalCancelled = true;
+					newCp.departureCancelled = true;
+				}}>Cancel</Button
+			>
+			<Button
+				size="sm"
+				onclick={() => {
+					newCp.departed = true;
+				}}>Depart</Button
+			>
+		</DropdownMenu.Content>
+	</DropdownMenu.Root> -->
 </div>

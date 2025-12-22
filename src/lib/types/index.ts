@@ -52,6 +52,7 @@ export type BoardDetails = {
 	filterName: string | null;
 	filterCrs: string | null;
 	offset: number;
+	time: string;
 	notices: Notice[];
 };
 

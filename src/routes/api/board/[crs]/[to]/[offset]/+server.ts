@@ -92,14 +92,14 @@ export const GET: RequestHandler = async ({ params }) => {
 		shouldUseRailData = true;
 	}
 
+	const time = dayjs()
+		.tz('Europe/London')
+		.add(parseInt(offset || '0'), 'minute');
+
 	let url = `https://huxley2.azurewebsites.net/staffdepartures/${crs}/20?timeOffset=${offset}&timeWindow=120&access_token=${ACCESS_TOKEN}`;
 	if (shouldUseRailData) {
-		const time = dayjs()
-			.tz('Europe/London')
-			.add(parseInt(offset || '0'), 'minute')
-			.format('YYYYMMDDTHHmmss');
 		const urlObj = new URL(
-			`https://api1.raildata.org.uk/1010-live-departure-board---staff-version1_0/LDBSVWS/api/20220120/GetDepartureBoardByCRS/${crs}/${time}?numRows=20`
+			`https://api1.raildata.org.uk/1010-live-departure-board---staff-version1_0/LDBSVWS/api/20220120/GetDepartureBoardByCRS/${crs}/${time.format('YYYYMMDDTHHmmss')}?numRows=20`
 		);
 		if (to && to != 'null') urlObj.searchParams.append('filterCRS', to);
 		url = urlObj.toString();
@@ -152,6 +152,7 @@ export const GET: RequestHandler = async ({ params }) => {
 				filterName: data.filterLocationName ?? null,
 				filterCrs: to && to != 'null' ? to : null,
 				offset: parseInt(offset ?? '0'),
+				time,
 				notices: nrccMessages
 			}
 		};

@@ -12,7 +12,8 @@
 		ChevronDown,
 		ChevronLeft,
 		GitBranchIcon,
-		Split
+		Split,
+		TrainFront
 	} from 'lucide-svelte';
 	import type { PageData } from './$types';
 	import { invalidate, invalidateAll } from '$app/navigation';
@@ -29,11 +30,15 @@
 	import Button from '$lib/components/ui/button/button.svelte';
 	import Spinner from '$lib/components/ui/spinner/spinner.svelte';
 	import { refreshing } from '$lib/state/services-subscriber.svelte';
+	import * as Select from '$lib/components/ui/select/index.js';
 	import dayjs from 'dayjs';
+	import Checkbox from '$lib/components/ui/checkbox/checkbox.svelte';
+	import { dayjsFromHHmm } from '$lib/utils';
 
 	let { data }: { data: PageData } = $props();
 
 	$effect(() => {
+		refreshing.current = true;
 		data.service.then(async (r) => {
 			serviceData = r;
 			headerColor.current = r.operator.color;
@@ -44,8 +49,11 @@
 					'Content-Type': 'application/json'
 				}
 			});
-			const data = await response.json();
-			mapData.service = data;
+			if (response.ok) {
+				const data = await response.json();
+				mapData.service = data;
+			}
+			refreshing.current = false;
 		});
 	});
 	onDestroy(() => {
@@ -72,6 +80,10 @@
 				)
 			: false
 	);
+
+	let testView = $state(false);
+
+	let selectedTestCp: number = $state(0);
 </script>
 
 {#snippet lineButton(
@@ -79,7 +91,8 @@
 	show: boolean,
 	name: string,
 	operator: Operator,
-	inDivision: boolean
+	inDivision: boolean,
+	showTrain: boolean
 )}
 	<button class="flex h-8 items-center gap-2 text-left" {onclick}>
 		<div class="flex gap-3">
@@ -89,8 +102,19 @@
 		{#if inDivision}
 			<div class="w-2"></div>
 		{/if}
-		<div class="flex h-full w-3 justify-center">
+		<div class="relative flex h-full w-3 justify-center">
 			<div style:background={operator.color} class="h-full w-1.5 bg-black"></div>
+			{#if showTrain && !show}
+				<div class="absolute top-1/2 z-10 -translate-y-1/2">
+					<div
+						style:border-color={operator.color}
+						style:color={operator.color}
+						class="flex h-6 w-6 items-center justify-center rounded-full border-2 bg-white"
+					>
+						<TrainFront size={14} />
+					</div>
+				</div>
+			{/if}
 		</div>
 		<div class="flex items-center gap-1 pl-2 text-sm font-medium">
 			<div class={[show && 'rotate-180', 'transition-transform duration-200']}>
@@ -216,7 +240,11 @@
 							showPrevious,
 							'previous',
 							operator,
-							cp.inDivision
+							cp.inDivision,
+							callingPoints.some((cp) => cp.order === 'previous' && (cp.arrived || cp.departed)) &&
+								!cp.arrived &&
+								!cp.departed &&
+								!callingPoints.some((cp, j) => j > i && (cp.arrived || cp.departed))
 						)}
 						<!-- {:else if cp.order === 'destination' && callingPoints.filter((c) => c.order === 'further').length > 0}
 						{@render lineButton(
@@ -285,6 +313,14 @@
 							length={callingPoints.length}
 							nextCancelled={next?.isCancelled}
 							prevCancelled={prev?.isCancelled}
+							showTrain={!callingPoints.some(
+								(cp, index) => index > i && (cp.departed || cp.arrived)
+							) &&
+								(cp.isCancelled
+									? !callingPoints[i + 1]?.isCancelled &&
+										(!callingPoints.some((cp, j) => j < i && !cp.departed && !cp.isCancelled) ||
+											callingPoints.findLast((cp, j) => j < i && !cp.isCancelled)?.departed)
+									: !(cp.departed && callingPoints[i + 1]?.isCancelled))}
 						/>
 						{#if cp.endDivide && (showPrevious || !previousIncludesStartDivide)}
 							<div class="flex h-4 min-h-4 gap-2">
@@ -305,6 +341,71 @@
 					</div>
 				{/if}
 			{/each}
+			{#if testView}
+				<div>
+					<Select.Root type="single" bind:value={selectedTestCp}>
+						<Select.Trigger>
+							{callingPoints[selectedTestCp]?.name}
+						</Select.Trigger>
+						<Select.Content>
+							{#each callingPoints as cp, i}
+								<Select.Item value={i}>{cp.name}</Select.Item>
+							{/each}
+						</Select.Content>
+					</Select.Root>
+					<Button
+						onclick={() => {
+							callingPoints[selectedTestCp].isCancelled =
+								!callingPoints[selectedTestCp].isCancelled;
+							if (callingPoints[selectedTestCp].isCancelled) {
+								callingPoints[selectedTestCp].arrived = false;
+								callingPoints[selectedTestCp].departed = false;
+							}
+							if (selectedTestCp === callingPoints.length - 1) {
+								callingPoints[selectedTestCp - 1].departed = false;
+							}
+						}}
+					>
+						Cancel
+					</Button>
+					<Button
+						disabled={callingPoints[selectedTestCp].isCancelled}
+						onclick={() =>
+							(callingPoints[selectedTestCp].arrived = !callingPoints[selectedTestCp].arrived)}
+					>
+						Arrive
+					</Button>
+					<Button
+						disabled={callingPoints[selectedTestCp].isCancelled ||
+							selectedTestCp === callingPoints.length - 1}
+						onclick={() => {
+							callingPoints[selectedTestCp].departed = !callingPoints[selectedTestCp].departed;
+							if (selectedTestCp !== 0) {
+								callingPoints[selectedTestCp].arrived = true;
+							}
+						}}
+					>
+						Depart
+					</Button>
+					<Button
+						disabled={callingPoints[selectedTestCp].isCancelled}
+						onclick={() => {
+							callingPoints[selectedTestCp].times.rt.arr = dayjsFromHHmm(
+								callingPoints[selectedTestCp].times.rt.arr
+							)
+								.add(5, 'minutes')
+								.format('HH:mm');
+							callingPoints[selectedTestCp].times.rt.dep = dayjsFromHHmm(
+								callingPoints[selectedTestCp].times.rt.dep
+							)
+								.add(5, 'minutes')
+								.format('HH:mm');
+						}}
+					>
+						Delay
+					</Button>
+				</div>
+			{/if}
 		</div>
 	</div>
 {:else}

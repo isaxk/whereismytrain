@@ -23,7 +23,7 @@
 		X
 	} from 'lucide-svelte';
 	import { onMount, untrack } from 'svelte';
-	import { fade, fly } from 'svelte/transition';
+	import { fade, fly, slide } from 'svelte/transition';
 	import StationsJSON from '$lib/data/stations.json';
 	import { mapData } from '$lib/state/map.svelte.js';
 	import Search from '$lib/components/search/search.svelte';
@@ -42,6 +42,7 @@
 	import { localStore } from '$lib/state/saved.svelte.js';
 	import Button from '$lib/components/ui/button/button.svelte';
 	import { refreshing } from '$lib/state/services-subscriber.svelte.js';
+	import { flip } from 'svelte/animate';
 
 	let { data, children } = $props();
 
@@ -69,13 +70,13 @@
 
 	onMount(() => {
 		const interval = setInterval(() => {
-			refreshing.current = true;
-			invalidateAll().then((d) => {
-				console.log(d);
-				setTimeout(() => {
-					refreshing.current = false;
-				}, 500);
-			});
+			// refreshing.current = true;
+			// invalidateAll().then((d) => {
+			// 	console.log(d);
+			// 	setTimeout(() => {
+			// 		refreshing.current = false;
+			// 	}, 500);
+			// });
 		}, 10000);
 		return () => {
 			clearInterval(interval);
@@ -121,10 +122,10 @@
 
 	const laterUrl = $derived.by(() => {
 		if (services) {
-			if (services.length < 2) return offsetUrl(data.offset + 20);
+			if (services.length < 2) return offsetUrl(data.offset + 60);
 			const first = services[0];
 			const last = services[services.length - 1];
-			if (!last.rawTime || !first.rawTime) return offsetUrl(data.offset + 20);
+			if (!last.rawTime || !first.rawTime) return offsetUrl(data.offset + 60);
 			const diff = dayjs(last.rawTime).diff(dayjs(first.rawTime), 'minute');
 			console.log(diff);
 			return offsetUrl(data.offset + diff);
@@ -262,14 +263,19 @@
 						{#if services}
 							<div class="" in:fade|global={{ duration: 200 }}>
 								{#each services as service, index (service.rid)}
-									{#if (index === 0 && !dayjs(service.rawTime).isSame(dayjs(), 'day')) || (index > 0 && !dayjs(service.rawTime).isSame(dayjs(services[index - 1].rawTime), 'day'))}
-										<div
-											class="border-b border-border px-4 py-2 text-lg font-semibold odd:bg-muted/40"
-										>
-											{dayjs(service.rawTime).format('ddd DD MMM')}
-										</div>
-									{/if}
-									<div class="border-b border-border px-4 odd:bg-muted/40">
+									<div
+										class="border-b border-border px-4 transition-all odd:bg-muted/40"
+										animate:flip={{ duration: 200 }}
+										out:fly={{ duration: 200, x: -50 }}
+									>
+										{#if (index === 0 && !dayjs(service.rawTime).isSame(dayjs(), 'day')) || (index > 0 && !dayjs(service.rawTime).isSame(dayjs(services[index - 1].rawTime), 'day'))}
+											<div
+												transition:slide={{ duration: 200 }}
+												class="-mr-8 -ml-4 border-b border-border px-4 py-2 text-lg font-semibold"
+											>
+												{dayjs(service.rawTime).format('ddd DD MMM')}
+											</div>
+										{/if}
 										<BoardItemComponent
 											href={serviceUrl(service.rid)}
 											id={service.rid}

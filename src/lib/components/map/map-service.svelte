@@ -5,6 +5,9 @@
 	import type { ServiceMapData, TrainService } from '$lib/types';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
+	import { refreshing } from '$lib/state/services-subscriber.svelte';
+	import { fade } from 'svelte/transition';
+	import Spinner from '../ui/spinner/spinner.svelte';
 
 	let {
 		serviceData,
@@ -85,11 +88,21 @@
 								</div>
 								<div
 									class={[
-										'flex grow flex-col items-center justify-center pb-0.5',
+										'relative flex grow flex-col items-center justify-center pb-0.5',
 										isOfFormedFrom ? 'h-2 min-h-2 opacity-50' : 'h-5 min-h-5'
 									]}
 								>
-									<TrainFront size={isOfFormedFrom ? 10 : 14} />
+									<div class={['transition-all', refreshing.current ? 'scale-60' : 'scale-100']}>
+										<TrainFront size={isOfFormedFrom ? 10 : 14} />
+									</div>
+									{#if refreshing.current}
+										<div
+											transition:fade={{ duration: 150 }}
+											class="absolute inset-0 flex items-center justify-center"
+										>
+											<Spinner class="size-20 scale-120" />
+										</div>
+									{/if}
 									<!-- <div class="text-[7px]/3">
 									to {mapData.locations.find(
 										(l) =>

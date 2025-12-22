@@ -1,7 +1,8 @@
-import { clsx, type ClassValue } from "clsx";
-import dayjs from "dayjs";
-import type { LngLatLike } from "maplibre-gl";
-import { twMerge } from "tailwind-merge";
+import { clsx, type ClassValue } from 'clsx';
+import dayjs from 'dayjs';
+import type { LngLatLike } from 'maplibre-gl';
+import { crossfade } from 'svelte/transition';
+import { twMerge } from 'tailwind-merge';
 
 export function throttle<T extends (...args: any[]) => any>(func: T, delay: number): T {
 	let isWaiting = false;
@@ -77,7 +78,6 @@ export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
 }
 
-
 export function parseServiceId(rawid: string) {
 	const splitten = rawid.split('d');
 	const id = splitten[0];
@@ -91,3 +91,9 @@ export function dayjsFromHHmm(hhmm: string) {
 	const [hh, mm] = hhmm.split(':').map(Number);
 	return dayjs().hour(hh).minute(mm).second(0).millisecond(0);
 }
+
+const [send, receive] = crossfade({ duration: 200 });
+export const t = {
+	send,
+	receive
+};
