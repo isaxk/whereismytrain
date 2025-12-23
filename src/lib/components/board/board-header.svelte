@@ -71,7 +71,7 @@
 				</div>
 			{/if}
 		</div>
-		{#if details?.offset}
+		<!-- {#if details?.offset}
 			<div class="flex items-center justify-center gap-1 text-xs text-nowrap">
 				<div class="min-w-3">
 					<Clock size={12} />
@@ -84,7 +84,7 @@
 					in {details?.offset}m
 				{/if}
 			</div>
-		{/if}
+		{/if} -->
 	</div>
 	<div class={['flex w-full min-w-0 grow flex-col items-end', to && 'pr-2']}>
 		{#if to}
