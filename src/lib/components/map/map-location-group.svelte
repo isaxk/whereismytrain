@@ -8,6 +8,7 @@
 	import { page } from '$app/state';
 	import Spinner from '../ui/spinner/spinner.svelte';
 	import { fade } from 'svelte/transition';
+	import MapTrainIndication from './map-train-indication.svelte';
 	let {
 		href,
 		crs,
@@ -223,7 +224,18 @@
 			</div>
 		</div>
 	{/if}
-	<Marker
+	{#if data.trainPosition}
+		<MapTrainIndication
+			trainBearing={data.trainBearing}
+			trainPosition={data.trainPosition}
+			isFormedFromTrain={data.isFormedFromTrain}
+			showDestination={showDestination ? data.destination.crs : null}
+			{color}
+			{refreshing}
+			{rid}
+		/>
+	{/if}
+	<!-- <Marker
 		onclick={(e) => {
 			goto(href);
 			page.data.id = rid;
@@ -295,5 +307,5 @@
 				</svg>
 			{/if}
 		</div>
-	</Marker>
+	</Marker> -->
 {/if}
