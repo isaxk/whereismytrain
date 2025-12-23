@@ -2,7 +2,7 @@
 	import type { ServiceMapData, TrainService } from '$lib/types';
 	import { onMount } from 'svelte';
 	import MapService from './map-service.svelte';
-	import { servicesSub } from '$lib/state/services-subscriber.svelte';
+	import { refreshing, servicesSub } from '$lib/state/services-subscriber.svelte';
 
 	let { rid, crs, filter = null } = $props();
 
@@ -15,9 +15,12 @@
 		return data;
 	}
 
+	let refreshingMap = $state(false);
+
 	function refresh() {
 		getServiceData().then(async (data) => {
 			serviceData = data;
+			refreshingMap = true;
 			const response = await fetch(`/api/mapdata`, {
 				method: 'POST',
 				body: JSON.stringify({ locations: data.locations, formedFrom: data.formedFrom }),
@@ -27,6 +30,7 @@
 			});
 			const resData = await response.json();
 			mapData = resData;
+			refreshingMap = false;
 		});
 	}
 
@@ -50,5 +54,12 @@
 </script>
 
 {#if serviceData && mapData}
-	<MapService {rid} {serviceData} {mapData} {crs} filter={filter ?? null} />
+	<MapService
+		{rid}
+		{serviceData}
+		{mapData}
+		{crs}
+		filter={filter ?? null}
+		refreshing={refreshing.current || refreshingMap}
+	/>
 {/if}

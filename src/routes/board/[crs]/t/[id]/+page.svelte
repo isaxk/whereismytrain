@@ -38,8 +38,8 @@
 	let { data }: { data: PageData } = $props();
 
 	$effect(() => {
-		refreshing.current = true;
 		data.service.then(async (r) => {
+			refreshing.map = true;
 			serviceData = r;
 			headerColor.current = r.operator.color;
 			const response = await fetch(`/api/mapdata`, {
@@ -53,7 +53,9 @@
 				const data = await response.json();
 				mapData.service = data;
 			}
-			refreshing.current = false;
+			setTimeout(() => {
+				refreshing.map = false;
+			}, 250);
 		});
 	});
 	onDestroy(() => {
@@ -159,7 +161,7 @@
 		<div class="min-w-0 grow text-center">
 			<div class="flex items-center justify-center gap-1 text-xs">
 				<div class="w-3">
-					{#if refreshing.current}
+					{#if refreshing.current || refreshing.map}
 						<Spinner class="size-3" />
 					{/if}
 				</div>

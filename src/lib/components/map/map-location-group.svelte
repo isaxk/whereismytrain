@@ -6,7 +6,6 @@
 	import { Tween } from 'svelte/motion';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
-	import { refreshing } from '$lib/state/services-subscriber.svelte';
 	import Spinner from '../ui/spinner/spinner.svelte';
 	import { fade } from 'svelte/transition';
 	let {
@@ -15,6 +14,7 @@
 		rid,
 		data,
 		index,
+		refreshing = false,
 		color,
 		showDestination,
 		isAtStation,
@@ -27,6 +27,7 @@
 		index: number;
 		color: string;
 		showDestination: boolean;
+		refreshing: boolean;
 		isAtStation: boolean;
 		filter?: string | null;
 	} = $props();
@@ -248,7 +249,7 @@
 				]}
 			>
 				<div class="relative">
-					{#if refreshing.current}
+					{#if refreshing}
 						<div
 							transition:fade={{ duration: 150 }}
 							class="absolute inset-0 flex items-center justify-center"
@@ -256,7 +257,7 @@
 							<Spinner class="size-20 scale-120" />
 						</div>
 					{/if}
-					<div class={['transition-all', refreshing.current ? 'scale-60' : 'scale-100']}>
+					<div class={['transition-all', refreshing ? 'scale-60' : 'scale-100']}>
 						<TrainFront size={showDestination || data.isFormedFromTrain ? 14 : 18} />
 					</div>
 				</div>

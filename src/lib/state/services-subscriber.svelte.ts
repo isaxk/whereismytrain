@@ -20,7 +20,8 @@ async function refresh() {
 }
 
 export const refreshing = $state({
-	current: false
+	current: false,
+	map: false
 });
 
 let services: {

@@ -70,18 +70,21 @@
 
 	onMount(() => {
 		const interval = setInterval(() => {
-			// refreshing.current = true;
-			// invalidateAll().then((d) => {
-			// 	console.log(d);
-			// 	setTimeout(() => {
-			// 		refreshing.current = false;
-			// 	}, 500);
-			// });
+			console.log('refreshing');
+			refreshing.current = true;
+			invalidateAll().then((d) => {
+				console.log(d);
+				setTimeout(() => {
+					refreshing.current = false;
+				}, 500);
+			});
 		}, 10000);
 		return () => {
 			clearInterval(interval);
 		};
 	});
+
+	$inspect('refreshing.current', refreshing.current);
 
 	$effect(() => {
 		untrack(() => {

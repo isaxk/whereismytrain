@@ -33,6 +33,7 @@
 	import { saved } from '$lib/state/saved.svelte';
 	import { favourites } from '$lib/data/favourites';
 	import { explicitEffect } from '$lib/state/utils.svelte';
+	import { refreshing } from '$lib/state/services-subscriber.svelte';
 
 	let serviceData: TrainService | null = $state(null);
 	let map: maplibregl.Map;
@@ -304,11 +305,12 @@
 			{serviceData}
 			filter={page.data.to}
 			crs={page.data.crs}
+			refreshing={refreshing.current || refreshing.map}
 		/>
 	{:else if !page.data.id}
 		{#if filteredStations.length === 0}
 			<div class="fixed top-3 right-3 z-[200]">
-				<div class="bg-background flex w-max items-center gap-1 rounded-md px-2 py-1">
+				<div class="flex w-max items-center gap-1 rounded-md bg-background px-2 py-1">
 					<CircleAlertIcon size={16} />
 					Zoom in too see stations
 				</div>
@@ -318,7 +320,7 @@
 		{#each filteredStations as station, i ((station?.crsCode ?? Date.now().toString()) + i)}
 			{#if station}
 				<Marker
-					class="bg-background rounded-full"
+					class="rounded-full bg-background"
 					zIndex={favourites.includes(station.crsCode) ? 1000 : 100}
 					lngLat={[station.long, station.lat]}
 					onclick={(e) => {
@@ -392,7 +394,7 @@
 			{#if station}
 				<Marker lngLat={[station.long, station.lat]} zIndex={5000}>
 					<div
-						class="animate-in fade-in-20 flex h-7 w-7 items-center justify-center rounded-full bg-black text-xs text-[10px] text-white dark:bg-white dark:text-black"
+						class="flex h-7 w-7 animate-in items-center justify-center rounded-full bg-black text-xs text-[10px] text-white fade-in-20 dark:bg-white dark:text-black"
 					>
 						{page.data.crs}
 					</div>

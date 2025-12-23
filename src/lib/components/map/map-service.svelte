@@ -5,7 +5,6 @@
 	import type { ServiceMapData, TrainService } from '$lib/types';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
-	import { refreshing } from '$lib/state/services-subscriber.svelte';
 	import { fade } from 'svelte/transition';
 	import Spinner from '../ui/spinner/spinner.svelte';
 
@@ -14,12 +13,14 @@
 		mapData,
 		crs,
 		filter = null,
+		refreshing = false,
 		rid
 	}: {
 		serviceData: TrainService;
 		mapData: ServiceMapData;
 		crs: string;
 		filter?: string | null;
+		refreshing: boolean;
 		rid: string;
 	} = $props();
 </script>
@@ -30,6 +31,7 @@
 			<MapLocationGroup
 				{rid}
 				{crs}
+				{refreshing}
 				{filter}
 				href="/board/{crs}/t/{rid}?{filter ? `to=${filter}&` : ''}backTo=/"
 				isAtStation={false}
@@ -92,10 +94,10 @@
 										isOfFormedFrom ? 'h-2 min-h-2 opacity-50' : 'h-5 min-h-5'
 									]}
 								>
-									<div class={['transition-all', refreshing.current ? 'scale-60' : 'scale-100']}>
+									<div class={['transition-all', refreshing ? 'scale-60' : 'scale-100']}>
 										<TrainFront size={isOfFormedFrom ? 10 : 14} />
 									</div>
-									{#if refreshing.current}
+									{#if refreshing}
 										<div
 											transition:fade={{ duration: 150 }}
 											class="absolute inset-0 flex items-center justify-center"
