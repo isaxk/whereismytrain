@@ -92,7 +92,7 @@
 				details &&
 				(page.data.crs !== details.crs ||
 					page.data.to !== details.filterCrs ||
-					page.data.time !== details.time)
+					page.data.offset !== details.offset)
 			) {
 				services = null;
 			}
