@@ -5,6 +5,7 @@ import { env } from '$env/dynamic/public';
 import { parseServiceId } from '$lib/utils';
 import { toast } from 'svelte-sonner';
 import NotificationComponent from '$lib/components/home/notification.svelte';
+import { page } from '$app/state';
 
 let token: string | null = null;
 
@@ -152,13 +153,19 @@ export function setupForegroundMessageHandler() {
 		// 	});
 		// }
 		//
-		toast(NotificationComponent, {
-			componentProps: {
-				title: payload.notification?.title ?? '',
-				service: payload.data?.service ?? '{}',
-				alertType: payload.data?.alertType ?? ''
-			},
-			duration: 5000
-		});
+		//
+		if (
+			page.url.pathname !== '/' &&
+			page.data.id !== JSON.parse(payload.data?.service ?? 'null')?.service_id
+		) {
+			toast(NotificationComponent, {
+				componentProps: {
+					title: payload.notification?.title ?? '',
+					service: payload.data?.service ?? '{}',
+					alertType: payload.data?.alertType ?? ''
+				},
+				duration: 5000
+			});
+		}
 	});
 }

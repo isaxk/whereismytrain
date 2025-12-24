@@ -25,16 +25,13 @@
 		operator,
 		index,
 		length,
-		nextCancelled = false,
-		prevCancelled = false,
 		showTrain = false
 	}: {
 		cp: CallingPoint;
 		operator: Operator;
 		index: number;
 		length: number;
-		nextCancelled?: boolean;
-		prevCancelled?: boolean;
+
 		showTrain?: boolean;
 	} = $props();
 
@@ -76,10 +73,10 @@
 					oldCp.times.plan.arr !== oldCp.times.rt.arr}
 				class={[
 					newCp.isCancelled || newCp.arrivalCancelled
-						? 'text-sm text-red-600 line-through'
+						? 'text-sm text-red-600'
 						: newCp.times.rt.arr !== newCp.times.plan.arr
 							? newCp.times.rt.arr
-								? 'text-xs/3 line-through'
+								? 'text-xs/3'
 								: 'text-xs/3'
 							: 'text-sm text-good'
 				]}
@@ -117,10 +114,10 @@
 					oldCp.times.plan.dep !== oldCp.times.rt.dep}
 				class={[
 					newCp.isCancelled || newCp.departureCancelled
-						? 'text-sm text-red-600 line-through'
+						? 'text-sm text-red-600'
 						: newCp.times.rt.dep !== newCp.times.plan.dep
 							? newCp.times.rt.dep
-								? 'text-xs/3 line-through'
+								? 'text-xs/3'
 								: 'text-xs/3'
 							: 'text-sm text-good'
 				]}
@@ -162,7 +159,7 @@
 			newCp.isPostDestination ? 'opacity-50' : ''
 		]}
 	>
-		{#if index === 0}
+		{#if cp.isOrigin}
 			<div class="grow"></div>
 			<div style:background={operator.color} class="h-1.5 w-4"></div>
 			<div style:background={operator.color} class="w-1.5 grow bg-black"></div>
@@ -185,8 +182,8 @@
 		{#if (newCp.departed || newCp.isCancelled) && showTrain}
 			<div
 				class="absolute top-9 z-10"
-				in:t.receive={{ key: 'train-pos-icon' }}
-				out:t.send={{ key: 'train-pos-icon' }}
+				in:t.receive|global={{ key: 'train-pos-icon' }}
+				out:t.send|global={{ key: 'train-pos-icon' }}
 			>
 				<div
 					style:border-color={operator.color}
@@ -199,8 +196,8 @@
 		{:else if newCp.arrived && showTrain}
 			<div
 				class="absolute top-1/2 z-10 -translate-y-1/2"
-				in:t.receive={{ key: 'train-pos-icon' }}
-				out:t.send={{ key: 'train-pos-icon' }}
+				in:t.receive|global={{ key: 'train-pos-icon' }}
+				out:t.send|global={{ key: 'train-pos-icon' }}
 			>
 				<div
 					style:border-color={operator.color}
@@ -245,7 +242,7 @@
 				changed={newCp.isCancelled !== oldCp.isCancelled}
 				class="w-max text-xs/4 text-red-600"><X size={16} /> Cancelled</ChangeNotifier
 			>
-		{:else if newCp.departed}
+		{:else if newCp.departed && cp.order === 'focus'}
 			<ChangeNotifier
 				changed={newCp.departed !== oldCp.departed}
 				class={['flex w-max items-center gap-1 text-[10px]/4 text-muted-foreground']}
@@ -256,11 +253,11 @@
 						? `${Math.abs(newCp.delay ?? 0)}m early`
 						: 'on time'}
 			</ChangeNotifier>
-		{:else if newCp.arrived}
+		{:else if newCp.arrived && (cp.order === 'focus' || cp.order === 'filter')}
 			<div class="flex items-center gap-1 text-[10px]/4 text-muted-foreground">
 				<ArrowDownRight size={12} /> Arrived
 			</div>
-		{:else if (newCp.delay ?? 0) > 5}
+		{:else if (newCp.delay ?? 0) > 5 && (cp.order === 'focus' || cp.order === 'filter')}
 			<div class="flex items-center gap-1 text-[10px]/4 text-muted-foreground">
 				<ClockAlertIcon size={12} /> Expected departure {newCp.delay}m late
 			</div>

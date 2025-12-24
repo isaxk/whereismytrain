@@ -51,3 +51,20 @@ export const favourites = [
 	'SHR',
 	'WVH'
 ];
+
+export const londonTerminals = [
+	'PAD',
+	'MYB',
+	'EUS',
+	'STP',
+	'KGX',
+	'MOG',
+	'FST',
+	'LST',
+	'CST',
+	'CHX',
+	'LBG',
+	'BFR',
+	'VIC',
+	'WAT'
+];

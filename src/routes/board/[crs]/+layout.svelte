@@ -88,14 +88,11 @@
 
 	$effect(() => {
 		untrack(() => {
-			console.log('crs', page.data.crs, details?.crs);
-			console.log('to', page.data.to, details?.filterCrs);
-			console.log('offset', page.data.offset, details?.offset);
 			if (
 				details &&
 				(page.data.crs !== details.crs ||
 					page.data.to !== details.filterCrs ||
-					page.data.offset !== details.offset)
+					page.data.time !== details.time)
 			) {
 				services = null;
 			}
@@ -119,33 +116,33 @@
 
 	function offsetUrl(offset: number) {
 		const url = new URL(page.url);
-		url.searchParams.set('offset', Math.max(-119, offset).toString());
+		url.searchParams.set('offset', offset.toString());
 		return url.toString();
 	}
 
 	const laterUrl = $derived.by(() => {
-		if (services) {
-			if (services.length < 2) return offsetUrl(data.offset + 60);
+		if (services && details) {
+			if (services.length < 2) return offsetUrl(details.offset + 60);
 			const first = services[0];
 			const last = services[services.length - 1];
-			if (!last.rawTime || !first.rawTime) return offsetUrl(data.offset + 60);
+			if (!last.rawTime || !first.rawTime) return offsetUrl(details.offset + 60);
 			const diff = dayjs(last.rawTime).diff(dayjs(first.rawTime), 'minute');
 			console.log(diff);
-			return offsetUrl(data.offset + diff);
+			return offsetUrl(details.offset + diff);
 		} else {
 			return '#';
 		}
 	});
 
 	const earlierUrl = $derived.by(() => {
-		if (services) {
-			if (services.length < 2) return offsetUrl(data.offset - 20);
+		if (services && details) {
+			if (services.length < 2) return offsetUrl(details.offset - 20);
 			const first = services[0];
 			const last = services[services.length - 1];
-			if (!last.rawTime || !first.rawTime) return offsetUrl(data.offset - 20);
+			if (!last.rawTime || !first.rawTime) return offsetUrl(details.offset - 20);
 			const diff = dayjs(last.rawTime).diff(dayjs(first.rawTime), 'minute');
 			// console.log(diff);
-			return offsetUrl(data.offset - diff);
+			return offsetUrl(details.offset - diff);
 		} else {
 			return '#';
 		}
@@ -154,13 +151,11 @@
 	function serviceUrl(rid: string) {
 		const search = new URLSearchParams();
 		data.to && search.set('to', data.to);
-		data.offset && search.set('offset', data.offset.toString());
+		data.time && search.set('time', data.time.toString());
 		return `/board/${data.crs}/t/${rid}?${search.toString()}`;
 	}
 
 	let expanded = $state(false);
-
-	$inspect('offset', data.offset);
 </script>
 
 <svelte:head>

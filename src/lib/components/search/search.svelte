@@ -93,10 +93,10 @@
 			out:send|global={{ key }}
 			in:receive|global={{ key }}
 			onclick={() => openSearch()}
-			class="group/input-group border-input dark:bg-input/30 bg-background flex h-14 flex-col justify-center overflow-hidden rounded-md border p-4 text-left shadow-xs transition-[color,box-shadow] outline-none"
+			class="group/input-group flex h-12 flex-col justify-center overflow-hidden rounded-md border border-input bg-background px-4 text-left shadow-xs transition-[color,box-shadow] outline-none dark:bg-input/30"
 		>
 			{#if selectedStation}
-				<div class="text-xl/5 font-semibold">{selectedStation.crsCode}</div>
+				<div class="text-base/4 font-semibold">{selectedStation.crsCode}</div>
 				<div class="h-max min-h-4 w-full max-w-full truncate text-xs/4 text-zinc-500">
 					{selectedStation.stationName}
 				</div>
@@ -114,7 +114,7 @@
 			submit(results[0]?.item.crsCode);
 		}}
 		transition:fade={{ duration: 200 }}
-		class={['bg-background fixed inset-0 z-10000 rounded-t-xl transition-all']}
+		class={['fixed inset-0 z-10000 rounded-t-xl bg-background transition-all']}
 	>
 		<div class="flex gap-2 p-4 pt-6">
 			<input
@@ -125,7 +125,7 @@
 				in:receive|global={{ key }}
 				type="text"
 				placeholder="Search for a station..."
-				class="bg-background border-border w-full rounded-lg border p-3 px-4 drop-shadow-xs"
+				class="w-full rounded-lg border border-border bg-background p-3 px-4 drop-shadow-xs"
 			/>
 			<button class="flex w-10 items-center justify-center" onclick={() => closeSearch()}
 				><X /></button
@@ -137,7 +137,7 @@
 					<button
 						type={i === 0 ? 'submit' : 'button'}
 						onclick={() => submit(results[i].item.crsCode)}
-						class="border-border flex h-14 w-full items-center border-b px-4 text-left last:border-none"
+						class="flex h-14 w-full items-center border-b border-border px-4 text-left last:border-none"
 					>
 						<div>
 							<div class="text-xl">

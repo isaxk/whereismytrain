@@ -1,5 +1,3 @@
-import type { is } from 'zod/v4/locales';
-
 export type DestinationOrigin = {
 	crs: string;
 	name: string;
@@ -116,6 +114,7 @@ export type CallingPoint = {
 	endDivide: boolean;
 	delay: number | null;
 	order: CallingPointOrder;
+	isOrigin: boolean;
 	departed: boolean;
 	arrived: boolean;
 	isDestination: boolean;

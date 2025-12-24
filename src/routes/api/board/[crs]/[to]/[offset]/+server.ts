@@ -88,7 +88,7 @@ export const GET: RequestHandler = async ({ params }) => {
 	}
 
 	let shouldUseRailData = false;
-	if (parseInt(offset || '0') > 119) {
+	if (Math.abs(parseInt(offset || '0')) > 119) {
 		shouldUseRailData = true;
 	}
 

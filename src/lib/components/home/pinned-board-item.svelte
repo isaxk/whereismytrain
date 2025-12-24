@@ -5,14 +5,20 @@
 	import { X } from 'lucide-svelte';
 	import type { PinnedBoard } from '$lib/types';
 
-	let { toCrs, fromCrs, toName, fromName }: PinnedBoard = $props();
+	let {
+		toCrs,
+		fromCrs,
+		toName,
+		fromName,
+		onselect
+	}: PinnedBoard & { onselect: (fromCrs: string, toCrs: string | null) => void } = $props();
 </script>
 
-<div class="border-border flex w-full items-center gap-4 border-t px-4 py-2">
-	<a href={toCrs ? `/board/${fromCrs}?to=${toCrs}` : `/board/${fromCrs}`} class="contents">
-		<div class="w-full grow">
+<div class="flex w-full items-center gap-4 px-4 py-2">
+	<button type="button" onclick={() => onselect(fromCrs, toCrs)} class="contents text-left">
+		<div class="w-full min-w-0 grow">
 			<div class="text-xl/5 font-medium">{fromCrs}</div>
-			<div class="text-xs">{fromName}</div>
+			<div class="truncate text-xs">{fromName}</div>
 		</div>
 
 		<div>
@@ -20,17 +26,18 @@
 		</div>
 
 		{#if toCrs}
-			<div class="w-full grow">
+			<div class="w-full min-w-0 grow">
 				<div class="text-xl/5 font-medium">{toCrs}</div>
-				<div class="text-xs">{toName}</div>
+				<div class="truncate text-xs">{toName}</div>
 			</div>
 		{:else}
 			<div class="w-full grow">
-				<div class="text-muted-foreground text-xs">Anywhere</div>
+				<div class="text-xs text-muted-foreground">Anywhere</div>
 			</div>
 		{/if}
-	</a>
+	</button>
 	<Button
+		type="button"
 		onclick={() =>
 			(pinned.value = pinned.value.filter((p) => !(p.fromCrs === fromCrs && p.toCrs === toCrs)))}
 		size="icon"

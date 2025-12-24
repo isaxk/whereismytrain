@@ -139,6 +139,7 @@ function parseCallingPoint(
 		name: item.locationName,
 		times,
 		delay,
+		rtDepDate: item.atd ?? item.etd,
 		departed: item.atd && item.atd !== nullTime,
 		arrived: item.ata && item.ata !== nullTime,
 		isCancelled: item.isCancelled,
@@ -150,6 +151,7 @@ function parseCallingPoint(
 		platform: item.platform ?? null,
 		order,
 		isDestination,
+		isOrigin: index === 0,
 		isPostDestination
 	};
 }

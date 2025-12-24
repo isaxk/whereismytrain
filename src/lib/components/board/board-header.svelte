@@ -42,20 +42,18 @@
 		<div class="h-[5px] w-10 rounded-sm bg-black/40"></div>
 	</div>
 	<Button size="icon" variant="outline" href="../"><ArrowLeft size={20} /></Button>
-	<div class="flex w-full min-w-0 grow">
-		<div class="flex min-w-26 flex-col pl-2 sm:min-w-32">
-			<div class="text-2xl/7 font-bold">{from}</div>
-			<div class="max-w-full truncate text-[10px]/3 font-medium">
-				{#if details?.name}
-					{details?.name}
-				{:else}
-					<Skeleton class="h-3 w-10" />
-				{/if}
-			</div>
+	<div class="flex w-full min-w-0 grow flex-col pl-2">
+		<div class="text-2xl/7 font-bold">{from}</div>
+		<div class="max-w-full truncate text-[10px]/3 font-medium">
+			{#if details?.name}
+				{details?.name}
+			{:else}
+				<Skeleton class="h-3 w-10" />
+			{/if}
 		</div>
 	</div>
 
-	<div class="min-w-10">
+	<div class="w-14 min-w-14">
 		<div class="relative flex h-6.5 min-w-10 items-center justify-center px-2">
 			{#if refreshing.current}
 				<div
@@ -71,20 +69,23 @@
 				</div>
 			{/if}
 		</div>
-		<!-- {#if details?.offset}
-			<div class="flex items-center justify-center gap-1 text-xs text-nowrap">
+		{#if details?.time && Math.abs(details.offset) > 0}
+			<div class="flex items-center justify-center gap-1 px-4 text-xs text-nowrap">
 				<div class="min-w-3">
 					<Clock size={12} />
 				</div>
-				{#if details?.offset > 120}
-					{dayjs(details?.time).format('HH:mm')}
-				{:else if details?.offset > 60}
-					in {Math.floor(details?.offset / 60)}h {details?.offset % 60}m
-				{:else if details?.offset > 0}
-					in {details?.offset}m
-				{/if}
+				{dayjs(details?.time).format('HH:mm')}
 			</div>
-		{/if} -->
+		{:else}
+			<div
+				class="justify-center4gap-1 flex items-center px-2 text-xs text-nowrap text-muted-foreground"
+			>
+				<div class="min-w-3">
+					<Clock size={12} />
+				</div>
+				now
+			</div>
+		{/if}
 	</div>
 	<div class={['flex w-full min-w-0 grow flex-col items-end', to && 'pr-2']}>
 		{#if to}

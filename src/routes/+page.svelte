@@ -2,7 +2,15 @@
 	import { goto } from '$app/navigation';
 	import Search from '$lib/components/search/search.svelte';
 	import { mapData, paneHeight } from '$lib/state/map.svelte';
-	import { BellRing, ChevronRight, Pin, X } from 'lucide-svelte';
+	import {
+		ArrowUpRight,
+		BellRing,
+		ChevronRight,
+		Pin,
+		SearchIcon,
+		Settings,
+		X
+	} from 'lucide-svelte';
 	import AllStations from '$lib/data/stations.json';
 	import { pinned, saved } from '$lib/state/saved.svelte';
 	import SavedTrain from '$lib/components/home/saved-train.svelte';
@@ -13,6 +21,8 @@
 	import { flip } from 'svelte/animate';
 	import Button from '$lib/components/ui/button/button.svelte';
 	import PinnedBoardItem from '$lib/components/home/pinned-board-item.svelte';
+	import { Tabs } from 'bits-ui';
+	import TrainSearch from '$lib/components/home/train-search.svelte';
 
 	let from = $state(null);
 	let to = $state(null);
@@ -30,8 +40,92 @@
 	<title>Where is my train?</title>
 </svelte:head>
 
-<div class="flex w-full flex-col">
-	<div class="border-b-border bg-background sticky top-0 z-20 rounded-t-xl p-4 pt-6">
+<div
+	class="fixed top-0 right-0 left-0 flex h-24 w-full flex-col justify-center rounded-t-2xl border-b border-border bg-background px-4"
+>
+	<div class="flex items-center justify-start gap-2">
+		<div class="grow text-3xl font-bold">Where is my train?</div>
+		{#if refreshing.current}
+			<Spinner />
+		{/if}
+	</div>
+	<div class="flex gap-2 *:text-blue-400 *:underline">
+		<a href="/about">About & Data Sources</a>
+		<a href="https://github.com/isaxk/whereismytrain">GitHub</a>
+		<a href="https://www.isaxk.com">isaxk.com</a>
+	</div>
+	<!-- <div class="grow"></div>
+	<div><SearchIcon /></div>
+	<div><Settings /></div> -->
+</div>
+<div class="pt-24"></div>
+<div class="w-full p-4 pb-0">
+	<!-- <div class="grid w-full max-w-full grid-cols-[1fr_32px_1fr_64px] items-center gap-2">
+		<Search class="" key="from" bind:selected={from}></Search>
+		<div class="flex justify-center">
+			<ChevronRight />
+		</div>
+		<Search class="" key="to" bind:selected={to}></Search>
+		<Button
+			onclick={() => {
+				paneHeight.break = 'middle';
+			}}
+			href={from && from !== to
+				? to
+					? `/board/${from}?to=${to}&offset=0`
+					: `/board/${from}?offset=0`
+				: '#'}
+			class="h-12 w-full">Go</Button
+		>
+	</div> -->
+	<TrainSearch />
+</div>
+<div class="flex flex-col">
+	{#if saved.value.length === 0}
+		<div class="flex flex-col items-center justify-center gap-1 p-4 pt-10 text-muted-foreground">
+			<div class="font-semibold">No trains added yet</div>
+			<div class="text-sm">Tap the search bar above to find trains</div>
+		</div>
+	{:else}
+		{#each saved.value as item (item.id + item.filterCrs + item.focusCrs + item.subscriptionId)}
+			<div
+				class="border-b border-border px-4 last:border-none even:bg-muted/20"
+				transition:fly={{ duration: 200, x: -100 }}
+				animate:flip={{ duration: 200 }}
+			>
+				<SavedTrain data={item} />
+			</div>
+		{/each}
+	{/if}
+</div>
+
+<!--
+<div class="w-full pt-4">
+	<div class="flex items-center gap-2 px-4 py-4">
+		<Pin size={20} />
+		<div class="grow text-2xl font-medium">Pinned boards</div>
+	</div>
+	<div class="flex w-full flex-col border-b border-border">
+		{#if pinned.value.length === 0}
+			<div class="flex items-center border-t border-border px-4 py-2 text-sm text-muted-foreground">
+				No pinned boards. Tap the pin on a board page to pin it here.
+			</div>
+		{:else}
+			{#each pinned.value as item (item.fromCrs + item.toCrs)}
+				<div
+					class="border-t border-border odd:bg-muted/20"
+					transition:fly={{ duration: 200, x: -100 }}
+					animate:flip={{ duration: 200 }}
+				>
+					<PinnedBoardItem {...item} />
+				</div>
+			{/each}
+		{/if}
+	</div>
+</div> -->
+
+<!-- <div class="flex w-full flex-col">
+	<div class="sticky top-0 z-20 rounded-t-xl border-b-border bg-background p-4 pt-6">
 		<div class="text-3xl font-bold">Where is my train?</div>
 		<div class="flex gap-2 *:text-blue-400 *:underline">
 			<a href="/about">About & Data Sources</a>
@@ -40,7 +134,7 @@
 		</div>
 	</div>
 
-	<div class="border-b-border bg-muted/40 w-full border-y p-4">
+	<div class="w-full border-y border-b-border bg-muted/40 p-4">
 		<div class="grid w-full max-w-full grid-cols-[1fr_32px_1fr] items-center gap-2 pb-4">
 			<Search class="" key="from" bind:selected={from}></Search>
 			<div class="flex justify-center">
@@ -53,7 +147,11 @@
 			onclick={() => {
 				paneHeight.break = 'middle';
 			}}
-			href={from && from !== to ? (to ? `/board/${from}?to=${to}&offset=0` : `/board/${from}?offset=0`) : '#'}
+			href={from && from !== to
+				? to
+					? `/board/${from}?to=${to}&offset=0`
+					: `/board/${from}?offset=0`
+				: '#'}
 		>
 			<Button class="w-full">Go</Button>
 		</a>
@@ -63,17 +161,17 @@
 			<Pin size={20} />
 			<div class="grow text-2xl font-medium">Pinned boards</div>
 		</div>
-		<div class="border-border flex w-full flex-col border-b">
+		<div class="flex w-full flex-col border-b border-border">
 			{#if pinned.value.length === 0}
 				<div
-					class="text-muted-foreground border-border flex items-center border-t px-4 py-2 text-sm"
+					class="flex items-center border-t border-border px-4 py-2 text-sm text-muted-foreground"
 				>
 					No pinned boards. Tap the pin on a board page to pin it here.
 				</div>
 			{:else}
 				{#each pinned.value as item (item.fromCrs + item.toCrs)}
 					<div
-						class="odd:bg-muted/20 border-border border-t"
+						class="border-t border-border odd:bg-muted/20"
 						transition:fly={{ duration: 200, x: -100 }}
 						animate:flip={{ duration: 200 }}
 					>
@@ -94,7 +192,7 @@
 		<div class="flex flex-col">
 			{#if saved.value.length === 0}
 				<div
-					class="text-muted-foreground border-border flex items-center border-t px-4 py-2 text-sm"
+					class="flex items-center border-t border-border px-4 py-2 text-sm text-muted-foreground"
 				>
 					No subscribed trains. Tap the bell on a service page to subscribe to it and receive
 					notifications.
@@ -102,7 +200,7 @@
 			{:else}
 				{#each saved.value as item (item.id + item.filterCrs + item.focusCrs + item.subscriptionId)}
 					<div
-						class="even:bg-muted/20 border-border border-t px-4"
+						class="border-t border-border px-4 even:bg-muted/20"
 						transition:fly={{ duration: 200, x: -100 }}
 						animate:flip={{ duration: 200 }}
 					>
@@ -112,4 +210,4 @@
 			{/if}
 		</div>
 	</div>
-</div>
+</div> -->

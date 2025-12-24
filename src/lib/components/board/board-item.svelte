@@ -4,7 +4,7 @@
 	import { explicitEffect } from '$lib/state/utils.svelte';
 	import type { BoardItem, DestinationOrigin, Operator, SavedTrain } from '$lib/types';
 	import dayjs from 'dayjs';
-	import { Bus, Check, ClockAlert, X } from 'lucide-svelte';
+	import { ArrowDownRight, Bus, Check, ClockAlert, GitCompareArrowsIcon, X } from 'lucide-svelte';
 	import { onMount } from 'svelte';
 	import ChangeNotifier from './change-notifier.svelte';
 	import Button from '../ui/button/button.svelte';
@@ -28,7 +28,8 @@
 		operator,
 		date = null,
 		isToday = true,
-		filterName = null
+		filterName = null,
+		connection = null
 	}: {
 		crs: string;
 		id: string;
@@ -53,6 +54,13 @@
 		date?: string | null;
 		isToday?: boolean;
 		filterName?: string | null;
+		connection?: {
+			schTime: number;
+			rtTime: number | null;
+			name: string;
+			status: string;
+			acrossLondon: boolean;
+		} | null;
 	} = $props();
 
 	let oldRtDep = $state(rtDep);
@@ -87,7 +95,14 @@
 
 <a
 	{href}
-	class={['flex w-full flex-col justify-center rounded  text-left', filter ? 'h-30 gap-1' : 'h-22']}
+	class={[
+		'flex w-full flex-col justify-center rounded  text-left',
+		connection && connection.rtTime && connection.status === 'ok'
+			? 'h-28 gap-1'
+			: filter
+				? 'h-22 gap-1'
+				: 'h-22'
+	]}
 >
 	<div class="flex h-max items-center gap-2">
 		<div class="font-medium">
@@ -155,10 +170,11 @@
 	<div class="flex items-start">
 		<div class="min-w-0 grow overflow-hidden">
 			{#if focus}
-				<div class="text-xs/3 font-light text-muted-foreground">
-					<span class="font-medium">
-						{focus}
-					</span> to
+				<div class="flex items-center gap-0.5 pr-4 text-xs/4 font-light text-muted-foreground">
+					<div class="truncate font-medium">
+						{focus.replace(' (Intl)', '')}
+					</div>
+					to
 				</div>
 			{/if}
 			<div class={['truncate text-base/5 font-semibold']}>
@@ -171,7 +187,7 @@
 			{/if}
 		</div>
 		<div
-			class="mt-0.5 h-max rounded-md px-1.5 py-0.5 text-[10px] text-white"
+			class="h-max truncate rounded-md px-1.5 py-0.5 text-[10px] text-white"
 			style:background={operator.color}
 		>
 			{operator.name}
@@ -179,7 +195,7 @@
 	</div>
 
 	{#if filter}
-		<div class="flex items-center gap-0">
+		<div class="flex items-center gap-2">
 			{#if filter.isCancelled}
 				{#if !isCancelled}
 					<ChangeNotifier
@@ -190,15 +206,24 @@
 					</ChangeNotifier>
 				{/if}
 			{:else}
-				<div class="flex min-w-0 gap-1 overflow-hidden text-xs text-nowrap">
+				<div class="flex min-w-0 gap-1 overflow-hidden text-xs text-nowrap text-muted-foreground">
+					<ArrowDownRight size={16} />
 					<div class="truncate">
 						{#if filter.arrived}
 							Arrived
 						{:else}
 							Expected arrival
 						{/if}
-						{#if filter.name !== destination[0].name}
-							at {filter.name}
+
+						{#if !destination.some((d) => d.name === filter?.name)}
+							at
+							<span class="font-medium text-foreground">
+								{#if filter?.name && filter?.name?.includes('London ') && filter.name !== 'London Bridge'}
+									{filter?.name.replace('London ', '').replace(' (Intl)', '')}
+								{:else}
+									{filter?.name?.replace(' (Intl)', '')}
+								{/if}
+							</span>
 						{/if}
 					</div>
 					{#if filter.planArr === filter.rtArr}
@@ -216,6 +241,12 @@
 			{/if}
 			<div class="grow"></div>
 		</div>
+		{#if connection && connection.rtTime && connection.status === 'ok'}
+			<div class="flex items-center gap-1 pl-0.5 text-xs text-muted-foreground">
+				<GitCompareArrowsIcon size={12} />
+				{connection.rtTime}m to change to the {connection.name}
+			</div>
+		{/if}
 	{:else if isFilterCancelled && !isCancelled}
 		<div class="flex items-center gap-0 text-xs">
 			<ChangeNotifier changed={oldisFilterCancelled !== isFilterCancelled} class="text-danger">
