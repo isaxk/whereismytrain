@@ -266,17 +266,19 @@
 										animate:flip={{ duration: 200 }}
 										out:fly={{ duration: 200, x: -50 }}
 									>
-										{#if (index === 0 && !dayjs(service.rawTime).isSame(dayjs(), 'day')) || (index > 0 && !dayjs(service.rawTime).isSame(dayjs(services[index - 1].rawTime), 'day'))}
+										<!-- {#if (index === 0 && !dayjs(service.rawTime).isSame(dayjs(), 'day')) || (index > 0 && !dayjs(service.rawTime).isSame(dayjs(services[index - 1].rawTime), 'day'))}
 											<div
 												transition:slide={{ duration: 200 }}
 												class="-mr-8 -ml-4 border-b border-border px-4 py-2 text-lg font-semibold"
 											>
 												{dayjs(service.rawTime).format('ddd DD MMM')}
 											</div>
-										{/if}
+										{/if} -->
 										<BoardItemComponent
 											href={serviceUrl(service.rid)}
 											id={service.rid}
+											date={service.rawTime}
+											isToday={dayjs(service.rawTime).isSame(dayjs(), 'day')}
 											planDep={service.times.plan.dep ?? 'N/A'}
 											rtDep={service.times.rt.dep}
 											delay={service.delay}

@@ -264,5 +264,10 @@
 			</AlertCard>
 		{/if}
 	{/if}
-	<Button variant="outline" class="absolute right-0 bottom-4" size="icon-sm"><X /></Button>
+	<Button
+		onclick={() => remove()}
+		variant="outline"
+		class="absolute right-0 bottom-4"
+		size="icon-sm"><X /></Button
+	>
 </div>

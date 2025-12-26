@@ -109,11 +109,11 @@
 			{#if isToday}
 				{planDep || 'N/A'}
 			{:else}
-				<span class="text-muted-foreground">
-					{dayjs(date).format('ddd DD MMM')} -
-				</span>
-
 				{planDep}
+
+				<span class="text-sm text-muted-foreground">
+					- {dayjs(date).format('ddd DD MMM')}
+				</span>
 			{/if}
 		</div>
 		<div class="text-[11px]">
