@@ -1,5 +1,5 @@
 <script lang="ts">
-	import '../app.css';
+	import '../../app.css';
 	import { MediaQuery } from 'svelte/reactivity';
 	import Map from '$lib/components/map/map.svelte';
 	import { Toaster } from 'svelte-sonner';
@@ -7,14 +7,17 @@
 	import Pane from '$lib/components/pane/pane.svelte';
 	import { onMount } from 'svelte';
 	import { initializeNotifications, setupForegroundMessageHandler } from '$lib/notifications';
+	import { pwa } from '$lib/state/saved.svelte';
+	import { browser } from '$app/environment';
 
-	let { children } = $props();
+	let { children, data } = $props();
 
 	const lg = new MediaQuery('(min-width: 1024px)');
 	let mounted = $state(false);
 
 	onMount(() => {
 		mounted = true;
+		pwa.current = data.pwa;
 		setupForegroundMessageHandler();
 		initializeNotifications();
 	});
@@ -41,7 +44,7 @@
 		</Pane>
 	{/if}
 
-	{#if mounted}
+	{#if mounted && browser}
 		<Map />
 	{/if}
 </div>

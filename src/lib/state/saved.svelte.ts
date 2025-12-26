@@ -36,3 +36,4 @@ export function localStore<T>(key: string, value: T) {
 
 export const saved = localStore<SavedTrain[]>('saved-services-v3', []);
 export const pinned = localStore<PinnedBoard[]>('pinned-boards', []);
+export const pwa = $state({ current: false });

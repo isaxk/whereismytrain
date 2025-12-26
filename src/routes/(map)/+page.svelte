@@ -6,23 +6,31 @@
 		ArrowUpRight,
 		BellRing,
 		ChevronRight,
+		Download,
 		Pin,
 		SearchIcon,
 		Settings,
 		X
 	} from 'lucide-svelte';
 	import AllStations from '$lib/data/stations.json';
-	import { pinned, saved } from '$lib/state/saved.svelte';
+	import { pinned, pwa, saved } from '$lib/state/saved.svelte';
 	import SavedTrain from '$lib/components/home/saved-train.svelte';
 	import { onMount } from 'svelte';
 	import { refreshing, servicesSub } from '$lib/state/services-subscriber.svelte';
 	import Spinner from '$lib/components/ui/spinner/spinner.svelte';
 	import { fly } from 'svelte/transition';
 	import { flip } from 'svelte/animate';
-	import Button from '$lib/components/ui/button/button.svelte';
+	import Button, { buttonVariants } from '$lib/components/ui/button/button.svelte';
 	import PinnedBoardItem from '$lib/components/home/pinned-board-item.svelte';
 	import { Tabs } from 'bits-ui';
 	import TrainSearch from '$lib/components/home/train-search.svelte';
+	import * as Item from '$lib/components/ui/item/index.js';
+	import * as Dialog from '$lib/components/ui/dialog/index.js';
+	import * as Carousel from '$lib/components/ui/carousel/index.js';
+	import Install from '$lib/components/home/install.svelte';
+	import { iOS } from '$lib/utils.js';
+
+	let { data } = $props();
 
 	let from = $state(null);
 	let to = $state(null);
@@ -60,6 +68,22 @@
 </div>
 <div class="pt-24"></div>
 <div class="w-full p-4 pb-0">
+	{#if !pwa.current && iOS()}
+		<Item.Root variant="outline" class="mb-4">
+			<Item.Content>
+				<Item.Title>Install the app</Item.Title>
+				<Item.Description>Get notifications for your trains, and more convenience</Item.Description>
+			</Item.Content>
+			<Item.Actions>
+				<Install>
+					{#snippet trigger()}
+						<Button><Download /> Install</Button>
+					{/snippet}
+				</Install>
+			</Item.Actions>
+		</Item.Root>
+	{/if}
+
 	<!-- <div class="grid w-full max-w-full grid-cols-[1fr_32px_1fr_64px] items-center gap-2">
 		<Search class="" key="from" bind:selected={from}></Search>
 		<div class="flex justify-center">

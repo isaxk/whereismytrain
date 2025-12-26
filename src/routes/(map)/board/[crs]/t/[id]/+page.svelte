@@ -35,6 +35,7 @@
 	import Checkbox from '$lib/components/ui/checkbox/checkbox.svelte';
 	import { dayjsFromHHmm, t } from '$lib/utils';
 	import { flip } from 'svelte/animate';
+	import Share from '$lib/components/train/share.svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -348,6 +349,13 @@
 				{/if}
 				<!-- </div> -->
 			{/each}
+			<div class="w-full pt-2">
+				<Share
+					{title}
+					text="Follow this service"
+					url={`/share/${data.crs}/${data.id}/${callingPoints.find((cp) => cp.order === 'filter')?.crs}`}
+				/>
+			</div>
 			{#if testView}
 				<div>
 					<Select.Root type="single" bind:value={selectedTestCp}>

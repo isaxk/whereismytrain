@@ -1,13 +1,14 @@
 <script lang="ts">
-	import { saved } from '$lib/state/saved.svelte';
+	import { pwa, saved } from '$lib/state/saved.svelte';
 	import type { TrainService, SavedTrain as SavedTrainType } from '$lib/types';
 	import { Bell, BellOff, BellRing, BookmarkIcon, X } from 'lucide-svelte';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 	import { subscribeToTrain, unsubscribeToTrain } from '$lib/notifications';
 	import { Spinner } from '../ui/spinner/index';
 	import dayjs from 'dayjs';
-	import { dayjsFromHHmm } from '$lib/utils';
+	import { dayjsFromHHmm, iOS } from '$lib/utils';
 	import Button from '../ui/button/button.svelte';
+	import Install from '../home/install.svelte';
 
 	let {
 		service,
@@ -76,7 +77,17 @@
 	const firstAfterCallingPointCrs = $derived.by(() => afterCallingPoints[0]?.crs);
 </script>
 
-{#if saved.value.some((s) => s.id === rid)}
+{#if !pwa.current && iOS()}
+	<Install
+		description="You need to install the app to track your trains and receive notifications on them."
+	>
+		{#snippet trigger()}
+			<Button size="icon" class="bg-input/30 hover:bg-input/50" variant="outline">
+				<Bell />
+			</Button>
+		{/snippet}
+	</Install>
+{:else if saved.value.some((s) => s.id === rid)}
 	<Button
 		size="icon"
 		class="relative bg-input/30 hover:bg-input/50"
