@@ -79,7 +79,7 @@
 
 {#if !pwa.value && iOS()}
 	<Install
-		description="You need to install the app to track your trains and receive notifications on them."
+		description="You need to install the app to track your trains and receive notifications on them. Don't worry, it doesn't take long!"
 	>
 		{#snippet trigger()}
 			<Button size="icon" class="bg-input/30 hover:bg-input/50" variant="outline">
