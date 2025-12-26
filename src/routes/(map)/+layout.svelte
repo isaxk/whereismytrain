@@ -17,7 +17,9 @@
 
 	onMount(() => {
 		mounted = true;
-		pwa.current = data.pwa;
+		if (data.pwa === true) {
+			pwa.value = true;
+		}
 		setupForegroundMessageHandler();
 		initializeNotifications();
 	});

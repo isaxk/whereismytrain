@@ -77,7 +77,7 @@
 	const firstAfterCallingPointCrs = $derived.by(() => afterCallingPoints[0]?.crs);
 </script>
 
-{#if !pwa.current && iOS()}
+{#if !pwa.value && iOS()}
 	<Install
 		description="You need to install the app to track your trains and receive notifications on them."
 	>

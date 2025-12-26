@@ -68,7 +68,7 @@
 </div>
 <div class="pt-24"></div>
 <div class="w-full p-4 pb-0">
-	{#if !pwa.current && iOS()}
+	{#if !pwa.value && iOS()}
 		<Item.Root variant="outline" class="mb-4">
 			<Item.Content>
 				<Item.Title>Install the app</Item.Title>
