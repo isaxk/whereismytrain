@@ -25,7 +25,8 @@
 		operator,
 		index,
 		length,
-		showTrain = false
+		showTrain = false,
+		greyLine = false
 	}: {
 		cp: CallingPoint;
 		operator: Operator;
@@ -33,6 +34,7 @@
 		length: number;
 
 		showTrain?: boolean;
+		greyLine?: boolean;
 	} = $props();
 
 	let oldCp = $state({ ...cp });
@@ -156,7 +158,7 @@
 		class={[
 			'relative flex h-full flex-col items-center justify-center',
 			newCp.inDivision ? 'min-w-12 pl-5' : 'min-w-8 pl-1',
-			newCp.isPostDestination ? 'opacity-50' : ''
+			newCp.isPostDestination || greyLine ? 'opacity-50' : ''
 		]}
 	>
 		{#if cp.isOrigin || newCp.startJoin}
@@ -167,7 +169,7 @@
 			<div style:background={operator.color} class="w-1.5 grow bg-black"></div>
 			<div style:background={operator.color} class="h-1.5 w-4"></div>
 			<div class="grow"></div>
-		{:else if newCp.isDestination}
+		{:else if newCp.isDestination || (newCp.departureCancelled && !newCp.isCancelled)}
 			<div style:background={operator.color} class="w-1.5 grow bg-black"></div>
 			<div style:background={operator.color} class="h-1.5 w-4"></div>
 			<div style:background={operator.color} class="w-1.5 grow bg-black opacity-50"></div>

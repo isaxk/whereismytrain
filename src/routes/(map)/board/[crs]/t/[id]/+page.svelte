@@ -85,7 +85,7 @@
 			: false
 	);
 
-	let testView = $state(true);
+	let testView = $state(false);
 
 	let selectedTestCp: number = $state(0);
 </script>
@@ -336,6 +336,7 @@
 						index={i}
 						length={callingPoints.length}
 						showTrain={!(cp.departed && callingPoints[i + 1]?.order === 'focus')}
+						greyLine={!callingPoints.some((cp, j) => j > i && !cp.isCancelled) && cp.isCancelled}
 					/>
 					{#if cp.endDivide && (showPrevious || !previousIncludesStartDivide)}
 						<div class="flex h-4 min-h-4 gap-2">
