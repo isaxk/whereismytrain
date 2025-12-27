@@ -336,7 +336,9 @@
 						index={i}
 						length={callingPoints.length}
 						showTrain={!(cp.departed && callingPoints[i + 1]?.order === 'focus')}
-						greyLine={!callingPoints.some((cp, j) => j > i && !cp.isCancelled) && cp.isCancelled}
+						greyLine={!callingPoints.some((cp, j) => j > i && !cp.isCancelled) &&
+							cp.isCancelled &&
+							!callingPoints.some((cp) => cp.inDivision)}
 					/>
 					{#if cp.endDivide && (showPrevious || !previousIncludesStartDivide)}
 						<div class="flex h-4 min-h-4 gap-2">

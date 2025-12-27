@@ -178,7 +178,7 @@ function parseCallingPoint(
 		showTrain = false;
 	}
 
-	if (item.inDivision) {
+	if (item.inDivision && cpsOnSplit.some((cp) => cp.startJoin)) {
 		const firstAfterDivision = all.find((_, j) => j > cpsOnSplit[cpsOnSplit.length - 1].indexInCPs);
 		if (firstAfterDivision.atdSpecified) {
 			showTrain = false;
