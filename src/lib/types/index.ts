@@ -104,6 +104,7 @@ export type CallingPoint = {
 	crs: string | null;
 	tiploc: string;
 	times: TimeObject;
+	rtDepDate: string;
 	isCancelled: boolean;
 	departureCancelled: boolean;
 	arrivalCancelled: boolean;
@@ -112,6 +113,8 @@ export type CallingPoint = {
 	inDivision: boolean;
 	startDivide: boolean;
 	endDivide: boolean;
+	startJoin: boolean;
+	endJoin: boolean;
 	delay: number | null;
 	order: CallingPointOrder;
 	isOrigin: boolean;
@@ -119,6 +122,7 @@ export type CallingPoint = {
 	arrived: boolean;
 	isDestination: boolean;
 	isPostDestination: boolean;
+	showTrain: boolean;
 };
 
 export type Carriage = {

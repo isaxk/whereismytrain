@@ -66,10 +66,10 @@ function calculateTrainPosition(
 
 	coords = lastDepartedCoords ?? null;
 
-	console.log('nextDepartTime:', nextDepartTime);
-	console.log('lastDepartedTime:', lastDepartedTime);
-	console.log('lastDepartedCoords:', lastDepartedCoords);
-	console.log('nextCoords:', nextCoords);
+	// console.log('nextDepartTime:', nextDepartTime);
+	// console.log('lastDepartedTime:', lastDepartedTime);
+	// console.log('lastDepartedCoords:', lastDepartedCoords);
+	// console.log('nextCoords:', nextCoords);
 
 	if (nextDepartTime && nextCoords && lastDepartedCoords && lastDepartedTime) {
 		const lastTime = dayjs(lastDepartedTime, 'Europe/London').utc(false);
@@ -97,7 +97,7 @@ function calculateTrainPosition(
 		coords = lastDepartedCoords;
 	}
 
-	console.log(coords);
+	// console.log(coords);
 
 	return { coords, bearing };
 }

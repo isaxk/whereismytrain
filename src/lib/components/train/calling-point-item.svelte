@@ -73,7 +73,7 @@
 					oldCp.times.plan.arr !== oldCp.times.rt.arr}
 				class={[
 					newCp.isCancelled || newCp.arrivalCancelled
-						? 'text-sm text-red-600'
+						? 'text-sm text-red-600 line-through'
 						: newCp.times.rt.arr !== newCp.times.plan.arr
 							? newCp.times.rt.arr
 								? 'text-xs/3'
@@ -114,7 +114,7 @@
 					oldCp.times.plan.dep !== oldCp.times.rt.dep}
 				class={[
 					newCp.isCancelled || newCp.departureCancelled
-						? 'text-sm text-red-600'
+						? 'text-sm text-red-600 line-through'
 						: newCp.times.rt.dep !== newCp.times.plan.dep
 							? newCp.times.rt.dep
 								? 'text-xs/3'
@@ -159,7 +159,7 @@
 			newCp.isPostDestination ? 'opacity-50' : ''
 		]}
 	>
-		{#if cp.isOrigin}
+		{#if cp.isOrigin || newCp.startJoin}
 			<div class="grow"></div>
 			<div style:background={operator.color} class="h-1.5 w-4"></div>
 			<div style:background={operator.color} class="w-1.5 grow bg-black"></div>
@@ -175,15 +175,23 @@
 			<div style:background={operator.color} class="w-1.5 grow bg-black"></div>
 			<div class="flex w-4">
 				<div class="w-[5px]"></div>
-				<div style:background={operator.color} class="h-1.5 grow"></div>
+				<div style:background={operator.color} class={['h-1.5 w-[6px]']}></div>
+				<div
+					style:background={operator.color}
+					class={['h-1.5 grow', cp.isCancelled && 'opacity-50']}
+				></div>
 			</div>
 			<div style:background={operator.color} class="w-1.5 grow bg-black"></div>
 		{/if}
-		{#if (newCp.departed || newCp.isCancelled) && showTrain}
+		{#if (newCp.departed || newCp.isCancelled) && newCp.showTrain && showTrain}
 			<div
 				class="absolute top-9 z-10"
-				in:t.receive|global={{ key: 'train-pos-icon' }}
-				out:t.send|global={{ key: 'train-pos-icon' }}
+				in:t.receive|global={{
+					key: newCp.inDivision ? 'train-pos-icon-division' : 'train-pos-icon-'
+				}}
+				out:t.send|global={{
+					key: newCp.inDivision ? 'train-pos-icon-division' : 'train-pos-icon-'
+				}}
 			>
 				<div
 					style:border-color={operator.color}
@@ -193,11 +201,15 @@
 					<TrainFront size={14} />
 				</div>
 			</div>
-		{:else if newCp.arrived && showTrain}
+		{:else if newCp.arrived && newCp.showTrain && showTrain}
 			<div
 				class="absolute top-1/2 z-10 -translate-y-1/2"
-				in:t.receive|global={{ key: 'train-pos-icon' }}
-				out:t.send|global={{ key: 'train-pos-icon' }}
+				in:t.receive|global={{
+					key: newCp.inDivision ? 'train-pos-icon-division' : 'train-pos-icon-'
+				}}
+				out:t.send|global={{
+					key: newCp.inDivision ? 'train-pos-icon-division' : 'train-pos-icon-'
+				}}
 			>
 				<div
 					style:border-color={operator.color}

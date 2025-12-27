@@ -85,7 +85,7 @@
 			: false
 	);
 
-	let testView = $state(false);
+	let testView = $state(true);
 
 	let selectedTestCp: number = $state(0);
 </script>
@@ -249,7 +249,7 @@
 							showPrevious,
 							'previous',
 							operator,
-							cp.inDivision,
+							cp.inDivision && !cp.startJoin,
 							callingPoints.some((cp) => cp.order === 'previous' && (cp.arrived || cp.departed)) &&
 								!cp.arrived &&
 								!cp.departed &&
@@ -313,6 +313,21 @@
 								<div style:background={operator.color} class="h-4 w-1.5 bg-black"></div>
 							</div>
 						</div>
+					{:else if cp.startJoin}
+						<div class="flex h-4 min-h-4 gap-2">
+							<div class="flex gap-3">
+								<div class="w-10"></div>
+								<div class="w-10"></div>
+							</div>
+							<div class="flex h-full w-12 items-center justify-start pl-[3px]">
+								<div
+									style:background="linear-gradient(to bottom, {operator.color}, transparent)"
+									class="h-4 w-1.5 bg-black"
+								></div>
+								<div class="w-2.5"></div>
+								<div class="h-4 w-1.5 bg-transparent"></div>
+							</div>
+						</div>
 					{/if}
 
 					<CallingPointItem
@@ -320,15 +335,7 @@
 						{operator}
 						index={i}
 						length={callingPoints.length}
-						showTrain={!callingPoints.some(
-							(cp, index) => index > i && (cp.departed || cp.arrived)
-						) &&
-							!(cp.departed && callingPoints[i + 1]?.order === 'focus') &&
-							(cp.isCancelled
-								? !callingPoints[i + 1]?.isCancelled &&
-									(!callingPoints.some((cp, j) => j < i && !cp.departed && !cp.isCancelled) ||
-										callingPoints.findLast((cp, j) => j < i && !cp.isCancelled)?.departed)
-								: !(cp.departed && callingPoints[i + 1]?.isCancelled))}
+						showTrain={!(cp.departed && callingPoints[i + 1]?.order === 'focus')}
 					/>
 					{#if cp.endDivide && (showPrevious || !previousIncludesStartDivide)}
 						<div class="flex h-4 min-h-4 gap-2">
@@ -343,6 +350,55 @@
 								></div>
 								<div class="w-2.5"></div>
 								<div class="h-4 w-1.5 bg-transparent"></div>
+							</div>
+						</div>
+					{:else if cp.endJoin}
+						<div class="flex h-4 min-h-4 gap-2">
+							<div class="flex gap-3">
+								<div class="w-10"></div>
+								<div class="w-10"></div>
+							</div>
+							<div class="flex h-full w-12 items-center justify-start pl-[3px]">
+								<div
+									style:background="linear-gradient(to top, {operator.color}, transparent)"
+									class="h-4 w-1.5 bg-black"
+								></div>
+								<div class="w-2.5"></div>
+								<div style:background={operator.color} class="h-4 w-1.5 bg-black"></div>
+							</div>
+						</div>
+						<div class="flex h-8 gap-2">
+							<div class="flex gap-3">
+								<div class="w-10"></div>
+								<div class="w-10"></div>
+							</div>
+							<div
+								style:color={operator.color}
+								class={['flex h-full w-8 flex-col justify-center pl-[3px]']}
+							>
+								<svg
+									width="32"
+									height="31.999998"
+									viewBox="0 0 8.4666667 8.466666"
+									version="1.1"
+									id="svg1"
+									class={['-scale-y-100']}
+									xmlns="http://www.w3.org/2000/svg"
+								>
+									<defs id="defs1" />
+									<g id="layer1">
+										<path
+											style="fill:currentColor;stroke:currentColor;stroke-width:1.5875;stroke-linecap:square;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+											d="M 0.80000001,1 V 7.7000003"
+											id="path3"
+										/>
+										<path
+											style="fill:currentColor;stroke:currentColor;stroke-width:1.5875;stroke-linecap:square;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+											d="M 0.80000001,0.80000003 V 1.0000001 A 2.5370203,2.5370203 68.487467 0 0 1.4823183,2.7310554 l 2.8353635,3.0378895 a 2.5370203,2.5370203 68.487467 0 1 0.6823183,1.7310553 v 0.2000001"
+											id="path4"
+										/>
+									</g>
+								</svg>
 							</div>
 						</div>
 					{/if}

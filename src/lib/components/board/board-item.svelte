@@ -118,7 +118,7 @@
 		</div>
 		<div class="text-[11px]">
 			{#if isCancelled}
-				<ChangeNotifier changed={oldisCancelled !== isCancelled} class="text-danger"
+				<ChangeNotifier changed={oldisCancelled !== isCancelled} class="font-medium text-danger"
 					><X size={14} /> Cancelled</ChangeNotifier
 				>
 			{:else if rtDep == planDep}
@@ -133,7 +133,7 @@
 			{:else if rtDep}
 				<ChangeNotifier
 					changed={oldDeparted !== departed || oldRtDep !== rtDep}
-					class="text-warning"
+					class="font-medium text-warning"
 				>
 					<ClockAlert size={14} />
 					{#if departed}
@@ -146,7 +146,7 @@
 			{:else}
 				<ChangeNotifier
 					changed={oldDeparted !== departed || oldRtDep !== rtDep}
-					class="text-warning"
+					class="font-medium text-warning"
 				>
 					<ClockAlert size={14} />
 					Delayed

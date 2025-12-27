@@ -37,7 +37,7 @@
 	--sidebar-border: oklch(0.922 0 0);
 	--sidebar-ring: oklch(0.708 0 0);
 	--color-good: oklch(62.7% 0.194 149.214);
-	--color-warning: oklch(68.1% 0.162 75.834);
+	--color-warning: #eab308;
 	--color-danger: oklch(57.7% 0.245 27.325);
 	--sat: env(safe-area-inset-top);
 	--sar: env(safe-area-inset-right);
