@@ -19,7 +19,8 @@
 		color,
 		showDestination,
 		isAtStation,
-		filter
+		filter,
+		focus
 	}: {
 		href: string;
 		crs: string;
@@ -31,6 +32,7 @@
 		refreshing: boolean;
 		isAtStation: boolean;
 		filter?: string | null;
+		focus?: string | null;
 	} = $props();
 
 	const coordinates = $derived(data.lineLocations.map((l) => l.coords));
@@ -66,12 +68,22 @@
 
 	const primaryCoordinates = $derived.by(() => {
 		const filtered = unCancelled;
-		const focus = filtered.findIndex((l) => l.crs === crs);
-		if (focus !== -1 && filtered.find((l) => l.crs === crs)) {
+
+		if (!filter || !crs || !filtered.some((l) => l.crs === crs || l.crs === filter)) {
+			return [];
+		}
+
+		let focus = filtered.findIndex((l) => l.crs === crs);
+		if (focus === -1) {
+			focus = 0;
+		}
+		if (focus !== -1) {
 			let coords = [];
 
 			if (filter) {
 				const filterIndex = filtered.findIndex((l) => l.crs === filter);
+
+				console.log('filterIndex', filter, filterIndex);
 
 				if (filterIndex !== -1 && filterIndex > focus) {
 					coords = filtered.slice(focus, filterIndex + 1);
@@ -143,7 +155,8 @@
 
 	const coordsTween = $derived(data.trainPosition ? Tween.of(() => data.trainPosition) : null);
 
-	$inspect(data);
+	$inspect('filter', filter);
+	$inspect('focus', crs);
 </script>
 
 <GeoJSON id="train-route-{rid}-{index}-secondary" data={lineData}>
@@ -173,7 +186,13 @@
 		paint={{
 			'line-width': 5,
 			'line-color': color,
-			'line-opacity': page.data.crs ? (page.data.id === rid ? 1 : 0.2) : 0.8
+			'line-opacity': page.data.crs
+				? page.data.id === rid
+					? data.lineLocations.some((l) => l.crs === filter || l.crs === focus)
+						? 1
+						: 0.2
+					: 0.2
+				: 0.8
 		}}
 	/>
 </GeoJSON>

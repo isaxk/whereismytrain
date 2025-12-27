@@ -256,33 +256,38 @@ export const GET = async ({ params }) => {
 	// If the current service *is* the division
 	// category 1 == 'divide'
 	if (rawCallingPoints[0].associations?.some((l: any) => l.category === 1)) {
-		const assocService = await fetchAssocService(
-			rawCallingPoints[0].associations.find((l: any) => l.category === 1).rid
-		);
+		// const assocService = await fetchAssocService(
+		// 	rawCallingPoints[0].associations.find((l: any) => l.category === 1).rid
+		// );
 
-		if (assocService) {
-			// add the location as a line to the map object
-			const assocParsedLocations = assocService.locations.map(parseLocation);
-			locations.push(assocParsedLocations);
+		// if (assocService) {
+		// 	// add the location as a line to the map object
+		// 	const assocParsedLocations = assocService.locations.map(parseLocation);
+		// 	locations.push(assocParsedLocations);
 
-			const assocRawCallingPoints = assocService.locations.filter((l: any) => !l.isPass && l.crs);
-			destination.push(assocRawCallingPoints[assocRawCallingPoints.length - 1]);
-			assocRawCallingPoints.forEach((cp: any) => {
-				// Insert the division calling point to the list
-				if (cp.associations?.some((l: any) => l.category === 1)) {
-					rawCallingPoints.forEach((cp: any, i: number) => {
-						callingPoints.push({
-							...cp,
-							inDivision: true,
-							startDivide: i === 0, // and specify where the division starts and ends
-							endDivide: i === rawCallingPoints.length - 1
-						});
-					});
-				}
+		// 	const assocRawCallingPoints = assocService.locations.filter((l: any) => !l.isPass && l.crs);
+		// 	destination.push(assocRawCallingPoints[assocRawCallingPoints.length - 1]);
+		// 	assocRawCallingPoints.forEach((cp: any) => {
+		// 		// Insert the division calling point to the list
+		// 		if (cp.associations?.some((l: any) => l.category === 1)) {
+		// 			rawCallingPoints.forEach((cp: any, i: number) => {
+		// 				callingPoints.push({
+		// 					...cp,
+		// 					inDivision: true,
+		// 					startDivide: i === 0, // and specify where the division starts and ends
+		// 					endDivide: i === rawCallingPoints.length - 1
+		// 				});
+		// 			});
+		// 		}
 
-				callingPoints.push(cp);
-			});
-		}
+		// 		callingPoints.push(cp);
+		// 	});
+		// }
+		callingPoints = rawCallingPoints;
+		const assoc = rawCallingPoints[0].associations?.find((l: any) => l.category === 1);
+		formedFrom = assoc
+			? `${assoc.rid}d${assoc.destination?.[0]?.crs || rawCallingPoints[0].crs}`
+			: null;
 	}
 	// the current service joins onto the 'main' service
 	else if (
@@ -323,7 +328,10 @@ export const GET = async ({ params }) => {
 	// otherwise assume the current service is the primary service, or there is no division
 	else {
 		for (const cp of rawCallingPoints) {
-			if (cp.associations?.some((l: any) => l.category === 1 || l.category === 0)) {
+			if (
+				cp.associations?.some((l: any) => l.category === 1 || l.category === 0) &&
+				destCrsList.length > 1
+			) {
 				// get associations
 				const associations = cp.associations.filter(
 					(l: any) => l.category === 1 || l.category === 0

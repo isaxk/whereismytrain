@@ -7,6 +7,7 @@
 	import { page } from '$app/state';
 	import { fade } from 'svelte/transition';
 	import Spinner from '../ui/spinner/spinner.svelte';
+	import clsx from 'clsx';
 
 	let {
 		serviceData,
@@ -32,7 +33,12 @@
 				{rid}
 				{crs}
 				{refreshing}
-				{filter}
+				filter={group.lineLocations.some((l) => l.crs === filter)
+					? filter
+					: group.lineLocations.some((l) => l.crs === crs)
+						? (serviceData.callingPoints.find((l) => l.startDivide)?.crs ?? null)
+						: null}
+				focus={crs}
 				href="/board/{crs}/t/{rid}?{filter ? `to=${filter}&` : ''}backTo=/"
 				isAtStation={false}
 				showDestination={mapData.locations.reduce(
@@ -56,13 +62,14 @@
 						(l) =>
 							l.trainPosition?.[0] === tiploc.coords[0] && l.trainPosition?.[1] === tiploc.coords[1]
 					)?.isFormedFromTrain}
+					{@const filterItem = serviceData.callingPoints.find((cp) => cp.order === 'filter')}
 					<Marker
 						onclick={() => {
 							goto(`/board/${crs}/t/${rid}`);
 						}}
 						lngLat={tiploc?.coords}
-						zIndex={isTrainAtStation ? 2000 : 100}
-						class="rounded-full bg-white dark:bg-black"
+						zIndex={isTrainAtStation ? 2000 : cp.order === 'further' ? 50 : 100}
+						class={clsx(['rounded-full bg-white dark:bg-black'])}
 					>
 						<div
 							style:background={isTrainAtStation ? '#fff' : serviceData.operator.color}
@@ -74,10 +81,12 @@
 								(cp.order === 'origin' ||
 									cp.order === 'previous' ||
 									cp.order === 'further' ||
+									(!filterItem?.inDivision && cp.inDivision) ||
 									(cp.isDestination && filter && filter !== cp.crs)) &&
 								!isTrainAtStation
 									? 'opacity-50'
 									: '',
+
 								cp.isCancelled && 'line-through opacity-30'
 							]}
 						>

@@ -250,11 +250,7 @@
 							'previous',
 							operator,
 							cp.inDivision && !cp.startJoin,
-							callingPoints.some((cp) => cp.order === 'previous' && (cp.arrived || cp.departed)) &&
-								!cp.arrived &&
-								!cp.departed &&
-								!callingPoints.some((cp, j) => j > i && (cp.arrived || cp.departed)) &&
-								(!showPrevious || callingPoints[i - 1]?.departed)
+							callingPoints[i - 1].departed || !showPrevious
 						)}
 						<!-- {:else if cp.order === 'destination' && callingPoints.filter((c) => c.order === 'further').length > 0}
 						{@render lineButton(
