@@ -248,7 +248,7 @@ export const GET = async ({ params }) => {
 		const nextAssoc = hasNextAssoc.associations.find(
 			(l: any) => l.category === 4 || l.category === 'next'
 		);
-		formedFrom = `${nextAssoc?.rid}d${nextAssoc.destination?.[0]?.crs || rawCallingPoints[0].crs}`;
+		formedFrom = `${nextAssoc?.rid}d${nextAssoc.destCRS || rawCallingPoints[0].crs}`;
 	}
 
 	// Division logic
@@ -285,9 +285,8 @@ export const GET = async ({ params }) => {
 		// }
 		callingPoints = rawCallingPoints;
 		const assoc = rawCallingPoints[0].associations?.find((l: any) => l.category === 1);
-		formedFrom = assoc
-			? `${assoc.rid}d${assoc.destination?.[0]?.crs || rawCallingPoints[0].crs}`
-			: null;
+		console.log(assoc);
+		formedFrom = assoc ? `${assoc.rid}d${assoc.destCRS || rawCallingPoints[0].crs}` : null;
 	}
 	// the current service joins onto the 'main' service
 	else if (

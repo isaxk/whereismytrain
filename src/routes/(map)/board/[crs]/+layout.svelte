@@ -151,7 +151,7 @@
 	function serviceUrl(rid: string) {
 		const search = new URLSearchParams();
 		data.to && search.set('to', data.to);
-		data.time && search.set('time', data.time.toString());
+		data.offset && search.set('offset', data.offset.toString());
 		return `/board/${data.crs}/t/${rid}?${search.toString()}`;
 	}
 
