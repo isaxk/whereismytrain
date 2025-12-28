@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { pwa, saved } from '$lib/state/saved.svelte';
+	import { localStore, pwa, saved } from '$lib/state/saved.svelte';
 	import type { TrainService, SavedTrain as SavedTrainType } from '$lib/types';
 	import { Bell, BellOff, BellRing, BookmarkIcon, X } from 'lucide-svelte';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
@@ -75,6 +75,9 @@
 	});
 
 	const firstAfterCallingPointCrs = $derived.by(() => afterCallingPoints[0]?.crs);
+
+	const promptDismissed = localStore<boolean>('saved-prompt-dismissed', false);
+	$inspect('promptDismissed', promptDismissed.value);
 </script>
 
 {#if !pwa.value && iOS()}
@@ -127,6 +130,14 @@
 			<Bell />
 		{/if}
 	</Button>
+	{#if !promptDismissed.value}
+		<div
+			class="absolute top-14 right-4 z-[20] flex items-center gap-1 rounded border border-border bg-background px-1.5 py-0.5 text-xs text-foreground drop-shadow"
+		>
+			Receive notifications for this train?
+			<button onclick={() => (promptDismissed.value = true)}><X size={14} /></button>
+		</div>
+	{/if}
 {:else}
 	<DropdownMenu.Root>
 		<DropdownMenu.Trigger>
@@ -150,4 +161,12 @@
 			</DropdownMenu.Group>
 		</DropdownMenu.Content>
 	</DropdownMenu.Root>
+	{#if !promptDismissed.value}
+		<div
+			class="absolute top-14 right-4 z-[20] flex items-center gap-1 rounded border border-border bg-background px-1.5 py-0.5 text-xs text-foreground drop-shadow"
+		>
+			Receive notifications for this train?
+			<button onclick={() => (promptDismissed.value = true)}><X size={14} /></button>
+		</div>
+	{/if}
 {/if}

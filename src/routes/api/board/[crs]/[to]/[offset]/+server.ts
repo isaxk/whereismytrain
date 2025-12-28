@@ -160,6 +160,6 @@ export const GET: RequestHandler = async ({ params }) => {
 		return json(board);
 	} catch (error: any) {
 		console.log(error);
-		throw kitError(500, error.message);
+		return kitError(500, error.message);
 	}
 };

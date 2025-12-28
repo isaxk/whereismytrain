@@ -20,7 +20,7 @@
 <div
 	class={cn(
 		clsx([
-			'flex items-center gap-2.5 rounded-lg border px-3 py-2',
+			'flex items-center gap-2.5 rounded-lg border px-3 py-2 text-xs',
 			{
 				'border-blue-500 bg-blue-100 text-black dark:bg-blue-900 dark:text-white':
 					status === 'info',
@@ -36,7 +36,7 @@
 	<div>
 		<Icon size={14} />
 	</div>
-	<div class="grow text-xs text-current">
+	<div class="grow text-current">
 		{@render children?.()}
 	</div>
 </div>

@@ -39,26 +39,33 @@
 
 	let { data }: { data: PageData } = $props();
 
+	let serviceData: TrainService | null = $state(null);
+	let error: Error | null = $state(null);
+
 	$effect(() => {
-		data.service.then(async (r) => {
-			refreshing.map = true;
-			serviceData = r;
-			headerColor.current = r.operator.color;
-			const response = await fetch(`/api/mapdata`, {
-				body: JSON.stringify({ locations: r.locations, formedFrom: r.formedFrom }),
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
+		data.service
+			.then(async (r) => {
+				refreshing.map = true;
+				serviceData = r;
+				headerColor.current = r.operator.color;
+				const response = await fetch(`/api/mapdata`, {
+					body: JSON.stringify({ locations: r.locations, formedFrom: r.formedFrom }),
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json'
+					}
+				});
+				if (response.ok) {
+					const data = await response.json();
+					mapData.service = data;
 				}
+				setTimeout(() => {
+					refreshing.map = false;
+				}, 250);
+			})
+			.catch((e) => {
+				error = e;
 			});
-			if (response.ok) {
-				const data = await response.json();
-				mapData.service = data;
-			}
-			setTimeout(() => {
-				refreshing.map = false;
-			}, 250);
-		});
 	});
 	onDestroy(() => {
 		mapData.service = null;
@@ -73,7 +80,6 @@
 		// return () => clearInterval(interval);
 	});
 
-	let serviceData: TrainService | null = $state(null);
 	let showPrevious = $state(false);
 	let showFurther = $state(false);
 
@@ -250,7 +256,9 @@
 							'previous',
 							operator,
 							cp.inDivision && !cp.startJoin,
-							callingPoints[i - 1].departed || !showPrevious
+							(callingPoints[i - 1].departed ||
+								(callingPoints.some((cp, j) => cp.departed && j < i) && !showPrevious)) &&
+								!callingPoints.some((cp, j) => (cp.departed || cp.arrived) && j > i - 1)
 						)}
 						<!-- {:else if cp.order === 'destination' && callingPoints.filter((c) => c.order === 'further').length > 0}
 						{@render lineButton(
@@ -478,6 +486,26 @@
 			{/if}
 		</div>
 	</div>
+{:else if error}
+	<div
+		in:fade|global={{ duration: 100, delay: 150 }}
+		class="sticky top-0 flex h-18 items-center border-b border-border p-4 pt-6"
+	>
+		<div class="absolute top-1.5 right-0 left-0 flex h-2 w-full items-center">
+			<div class="h-[5px] w-10 rounded-sm bg-background/40"></div>
+		</div>
+		<Button
+			size="icon"
+			class="bg-input/30 hover:bg-input/50"
+			variant="outline"
+			href={data.backTo ?? `../${page.url.search}`}><ArrowLeft /></Button
+		>
+
+		<div class="w-10"></div>
+	</div>
+	<div class="p-4">
+		<AlertCard status="major" class="text-sm">{error.message}</AlertCard>
+	</div>
 {:else}
 	<div
 		in:fade|global={{ duration: 100, delay: 150 }}
@@ -486,7 +514,12 @@
 		<div class="absolute top-1.5 right-0 left-0 flex h-2 w-full items-center">
 			<div class="h-[5px] w-10 rounded-sm bg-background/40"></div>
 		</div>
-		<a href="../{page.url.search}" class="w-10"><ArrowLeft /></a>
+		<Button
+			size="icon"
+			class="bg-input/30 hover:bg-input/50"
+			variant="outline"
+			href={data.backTo ?? `../${page.url.search}`}><ArrowLeft /></Button
+		>
 		<div class="flex h-[36px] grow flex-col items-center justify-center gap-1">
 			<Skeleton class="h-3 w-20" />
 			<Skeleton class="h-4 w-32" />

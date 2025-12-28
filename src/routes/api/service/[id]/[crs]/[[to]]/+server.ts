@@ -10,7 +10,7 @@ import type {
 	TrainService
 } from '$lib/types';
 import { parseServiceId } from '$lib/utils.js';
-import { error, json } from '@sveltejs/kit';
+import { error as kitError, json } from '@sveltejs/kit';
 import dayjs from 'dayjs';
 import { TreesIcon } from 'lucide-svelte';
 
@@ -226,323 +226,346 @@ async function fetchAssocService(rid: string) {
 export const GET = async ({ params }) => {
 	const { id: rawid, crs, to } = params;
 
-	const { id, destCrsList } = parseServiceId(rawid);
+	try {
+		const { id, destCrsList } = parseServiceId(rawid);
 
-	const response = await fetch(
-		`https://huxley2.azurewebsites.net/service/${id}?access_token=${ACCESS_TOKEN}`
-	);
-	const data = await response.json();
-	// console.log(data);
-	const locations: ServiceLocation[] = [data.locations.map(parseLocation)];
-	const rawCallingPoints = data.locations.filter((l: any) => !l.isPass && l.crs);
-
-	let callingPoints: any[] = [];
-	let destination = [rawCallingPoints[rawCallingPoints.length - 1]];
-
-	let formedFrom: string | null = null;
-
-	const hasNextAssoc = rawCallingPoints.find((l: any) =>
-		l.associations?.some((a: any) => a.category === 4 || a.category === 'next')
-	);
-	if (hasNextAssoc) {
-		const nextAssoc = hasNextAssoc.associations.find(
-			(l: any) => l.category === 4 || l.category === 'next'
-		);
-		formedFrom = `${nextAssoc?.rid}d${nextAssoc.destCRS || rawCallingPoints[0].crs}`;
-	}
-
-	// Division logic
-
-	// If the current service *is* the division
-	// category 1 == 'divide'
-	if (rawCallingPoints[0].associations?.some((l: any) => l.category === 1)) {
-		// const assocService = await fetchAssocService(
-		// 	rawCallingPoints[0].associations.find((l: any) => l.category === 1).rid
-		// );
-
-		// if (assocService) {
-		// 	// add the location as a line to the map object
-		// 	const assocParsedLocations = assocService.locations.map(parseLocation);
-		// 	locations.push(assocParsedLocations);
-
-		// 	const assocRawCallingPoints = assocService.locations.filter((l: any) => !l.isPass && l.crs);
-		// 	destination.push(assocRawCallingPoints[assocRawCallingPoints.length - 1]);
-		// 	assocRawCallingPoints.forEach((cp: any) => {
-		// 		// Insert the division calling point to the list
-		// 		if (cp.associations?.some((l: any) => l.category === 1)) {
-		// 			rawCallingPoints.forEach((cp: any, i: number) => {
-		// 				callingPoints.push({
-		// 					...cp,
-		// 					inDivision: true,
-		// 					startDivide: i === 0, // and specify where the division starts and ends
-		// 					endDivide: i === rawCallingPoints.length - 1
-		// 				});
-		// 			});
-		// 		}
-
-		// 		callingPoints.push(cp);
-		// 	});
-		// }
-		callingPoints = rawCallingPoints;
-		const assoc = rawCallingPoints[0].associations?.find((l: any) => l.category === 1);
-		console.log(assoc);
-		formedFrom = assoc ? `${assoc.rid}d${assoc.destCRS || rawCallingPoints[0].crs}` : null;
-	}
-	// the current service joins onto the 'main' service
-	else if (
-		rawCallingPoints[rawCallingPoints.length - 1].associations?.some((l: any) => l.category === 0)
-	) {
-		const assocService = await fetchAssocService(
-			rawCallingPoints[rawCallingPoints.length - 1].associations.find((l: any) => l.category === 0)
-				.rid
+		const response = await fetch(
+			`https://huxley2.azurewebsites.net/service/${id}?access_token=${ACCESS_TOKEN}`
 		);
 
-		if (assocService) {
-			// add the location as a line to the map object
-			const assocParsedLocations = assocService.locations.map(parseLocation);
-			locations.push(assocParsedLocations);
+		if (!response.ok) {
+			throw new Error(
+				'Failed to fetch service. This usually means it does not (or no longer) exists in the National Rail database.'
+			);
+		}
 
-			const assocRawCallingPoints = assocService.locations.filter((l: any) => !l.isPass && l.crs);
-			destination.push(assocRawCallingPoints[assocRawCallingPoints.length - 1]);
-			assocRawCallingPoints.forEach((cp: any) => {
-				// Insert the join calling point to the list
+		const data = await response.json();
+		// console.log(data);
+		const locations: ServiceLocation[] = [data.locations.map(parseLocation)];
+		const rawCallingPoints = data.locations.filter((l: any) => !l.isPass && l.crs);
 
-				if (cp.associations?.some((l: any) => l.category === 0)) {
-					callingPoints.push({ ...cp, std: null, etd: null, atd: null });
-					rawCallingPoints.forEach((cp: any, i: number) => {
-						callingPoints.push({
-							...cp,
-							inDivision: true,
-							startJoin: i === 0, // and specify where the division starts and ends
-							endJoin: i === rawCallingPoints.length - 1
+		let callingPoints: any[] = [];
+		let destination = [rawCallingPoints[rawCallingPoints.length - 1]];
+
+		let formedFrom: string | null = null;
+
+		const hasNextAssoc = rawCallingPoints.find((l: any) =>
+			l.associations?.some((a: any) => a.category === 4 || a.category === 'next')
+		);
+		if (hasNextAssoc) {
+			const nextAssoc = hasNextAssoc.associations.find(
+				(l: any) => l.category === 4 || l.category === 'next'
+			);
+			formedFrom = `${nextAssoc?.rid}d${nextAssoc.destCRS || rawCallingPoints[0].crs}`;
+		}
+
+		// Division logic
+
+		// If the current service *is* the division
+		// category 1 == 'divide'
+		if (rawCallingPoints[0].associations?.some((l: any) => l.category === 1)) {
+			// const assocService = await fetchAssocService(
+			// 	rawCallingPoints[0].associations.find((l: any) => l.category === 1).rid
+			// );
+
+			// if (assocService) {
+			// 	// add the location as a line to the map object
+			// 	const assocParsedLocations = assocService.locations.map(parseLocation);
+			// 	locations.push(assocParsedLocations);
+
+			// 	const assocRawCallingPoints = assocService.locations.filter((l: any) => !l.isPass && l.crs);
+			// 	destination.push(assocRawCallingPoints[assocRawCallingPoints.length - 1]);
+			// 	assocRawCallingPoints.forEach((cp: any) => {
+			// 		// Insert the division calling point to the list
+			// 		if (cp.associations?.some((l: any) => l.category === 1)) {
+			// 			rawCallingPoints.forEach((cp: any, i: number) => {
+			// 				callingPoints.push({
+			// 					...cp,
+			// 					inDivision: true,
+			// 					startDivide: i === 0, // and specify where the division starts and ends
+			// 					endDivide: i === rawCallingPoints.length - 1
+			// 				});
+			// 			});
+			// 		}
+
+			// 		callingPoints.push(cp);
+			// 	});
+			// }
+			callingPoints = rawCallingPoints;
+			const assoc = rawCallingPoints[0].associations?.find((l: any) => l.category === 1);
+			console.log(assoc);
+			formedFrom = assoc ? `${assoc.rid}d${assoc.destCRS || rawCallingPoints[0].crs}` : null;
+		}
+		// the current service joins onto the 'main' service
+		else if (
+			rawCallingPoints[rawCallingPoints.length - 1].associations?.some((l: any) => l.category === 0)
+		) {
+			const assocService = await fetchAssocService(
+				rawCallingPoints[rawCallingPoints.length - 1].associations.find(
+					(l: any) => l.category === 0
+				).rid
+			);
+
+			if (assocService) {
+				// add the location as a line to the map object
+				const assocParsedLocations = assocService.locations.map(parseLocation);
+				locations.push(assocParsedLocations);
+
+				const assocRawCallingPoints = assocService.locations.filter((l: any) => !l.isPass && l.crs);
+				destination.push(assocRawCallingPoints[assocRawCallingPoints.length - 1]);
+				assocRawCallingPoints.forEach((cp: any) => {
+					// Insert the join calling point to the list
+
+					if (cp.associations?.some((l: any) => l.category === 0)) {
+						callingPoints.push({ ...cp, std: null, etd: null, atd: null });
+						rawCallingPoints.forEach((cp: any, i: number) => {
+							callingPoints.push({
+								...cp,
+								inDivision: true,
+								startJoin: i === 0, // and specify where the division starts and ends
+								endJoin: i === rawCallingPoints.length - 1
+							});
 						});
+						callingPoints.push({ ...cp, sta: null, eta: null, ata: null });
+					} else {
+						callingPoints.push(cp);
+					}
+				});
+			}
+		}
+		// otherwise assume the current service is the primary service, or there is no division
+		else {
+			for (const cp of rawCallingPoints) {
+				if (
+					cp.associations?.some((l: any) => l.category === 1 || l.category === 0) &&
+					destCrsList.length > 1
+				) {
+					// get associations
+					const associations = cp.associations.filter(
+						(l: any) => l.category === 1 || l.category === 0
+					);
+
+					// add the location before the division, with arr. info only
+					callingPoints.push({ ...cp, std: null, etd: null, atd: null });
+
+					// fetch assoc services
+					const assocServices = await Promise.all(
+						associations.map(async (assoc: any) => ({
+							...(await fetchAssocService(assoc.rid)),
+							category: assoc.category
+						}))
+					);
+
+					// sort assoc services by dep
+					assocServices.sort((a: any, b: any) => {
+						const aOrigin = a.locations?.[0];
+						const bOrigin = b.locations?.[0];
+						if (dayjs(aOrigin.std).isBefore(dayjs(bOrigin.std))) {
+							return -1;
+						} else {
+							return 1;
+						}
 					});
+
+					for (const { locations: assocLocations, category } of assocServices) {
+						// add locations to line model
+						const parsedAssoc = assocLocations.map(parseLocation);
+						locations.push(parsedAssoc);
+
+						// filter for calling points
+						const assocRawCallingPoints = assocLocations.filter((l: any) => !l.isPass && l.crs);
+
+						// add to destination array
+						destination.push(assocRawCallingPoints[assocRawCallingPoints.length - 1]);
+
+						// add to calling points array
+						assocRawCallingPoints.forEach((cp: any, i: number) => {
+							callingPoints.push({
+								...cp,
+								inDivision: true,
+								startDivide: i === 0 && category === 1, // and specify where the division starts and ends
+								startJoin: i === 0 && category === 0,
+								endDivide: i === assocRawCallingPoints.length - 1 && category === 1,
+								endJoin: i === assocRawCallingPoints.length - 1 && category === 0
+							});
+						});
+					}
+
+					// finally add the cp after division for the main service, with dep. info only
 					callingPoints.push({ ...cp, sta: null, eta: null, ata: null });
 				} else {
 					callingPoints.push(cp);
 				}
-			});
-		}
-	}
-	// otherwise assume the current service is the primary service, or there is no division
-	else {
-		for (const cp of rawCallingPoints) {
-			if (
-				cp.associations?.some((l: any) => l.category === 1 || l.category === 0) &&
-				destCrsList.length > 1
-			) {
-				// get associations
-				const associations = cp.associations.filter(
-					(l: any) => l.category === 1 || l.category === 0
-				);
-
-				// add the location before the division, with arr. info only
-				callingPoints.push({ ...cp, std: null, etd: null, atd: null });
-
-				// fetch assoc services
-				const assocServices = await Promise.all(
-					associations.map(async (assoc: any) => ({
-						...(await fetchAssocService(assoc.rid)),
-						category: assoc.category
-					}))
-				);
-
-				// sort assoc services by dep
-				assocServices.sort((a: any, b: any) => {
-					const aOrigin = a.locations?.[0];
-					const bOrigin = b.locations?.[0];
-					if (dayjs(aOrigin.std).isBefore(dayjs(bOrigin.std))) {
-						return -1;
-					} else {
-						return 1;
-					}
-				});
-
-				for (const { locations: assocLocations, category } of assocServices) {
-					// add locations to line model
-					const parsedAssoc = assocLocations.map(parseLocation);
-					locations.push(parsedAssoc);
-
-					// filter for calling points
-					const assocRawCallingPoints = assocLocations.filter((l: any) => !l.isPass && l.crs);
-
-					// add to destination array
-					destination.push(assocRawCallingPoints[assocRawCallingPoints.length - 1]);
-
-					// add to calling points array
-					assocRawCallingPoints.forEach((cp: any, i: number) => {
-						callingPoints.push({
-							...cp,
-							inDivision: true,
-							startDivide: i === 0 && category === 1, // and specify where the division starts and ends
-							startJoin: i === 0 && category === 0,
-							endDivide: i === assocRawCallingPoints.length - 1 && category === 1,
-							endJoin: i === assocRawCallingPoints.length - 1 && category === 0
-						});
-					});
-				}
-
-				// finally add the cp after division for the main service, with dep. info only
-				callingPoints.push({ ...cp, sta: null, eta: null, ata: null });
-			} else {
-				callingPoints.push(cp);
 			}
 		}
-	}
 
-	// console.log(
-	// 	callingPoints
-	// 		.map((cp) => {
-	// 			if (cp.startDivide) {
-	// 				return 'startDivide:' + cp.crs;
-	// 			}
-	// 			if (cp.endDivide) {
-	// 				return 'endDivide:' + cp.crs;
-	// 			} else {
-	// 				return cp.crs;
-	// 			}
-	// 		})
-	// 		.join(', ')
-	// );
-	//
-	// console.log(destCrsList);
-	// console.log(callingPoints.map((cp) => cp.crs));
+		// console.log(
+		// 	callingPoints
+		// 		.map((cp) => {
+		// 			if (cp.startDivide) {
+		// 				return 'startDivide:' + cp.crs;
+		// 			}
+		// 			if (cp.endDivide) {
+		// 				return 'endDivide:' + cp.crs;
+		// 			} else {
+		// 				return cp.crs;
+		// 			}
+		// 		})
+		// 		.join(', ')
+		// );
+		//
+		// console.log(destCrsList);
+		// console.log(callingPoints.map((cp) => cp.crs));
 
-	destination = destCrsList.map((item) => {
-		const cp = callingPoints.find((loc: any, i) => loc.crs === item);
-		if (cp) {
-			return {
-				crs: cp.crs,
-				name: cp.locationName,
-				indexInCPs: callingPoints.findIndex((l, i) => l.crs === item)
-			};
-		} else {
-			return null;
-		}
-	});
-	destination = destination.filter((item) => item !== null);
-
-	let focusIndex = callingPoints.findLastIndex(
-		(l, i) => l.crs === crs && i < destination[0].indexInCPs
-	);
-
-	const allThatMatchFilter = callingPoints
-		.map((loc, i) => ({
-			...loc,
-			indexInCPs: i
-		}))
-		.filter((l, i) => l.crs === to)
-		.toSorted((a, b) => dayjs(a.sta).diff(dayjs(b.sta)));
-
-	// console.log(
-	// 	'allThatMatchFilter',
-	// 	allThatMatchFilter.map((loc) => `${loc.indexInCPs} ${loc.std}`)
-	// );
-
-	// console.log('focusIndex', focusIndex);
-
-	let filterIndex = to
-		? allThatMatchFilter.find((l) => l.indexInCPs > focusIndex)?.indexInCPs
-		: callingPoints.findIndex((l, i) => destCrsList.includes(l.crs));
-
-	// console.log('focusIndex', focusIndex);
-	// console.log('filterIndex', filterIndex);
-
-	if ((!filterIndex || filterIndex === -1) && to) {
-		console.log('Could not find filter, retrying');
-		filterIndex = callingPoints.findLastIndex((l, i) => l.crs === to);
-		focusIndex = callingPoints.findLastIndex(
-			(l, i) => l.crs === crs && i < destination[0].indexInCPs && i < (filterIndex ?? 10000)
-		);
-		console.log('focusIndex', focusIndex);
-		console.log('filterIndex', filterIndex);
-	}
-
-	if (filterIndex && focusIndex > filterIndex) {
-		console.log('Focus index is after filter index, retrying');
-		focusIndex = callingPoints.findLastIndex(
-			(l, i) => l.crs === crs && i < destination[0].indexInCPs && i < filterIndex
-		);
-		console.log('focusIndex', focusIndex);
-		console.log('filterIndex', filterIndex);
-	}
-
-	const date = callingPoints[focusIndex].std;
-
-	const title = `${dayjs(date).format('HH:mm')} to ${destination.map((l) => l.name).join(', ')}`;
-
-	let formationLengthOnly: boolean = data.locations[focusIndex]?.length ? true : false;
-
-	let formation: Carriage[] | null = data.locations[focusIndex]?.length
-		? [...Array(data.locations[focusIndex]?.length).keys()].map((_, i) => {
+		destination = destCrsList.map((item) => {
+			const cp = callingPoints.find((loc: any, i) => loc.crs === item);
+			if (cp) {
 				return {
-					coachNumber: (i + 1).toString(),
-					serviceClass: 'standard',
-					toilet: false,
-					toiletIsAccessible: false,
-					loading: null
+					crs: cp.crs,
+					name: cp.locationName,
+					indexInCPs: callingPoints.findIndex((l, i) => l.crs === item)
 				};
-			})
-		: null;
+			} else {
+				return null;
+			}
+		});
+		destination = destination.filter((item) => item !== null);
 
-	if (data.formation) {
-		const focus = data.formation.find((f: any) => f.tiploc === data.locations[focusIndex]?.tiploc);
-		const lastWithLoading =
-			data.formation.find((f: any) =>
-				f ? f?.coaches?.some((c: any) => c.loading?.value !== null) : false
-			) ?? null;
-
-		if (focus?.coaches || lastWithLoading?.coaches) {
-			formationLengthOnly = false;
-			formation = ((focus?.coaches || lastWithLoading?.coaches) ?? []).map((c: any, i) => ({
-				coachNumber: c.number,
-				serviceClass: c.coachClass === 'First' ? 'first' : 'standard',
-				toilet: c.toilet && c.toilet?.value !== 'None',
-				toiletIsAccessible: c.toilet?.value === 'Accessible',
-				loading: lastWithLoading.coaches[i].loading?.value ?? null
-			}));
+		if (!destination.length) {
+			throw new Error(`Could not find destination station(s) on route: ${destCrsList.join(', ')}`);
 		}
+
+		let focusIndex = callingPoints.findLastIndex(
+			(l, i) => l.crs === crs && i < destination[0].indexInCPs
+		);
+
+		const allThatMatchFilter = callingPoints
+			.map((loc, i) => ({
+				...loc,
+				indexInCPs: i
+			}))
+			.filter((l, i) => l.crs === to)
+			.toSorted((a, b) => dayjs(a.sta).diff(dayjs(b.sta)));
+
+		// console.log(
+		// 	'allThatMatchFilter',
+		// 	allThatMatchFilter.map((loc) => `${loc.indexInCPs} ${loc.std}`)
+		// );
+
+		// console.log('focusIndex', focusIndex);
+
+		let filterIndex = to
+			? allThatMatchFilter.find((l) => l.indexInCPs > focusIndex)?.indexInCPs
+			: callingPoints.findIndex((l, i) => destCrsList.includes(l.crs));
+
+		// console.log('focusIndex', focusIndex);
+		// console.log('filterIndex', filterIndex);
+
+		if ((!filterIndex || filterIndex === -1) && to) {
+			console.log('Could not find filter, retrying');
+			filterIndex = callingPoints.findLastIndex((l, i) => l.crs === to);
+			focusIndex = callingPoints.findLastIndex(
+				(l, i) => l.crs === crs && i < destination[0].indexInCPs && i < (filterIndex ?? 10000)
+			);
+			console.log('focusIndex', focusIndex);
+			console.log('filterIndex', filterIndex);
+		}
+
+		if (filterIndex && focusIndex > filterIndex) {
+			console.log('Focus index is after filter index, retrying');
+			focusIndex = callingPoints.findLastIndex(
+				(l, i) => l.crs === crs && i < destination[0].indexInCPs && i < filterIndex
+			);
+			console.log('focusIndex', focusIndex);
+			console.log('filterIndex', filterIndex);
+		}
+
+		if (focusIndex === -1 || filterIndex === -1) {
+			throw new Error(`Could not query journey: ${crs}->${to ?? destCrsList[0]}, on this service`);
+		}
+
+		const date = callingPoints[focusIndex].std;
+
+		const title = `${dayjs(date).format('HH:mm')} to ${destination.map((l) => l.name).join(', ')}`;
+
+		let formationLengthOnly: boolean = data.locations[focusIndex]?.length ? true : false;
+
+		let formation: Carriage[] | null = data.locations[focusIndex]?.length
+			? [...Array(data.locations[focusIndex]?.length).keys()].map((_, i) => {
+					return {
+						coachNumber: (i + 1).toString(),
+						serviceClass: 'standard',
+						toilet: false,
+						toiletIsAccessible: false,
+						loading: null
+					};
+				})
+			: null;
+
+		if (data.formation) {
+			const focus = data.formation.find(
+				(f: any) => f.tiploc === data.locations[focusIndex]?.tiploc
+			);
+			const lastWithLoading =
+				data.formation.find((f: any) =>
+					f ? f?.coaches?.some((c: any) => c.loading?.value !== null) : false
+				) ?? null;
+
+			if (focus?.coaches || lastWithLoading?.coaches) {
+				formationLengthOnly = false;
+				formation = ((focus?.coaches || lastWithLoading?.coaches) ?? []).map((c: any, i) => ({
+					coachNumber: c.number,
+					serviceClass: c.coachClass === 'First' ? 'first' : 'standard',
+					toilet: c.toilet && c.toilet?.value !== 'None',
+					toiletIsAccessible: c.toilet?.value === 'Accessible',
+					loading: lastWithLoading.coaches[i].loading?.value ?? null
+				}));
+			}
+		}
+
+		if (id === '202511307801133') {
+			callingPoints[focusIndex].isCancelled = false;
+		}
+
+		if (data.operatorCode == 'LO') {
+			data.operatorCode = findOvergroundLine(data.uid);
+		}
+
+		const final: TrainService = {
+			rid: data.id,
+			callingPoints: callingPoints.map((cp, i) =>
+				parseCallingPoint(
+					cp,
+					i,
+					callingPoints.length,
+					focusIndex,
+					filterIndex,
+					destination,
+					callingPoints
+				)
+			),
+			locations,
+			isBus: data.serviceType === 'bus' || data.serviceType === 1,
+			operator: {
+				id: data.operatorCode,
+				name: operatorList[data.operatorCode].name ?? data.operator ?? 'Unknown',
+				color: operatorList[data.operatorCode].bg ?? '#000000'
+			},
+			title,
+			formedFrom,
+			destination,
+			formation,
+			formationLengthOnly,
+			uid: data.uid,
+			sdd: data.sdd,
+			date,
+			isToday: dayjs().isSame(date, 'day'),
+			reasonCode: data.delayReason?.value ?? data.cancelReason?.value ?? null
+		};
+
+		return json(final);
+	} catch (error: any) {
+		console.error('error.message', error.message);
+		return kitError(500, error.message);
 	}
-
-	if (id === '202511307801133') {
-		callingPoints[focusIndex].isCancelled = false;
-	}
-
-	if (data.operatorCode == 'LO') {
-		data.operatorCode = findOvergroundLine(data.uid);
-	}
-
-	const final: TrainService = {
-		rid: data.id,
-		callingPoints: callingPoints.map((cp, i) =>
-			parseCallingPoint(
-				cp,
-				i,
-				callingPoints.length,
-				focusIndex,
-				filterIndex,
-				destination,
-				callingPoints
-			)
-		),
-		locations,
-		isBus: data.serviceType === 'bus' || data.serviceType === 1,
-		operator: {
-			id: data.operatorCode,
-			name: operatorList[data.operatorCode].name ?? data.operator ?? 'Unknown',
-			color: operatorList[data.operatorCode].bg ?? '#000000'
-		},
-		title,
-		formedFrom,
-		destination,
-		formation,
-		formationLengthOnly,
-		uid: data.uid,
-		sdd: data.sdd,
-		date,
-		isToday: dayjs().isSame(date, 'day'),
-		reasonCode: data.delayReason?.value ?? data.cancelReason?.value ?? null
-	};
-
-	return json(final);
 };

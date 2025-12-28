@@ -233,13 +233,14 @@
 	{#if data.isFormedFromTrain}
 		<div class="fixed top-safe-top right-3 z-[20000] lg:top-3">
 			<div
-				class="flex max-w-42 items-center gap-2 rounded-md bg-background px-2.5 py-1.5 text-[10px]/3 drop-shadow sm:max-w-full sm:text-xs"
+				class="flex max-w-42 items-center gap-2 rounded-md bg-background px-2.5 py-1.5 text-[10px]/3 drop-shadow sm:max-w-md sm:text-xs"
 			>
-				<CircleAlert size={14} />
-				Location is of
-				<a href="/board/{data.formedFromOrigin}/t/{data.formedFromId}?backTo={page.url.pathname}"
-					>the service your train is formed from.</a
-				>
+				<div class="min-w-4">
+					<CircleAlert size={14} />
+				</div>
+				<a href="/board/{data.formedFromOrigin}/t/{data.formedFromId}?backTo={page.url.pathname}">
+					Location is of the service your train is formed from, which can change last minute
+				</a>
 			</div>
 		</div>
 	{/if}
