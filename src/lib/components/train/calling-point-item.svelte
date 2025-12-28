@@ -227,7 +227,7 @@
 		<div class="flex items-end gap-1">
 			<div
 				class={[
-					'min-w-0 overflow-hidden text-nowrap text-ellipsis',
+					'min-w-0 overflow-hidden text-base/4 text-nowrap text-ellipsis',
 					{
 						'font-semibold':
 							newCp.order === 'focus' || newCp.order === 'filter' || newCp.isDestination,
@@ -267,13 +267,21 @@
 						? `${Math.abs(newCp.delay ?? 0)}m early`
 						: 'on time'}
 			</ChangeNotifier>
-		{:else if newCp.arrived && (cp.order === 'focus' || cp.order === 'filter')}
+		{:else if newCp.arrived && cp.order === 'filter'}
 			<div class="flex items-center gap-1 text-[10px]/4 text-muted-foreground">
-				<ArrowDownRight size={12} /> Arrived
+				<ArrowDownRight size={12} /> Arrived {(newCp.arrivalDelay ?? 0) > 0
+					? `${newCp.arrivalDelay}m late`
+					: (newCp.arrivalDelay ?? 0) < 0
+						? `${Math.abs(newCp.arrivalDelay ?? 0)}m early`
+						: 'on time'}
 			</div>
-		{:else if (newCp.delay ?? 0) > 5 && (cp.order === 'focus' || cp.order === 'filter')}
+		{:else if (newCp.delay ?? 0) > 5 && cp.order === 'focus'}
 			<div class="flex items-center gap-1 text-[10px]/4 text-muted-foreground">
 				<ClockAlertIcon size={12} /> Expected departure {newCp.delay}m late
+			</div>
+		{:else if (newCp.arrivalDelay ?? 0) > 5 && cp.order === 'filter'}
+			<div class="flex items-center gap-1 text-[10px]/4 text-muted-foreground">
+				<ClockAlertIcon size={12} /> Expected arrival {newCp.arrivalDelay}m late
 			</div>
 		{/if}
 	</div>

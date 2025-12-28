@@ -66,5 +66,6 @@ export const londonTerminals = [
 	'LBG',
 	'BFR',
 	'VIC',
-	'WAT'
+	'WAT',
+	'ZFD'
 ];

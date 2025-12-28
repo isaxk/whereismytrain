@@ -229,7 +229,7 @@
 	/>
 </GeoJSON>
 
-{#if data.trainPosition && coordsTween?.current && page.data.id === rid}
+{#if data.trainPosition && coordsTween?.current}
 	{#if data.isFormedFromTrain}
 		<div class="fixed top-safe-top right-3 z-[20000] lg:top-3">
 			<div

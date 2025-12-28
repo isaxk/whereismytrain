@@ -52,14 +52,20 @@ function parseCallingPoint(
 	if (item.std === nullTime) item.std = null;
 
 	let delay = null;
+	let arrivalDelay = null;
 
-	// const rta = item.ata || item.eta ? dayjs(item.ata ?? item.eta) : null;
+	const rta = item.ata || item.eta ? dayjs(item.ata ?? item.eta) : null;
 	const rtd = item.atd || item.etd ? dayjs(item.atd ?? item.etd) : null;
-	// const pta = item.sta ? dayjs(item.sta) : null;
+
+	const pta = item.sta ? dayjs(item.sta) : null;
 	const ptd = item.std ? dayjs(item.std) : null;
 
 	if (rtd && ptd) {
 		delay = rtd.diff(ptd, 'minutes');
+	}
+
+	if (rta && pta) {
+		arrivalDelay = rta ? rta.diff(pta, 'minutes') : null;
 	}
 
 	const times: TimeObject = {
@@ -191,6 +197,7 @@ function parseCallingPoint(
 		name: item.locationName,
 		times,
 		delay,
+		arrivalDelay,
 		rtDepDate: item.atd ?? item.etd,
 		departed: item.atd && item.atd !== nullTime,
 		arrived: item.ata && item.ata !== nullTime,

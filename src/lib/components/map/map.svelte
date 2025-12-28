@@ -293,7 +293,7 @@
 	{#if !mapData.service}
 		{#each saved.value as item, i (item.id)}
 			{#if !page.data.id || page.data.id === item.id}
-				<SavedMapService rid={item.id} crs={item.focusCrs} filter={item.filterCrs} />
+				<SavedMapService rid={item.service_id} crs={item.focusCrs} filter={item.filterCrs} />
 			{/if}
 		{/each}
 	{/if}

@@ -34,9 +34,12 @@
 		});
 	}
 
-	onMount(() => {
+	let unsubscribe: () => void;
+
+	$effect(() => {
+		unsubscribe?.();
 		refresh();
-		const unsubscribe = servicesSub.subscribe(rid, crs, filter, async (s) => {
+		unsubscribe = servicesSub.subscribe(rid, crs, filter, async (s) => {
 			serviceData = s;
 			console.log('map-service', rid, crs, filter);
 			const response = await fetch(`/api/mapdata`, {
@@ -49,7 +52,7 @@
 			const resData = await response.json();
 			mapData = resData;
 		});
-		return () => unsubscribe();
+		return () => unsubscribe?.();
 	});
 </script>
 

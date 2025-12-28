@@ -30,11 +30,14 @@
 	async function save(filter: string) {
 		loading = true;
 		let newItem: SavedTrainType = {
-			id: rid,
+			id: crypto.randomUUID(),
+			service_id: rid,
 			focusCrs: crs,
 			filterCrs: filter,
 			service,
-			lastRefreshed: Date.now()
+			lastRefreshed: Date.now(),
+			subscriptionId: null,
+			originalArrival: service.callingPoints.find((cp) => cp.order === 'filter')?.times.plan.arr
 		};
 		const subscriptionId = await subscribeToTrain(
 			rid,
@@ -90,14 +93,14 @@
 			</Button>
 		{/snippet}
 	</Install>
-{:else if saved.value.some((s) => s.id === rid)}
+{:else if saved.value.some((s) => s.service_id === rid)}
 	<Button
 		size="icon"
 		class="relative bg-input/30 hover:bg-input/50"
 		variant="outline"
 		onclick={() => remove()}
 	>
-		{#if saved.value.find((s) => s.id === rid)?.subscriptionId}
+		{#if saved.value.find((s) => s.service_id === rid)?.subscriptionId}
 			<BellRing fill="currentColor" />
 		{:else}
 			<BookmarkIcon fill="currentColor" />

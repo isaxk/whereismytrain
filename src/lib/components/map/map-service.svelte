@@ -28,28 +28,30 @@
 
 {#if mapData}
 	<div>
-		{#each mapData.locations as group, index (index)}
-			<MapLocationGroup
-				{rid}
-				{crs}
-				{refreshing}
-				filter={group.lineLocations.some((l) => l.crs === filter)
-					? filter
-					: group.lineLocations.some((l) => l.crs === crs)
-						? (serviceData.callingPoints.find((l) => l.startDivide)?.crs ?? null)
-						: null}
-				focus={crs}
-				href="/board/{crs}/t/{rid}?{filter ? `to=${filter}&` : ''}backTo=/"
-				isAtStation={false}
-				showDestination={mapData.locations.reduce(
-					(acc, curr) => acc + (curr.trainPosition ? 1 : 0),
-					0
-				) > 1}
-				color={serviceData.operator.color}
-				{index}
-				data={group}
-			/>
-		{/each}
+		{#key serviceData.rid}
+			{#each mapData.locations as group, index (index)}
+				<MapLocationGroup
+					{rid}
+					{crs}
+					{refreshing}
+					filter={group.lineLocations.some((l) => l.crs === filter)
+						? filter
+						: group.lineLocations.some((l) => l.crs === crs)
+							? (serviceData.callingPoints.find((l) => l.startDivide)?.crs ?? null)
+							: null}
+					focus={crs}
+					href="/board/{crs}/t/{rid}?{filter ? `to=${filter}&` : ''}backTo=/"
+					isAtStation={false}
+					showDestination={mapData.locations.reduce(
+						(acc, curr) => acc + (curr.trainPosition ? 1 : 0),
+						0
+					) > 1}
+					color={serviceData.operator.color}
+					{index}
+					data={group}
+				/>
+			{/each}
+		{/key}
 		{#if page.data.id === rid}
 			{#each serviceData.callingPoints as cp, i (cp.tiploc + i)}
 				{@const tiploc = mapData?.tiplocData?.find((t) => t.tiploc === cp.tiploc)}

@@ -111,13 +111,13 @@
 			<div class="text-sm">Tap the search bar above to find trains</div>
 		</div>
 	{:else}
-		{#each saved.value as item (item.id + item.filterCrs + item.focusCrs + item.subscriptionId)}
+		{#each saved.value as item, index (item.id)}
 			<div
 				class="border-b border-border px-4 last:border-none even:bg-muted/20"
 				transition:fly={{ duration: 200, x: -100 }}
 				animate:flip={{ duration: 200 }}
 			>
-				<SavedTrain data={item} />
+				<SavedTrain data={item} {index} />
 			</div>
 		{/each}
 	{/if}

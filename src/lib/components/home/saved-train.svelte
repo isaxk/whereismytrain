@@ -21,8 +21,11 @@
 	import AlertCard from '../ui/alert-card.svelte';
 	import { londonTerminals } from '$lib/data/favourites';
 	import Button from '../ui/button/button.svelte';
+	import AlternativeConnection from './alternative.svelte';
+	import { explicitEffect } from '$lib/state/utils.svelte';
+	import Spinner from '../ui/spinner/spinner.svelte';
 
-	let { data }: { data: SavedTrain } = $props();
+	let { data, index }: { data: SavedTrain; index: number } = $props();
 
 	let service = $derived(data.service);
 	let lastRefreshed = $state(null);
@@ -36,7 +39,7 @@
 	});
 
 	async function refetch() {
-		const res = await fetch(`/api/service/${data.id}/${data.focusCrs}`);
+		const res = await fetch(`/api/service/${data.service_id}/${data.focusCrs}`);
 		if (res.ok) {
 			const s = await res.json();
 			if (s) {
@@ -59,29 +62,37 @@
 		saved.value = saved.value.filter((s) => s.id !== data.id);
 	}
 
-	onMount(() => {
-		// refetch();
-		const unsubscribe = servicesSub.subscribe(data.id, data.focusCrs, data.filterCrs, (s) => {
-			if (s) {
-				service = s;
-				const item = saved.value.findIndex((s) => s.id === data.id);
-				if (item !== -1) {
-					saved.value[item] = {
-						...saved.value[item],
-						service: s,
-						lastRefreshed: Date.now()
-					};
+	let unsubscribe: () => void;
+
+	explicitEffect(
+		() => {
+			console.log('effect triggered for: data.service_id', data.service_id);
+			unsubscribe?.();
+
+			unsubscribe = servicesSub.subscribe(data.service_id, data.focusCrs, data.filterCrs, (s) => {
+				if (s) {
+					service = s;
+					const item = saved.value.findIndex((s) => s.id === data.id);
+					if (item !== -1) {
+						saved.value[item] = {
+							...saved.value[item],
+							service: s,
+							lastRefreshed: Date.now()
+						};
+					}
 				}
-			}
-		});
-		const interval = setInterval(() => {
-			now = dayjs();
-		}, 100);
-		return () => {
-			unsubscribe();
-			clearInterval(interval);
-		};
-	});
+			});
+			const interval = setInterval(() => {
+				now = dayjs();
+			}, 100);
+			return () => {
+				console.log('cleaning up effect');
+				unsubscribe?.();
+				clearInterval(interval);
+			};
+		},
+		() => [data.service_id]
+	);
 
 	const focus = $derived(service?.callingPoints?.find((cp) => cp.crs === data.focusCrs));
 	const filter = $derived(service?.callingPoints?.find((cp) => cp.crs === data.filterCrs));
@@ -90,12 +101,9 @@
 	const timeUntilDeparture = $derived(focus ? dayjs(focus.rtDepDate).diff(now, 'minute') : 0);
 
 	const connection = $derived.by(() => {
-		if (!filter) return null;
-
-		console.log(`\n---${service.title}, ${data.focusCrs} to ${filter.crs}---`);
+		if (!filter || focus?.isCancelled || filter?.isCancelled) return null;
 
 		const connection = saved.value.find((s) => {
-			console.log(`${s.service.title}, ${s.focusCrs} to ${s.filterCrs}`);
 			// if (s.id === service.rid) return false;
 
 			const acrossLondon =
@@ -103,7 +111,7 @@
 				londonTerminals.includes(filter.crs ?? '') &&
 				s.focusCrs !== filter.crs;
 
-			if (s.focusCrs !== filter.crs) return false;
+			if (s.focusCrs !== filter.crs && !acrossLondon) return false;
 
 			console.log('connection');
 
@@ -113,12 +121,13 @@
 				const schDiff =
 					connectionFocus.times.plan.dep && filter.times.plan.arr
 						? dayjsFromHHmm(connectionFocus.times.plan.dep).diff(
-								dayjsFromHHmm(filter.times.plan.arr),
+								dayjsFromHHmm(data.originalArrival ?? filter.times.plan.arr),
 								'minute'
 							)
 						: null;
 				console.log(schDiff);
-				if (schDiff && schDiff < 45 && schDiff > 1) return true;
+				if (schDiff && schDiff < (acrossLondon ? 120 : 90) && schDiff > (acrossLondon ? 10 : 1))
+					return true;
 			}
 			return false;
 		});
@@ -135,7 +144,7 @@
 			const schDiff =
 				connectionFocus.times.plan.dep && filter.times.plan.arr
 					? dayjsFromHHmm(connectionFocus.times.plan.dep).diff(
-							dayjsFromHHmm(filter.times.plan.arr),
+							dayjsFromHHmm(data.originalArrival ?? filter.times.plan.arr),
 							'minute'
 						)
 					: null;
@@ -155,43 +164,57 @@
 				if (acrossLondon && rtDiff <= 20) {
 					status = 'impossible';
 				} else if (acrossLondon && rtDiff <= 30) {
-					status = 'warning';
+					status = 'alternative';
 				}
 			} else if (schDiff <= 5) {
 				if (rtDiff < 1) {
 					status = 'impossible';
 				} else if (rtDiff < 4) {
-					status = 'warning';
+					status = 'alternative';
 				}
 			} else if (schDiff <= 10) {
 				if (rtDiff < 1) {
 					status = 'impossible';
 				} else if (rtDiff <= 5) {
+					status = 'alternative';
+				} else if (rtDiff <= 7) {
 					status = 'warning';
 				}
 			} else if (rtDiff < schDiff) {
 				if (rtDiff < 1) {
 					status = 'impossible';
-				} else if (rtDiff <= 8) {
+				} else if (rtDiff <= 5) {
+					status = 'alternative';
+				} else if (rtDiff <= 10) {
 					status = 'warning';
 				}
 			}
 
+			const connectionIndex = saved.value.findIndex((saved) => saved.id === connection.id);
+
 			if (rtDiff && schDiff) {
 				return {
+					rid: connection.service_id,
 					rtTime: rtDiff,
 					schTime: schDiff,
 					name: `${connectionFocus.times.plan.dep}`,
 					status,
-					acrossLondon
+					acrossLondon,
+					from: connection.focusCrs,
+					to: connection.filterCrs,
+					connectionIndex
 				};
 			} else if (schDiff) {
 				return {
+					rid: connection.service_id,
 					schTime: schDiff,
 					rtTime: null,
 					name: `${connectionFocus.times.plan.dep}`,
 					status,
-					acrossLondon
+					acrossLondon,
+					from: connection.focusCrs,
+					to: connection.filterCrs,
+					connectionIndex
 				};
 			}
 		}
@@ -199,7 +222,7 @@
 		return null;
 	});
 
-	$inspect('connection', connection);
+	$inspect('service', data);
 </script>
 
 <div
@@ -218,56 +241,229 @@
 			{/if}
 		</div>
 	{/if} -->
-	{#if focus}
-		<BoardItem
-			href={`/board/${data.focusCrs}/t/${data.id}?to=${data.filterCrs}&backTo=/`}
-			id={data.id}
-			planDep={focus?.times.plan.dep ?? 'N/A'}
-			rtDep={focus?.times.rt.dep ?? null}
-			departed={focus.departed}
-			isCancelled={focus?.isCancelled}
-			focus={focus.name}
-			destination={service.destination}
-			platform={focus.platform}
-			crs={focus.crs ?? ''}
-			operator={data.service.operator}
-			isToday={data.service.isToday ?? false}
-			date={data.service.date}
-			{connection}
-			filter={filter
-				? {
-						name: filter.name,
-						planArr: filter.times.plan.arr ?? 'N/A',
-						rtArr: filter.times.rt.arr ?? null,
-						isCancelled: filter.isCancelled,
-						arrived: filter.arrived
-					}
-				: null}
-		/>
+	{#key data.service_id}
+		{#if focus}
+			<BoardItem
+				href={`/board/${data.focusCrs}/t/${data.service_id}?to=${data.filterCrs}&backTo=/`}
+				id={data.service_id}
+				planDep={focus?.times.plan.dep ?? 'N/A'}
+				rtDep={focus?.times.rt.dep ?? null}
+				departed={focus.departed}
+				isCancelled={focus?.isCancelled}
+				focus={focus.name}
+				destination={service.destination}
+				platform={focus.platform}
+				crs={focus.crs ?? ''}
+				operator={data.service.operator}
+				isToday={data.service.isToday ?? false}
+				date={data.service.date}
+				{connection}
+				filter={filter
+					? {
+							name: filter.name,
+							planArr: filter.times.plan.arr ?? 'N/A',
+							rtArr: filter.times.rt.arr ?? null,
+							isCancelled: filter.isCancelled,
+							arrived: filter.arrived
+						}
+					: null}
+			/>
+		{/if}
+	{/key}
+	{#if focus?.isCancelled || filter?.isCancelled}
+		<AlternativeConnection
+			from={data.focusCrs}
+			to={data.filterCrs}
+			time={focus?.times.plan.dep}
+			{index}
+			existingRid={data.service_id}
+		>
+			{#snippet children(service, switchTo, switching)}
+				{#if service}
+					<AlertCard status="major" class="mt-0 font-normal" Icon={X}>
+						<div class="flex items-center">
+							<div>
+								<div class="font-semibold">
+									This service was cancelled, but an alternative was found.
+								</div>
+								<div class="font-normal underline">
+									{service.times.plan.dep} to {service.destination?.map((d) => d.name).join(', ')} (Exp.
+									{service.times.rt.dep})
+								</div>
+								<div class="text-xs text-muted-foreground">
+									Please check your ticket is valid on this service
+								</div>
+							</div>
+							<Button onclick={switchTo}
+								>{#if switching}
+									<Spinner />
+								{:else}
+									Switch
+								{/if}</Button
+							>
+						</div>
+					</AlertCard>
+				{/if}
+			{/snippet}
+		</AlternativeConnection>
 	{/if}
 	{#if connection && connection.schTime}
 		{#if !connection?.rtTime}
-			<AlertCard status="minor" class="mt-2">
-				Connection to the {connection.name} may no longer be possible
-			</AlertCard>
+			<AlternativeConnection
+				from={connection.from}
+				to={connection.to}
+				time={filter?.times.rt.arr}
+				index={connection.connectionIndex}
+				existingRid={connection.rid}
+				allowance={connection.schTime}
+			>
+				{#snippet children(service, switchTo, switching)}
+					<AlertCard status="minor" class="mt-2 font-normal" Icon={GitCompareArrowsIcon}>
+						{#if service}
+							<div class="flex items-center">
+								<div>
+									<div class="font-semibold">
+										Connection {#if connection.acrossLondon}(via Tube){/if} to the {connection.name}
+										may no longer be possible, but an alternative was found.
+									</div>
+									<div class="font-normal underline">
+										{service.times.plan.dep} to {service.destination?.map((d) => d.name).join(', ')}
+										(Exp.
+										{service.times.rt.dep})
+									</div>
+									<div class="text-xs text-muted-foreground">
+										Please check your ticket is valid on this service
+									</div>
+								</div>
+								<div class="flex min-w-24 justify-end">
+									<Button onclick={switchTo}
+										>{#if switching}
+											<Spinner />
+										{:else}
+											Switch
+										{/if}</Button
+									>
+								</div>
+							</div>
+						{:else}
+							<div class="font-semibold">
+								Connection {#if connection.acrossLondon}(via Tube){/if} to the {connection.name} may
+								no longer be possible.
+							</div>
+						{/if}
+					</AlertCard>
+				{/snippet}
+			</AlternativeConnection>
 		{:else if connection.status === 'impossible'}
-			<AlertCard status="major" class="mt-2">
-				{#if connection.rtTime < 1}
-					Connection to the {connection.name} no longer possible
-				{:else}
-					{connection.rtTime}m to change to the {connection.name} (likely impossible)
-				{/if}
-			</AlertCard>
+			<AlternativeConnection
+				from={connection.from}
+				to={connection.to}
+				time={filter?.times.rt.arr}
+				index={connection.connectionIndex}
+				existingRid={connection.rid}
+				allowance={connection.schTime}
+			>
+				{#snippet children(service, switchTo, switching)}
+					<AlertCard status="major" class="mt-2 font-normal" Icon={GitCompareArrowsIcon}>
+						{#if service}
+							<div class="flex items-center">
+								<div>
+									<div class="font-semibold">
+										{#if connection.rtTime < 1}
+											Connection {#if connection.acrossLondon}(via Tube){/if} to the {connection.name}
+											no longer possible, but an alternative was found.
+										{:else}
+											{connection.rtTime}m to change {#if connection.acrossLondon}(via Tube){/if} to
+											the {connection.name} (likely impossible), but an alternative was found.
+										{/if}
+									</div>
+									<div class="font-normal underline">
+										{service.times.plan.dep} to {service.destination?.map((d) => d.name).join(', ')}
+										(Exp.
+										{service.times.rt.dep})
+									</div>
+									<div class="text-xs text-muted-foreground">
+										Please check your ticket is valid on this service
+									</div>
+								</div>
+								<div class="flex min-w-24 justify-end">
+									<Button onclick={switchTo}
+										>{#if switching}
+											<Spinner />
+										{:else}
+											Switch
+										{/if}</Button
+									>
+								</div>
+							</div>
+						{:else}
+							<div class="font-semibold">
+								{#if connection.rtTime < 1}
+									Connection {#if connection.acrossLondon}(via Tube){/if} to the {connection.name} no
+									longer possible.
+								{:else}
+									{connection.rtTime}m to change {#if connection.acrossLondon}(via Tube){/if} to the
+									{connection.name} (likely impossible).
+								{/if}
+							</div>
+						{/if}
+					</AlertCard>
+				{/snippet}
+			</AlternativeConnection>
 		{:else if connection.status === 'warning'}
-			<AlertCard status="minor" class="mt-2">
+			<AlertCard status="minor" class="mt-2" Icon={GitCompareArrowsIcon}>
 				{connection.rtTime}m to change to the {connection.name}
 			</AlertCard>
+		{:else if connection.status === 'alternative'}
+			<AlternativeConnection
+				from={connection.from}
+				to={connection.to}
+				time={filter?.times.rt.arr}
+				index={connection.connectionIndex}
+				existingRid={connection.rid}
+				allowance={connection.schTime}
+			>
+				{#snippet children(service, switchTo, switching)}
+					<AlertCard status="minor" class="mt-2 font-normal" Icon={GitCompareArrowsIcon}>
+						{#if service}
+							<div class="flex items-center">
+								<div>
+									<div class="font-semibold">
+										Only {connection.rtTime}m to change {#if connection.acrossLondon}(via Tube){/if}
+										to the {connection.name}, you may want to switch to this alternative
+									</div>
+									<div class="font-normal underline">
+										{service?.times.plan.dep} to {service?.destination
+											?.map((d) => d.name)
+											.join(', ')} (Exp.
+										{service?.times.rt.dep})
+									</div>
+									<div class="text-xs text-muted-foreground">
+										Please check your ticket is valid on this service
+									</div>
+								</div>
+								<div class="flex min-w-24 justify-end">
+									<Button onclick={switchTo}
+										>{#if switching}
+											<Spinner />
+										{:else}
+											Switch
+										{/if}</Button
+									>
+								</div>
+							</div>
+						{:else}
+							<div class="font-semibold">
+								status='alternative'
+								{connection.rtTime}m to change {#if connection.acrossLondon}(via Tube){/if} to the {connection.name}
+							</div>
+						{/if}
+					</AlertCard>
+				{/snippet}
+			</AlternativeConnection>
 		{/if}
 	{/if}
-	<Button
-		onclick={() => remove()}
-		variant="outline"
-		class="absolute right-0 bottom-4"
-		size="icon-sm"><X /></Button
+	<Button onclick={() => remove()} variant="outline" class="absolute top-18 right-0" size="icon-sm"
+		><X /></Button
 	>
 </div>

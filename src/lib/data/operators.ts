@@ -65,7 +65,7 @@ export const operatorList: Record<string, { name: string; bg: string; text: stri
 		text: '#ffffff'
 	},
 	LM: {
-		name: 'West Midlands / LNWR',
+		name: 'West Midlands Trains',
 		bg: '#1E4B45',
 		text: '#ffffff'
 	},
@@ -203,7 +203,7 @@ export const operatorList: Record<string, { name: string; bg: string; text: stri
 		name: 'Suffragette Line',
 		bg: '#693D90',
 		text: '#ffffff'
-	}, 
+	},
 	MILDMAY: {
 		name: 'Mildmay Line',
 		bg: '#008855',
@@ -213,5 +213,5 @@ export const operatorList: Record<string, { name: string; bg: string; text: stri
 		name: 'Windrush Line',
 		bg: '#D95700',
 		text: '#ffffff'
-	},
+	}
 };

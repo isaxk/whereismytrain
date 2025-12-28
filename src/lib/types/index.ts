@@ -116,6 +116,7 @@ export type CallingPoint = {
 	startJoin: boolean;
 	endJoin: boolean;
 	delay: number | null;
+	arrivalDelay: number | null;
 	order: CallingPointOrder;
 	isOrigin: boolean;
 	departed: boolean;
@@ -154,12 +155,14 @@ export type TrainService = {
 };
 
 export type SavedTrain = {
+	id: string;
 	service: TrainService;
 	focusCrs: string;
 	filterCrs: string;
-	id: string;
+	service_id: string;
 	subscriptionId: string | null;
 	lastRefreshed: number;
+	originalArrival: string | null;
 };
 
 export type PinnedBoard = {

@@ -15,6 +15,8 @@
 		crs,
 		id,
 		href,
+		trainid,
+		uid,
 		isCancelled,
 		isFilterCancelled = false,
 		rtDep,
@@ -34,6 +36,8 @@
 		crs: string;
 		id: string;
 		href: string;
+		trainid?: string;
+		uid?: string;
 		isCancelled: boolean;
 		isFilterCancelled?: boolean;
 		rtDep: string | null;
@@ -106,6 +110,9 @@
 >
 	<div class="flex h-max items-center gap-2">
 		<div class="font-medium">
+			{#if trainid && uid}
+				{trainid} - {uid}
+			{/if}
 			{#if isToday}
 				{planDep || 'N/A'}
 			{:else}
@@ -156,7 +163,10 @@
 		<div class="grow"></div>
 		<ChangeNotifier
 			changed={oldPlatform !== platform}
-			class="-mr-1 items-center justify-center px-1 text-right"
+			class={[
+				'-mr-1 items-center justify-center px-1 text-right',
+				platform === 'BUS' && 'text-sm text-warning'
+			]}
 		>
 			{#if platform === 'BUS'}
 				<Bus size={16} /> Bus service
@@ -200,7 +210,7 @@
 				{#if !isCancelled}
 					<ChangeNotifier
 						changed={oldFilter?.isCancelled !== filter.isCancelled}
-						class="text-danger"
+						class="pb-2 text-xs text-danger"
 					>
 						<X size={14} /> Cancelled to {filter.name}
 					</ChangeNotifier>
@@ -244,12 +254,15 @@
 		{#if connection && connection.rtTime && connection.status === 'ok'}
 			<div class="flex items-center gap-1 pl-0.5 text-xs text-muted-foreground">
 				<GitCompareArrowsIcon size={12} />
-				{connection.rtTime}m to change to the {connection.name}
+				{connection.rtTime}m to change {#if connection.acrossLondon}(via Tube){/if} to the {connection.name}
 			</div>
 		{/if}
 	{:else if isFilterCancelled && !isCancelled}
 		<div class="flex items-center gap-0 text-xs">
-			<ChangeNotifier changed={oldisFilterCancelled !== isFilterCancelled} class="text-danger">
+			<ChangeNotifier
+				changed={oldisFilterCancelled !== isFilterCancelled}
+				class="text-xs text-danger"
+			>
 				<X size={14} /> Cancelled to {filterName}
 			</ChangeNotifier>
 		</div>

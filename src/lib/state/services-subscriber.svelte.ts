@@ -2,6 +2,7 @@ import type { TrainService } from '$lib/types';
 
 async function refresh() {
 	refreshing.current = true;
+	console.log(services);
 	for (const service of services) {
 		const response = await fetch(service.url);
 		if (response.ok) {
@@ -47,6 +48,7 @@ export const servicesSub = {
 		callback: (data: TrainService) => void
 	) => {
 		const url = `/api/service/${id}/${focus}/${filter}`;
+		console.log(url);
 		const service = services.find((s) => s.url === url);
 		if (!service) {
 			services.push({
