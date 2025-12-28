@@ -256,7 +256,7 @@
 				changed={newCp.isCancelled !== oldCp.isCancelled}
 				class="w-max text-xs/4 text-red-600"><X size={16} /> Cancelled</ChangeNotifier
 			>
-		{:else if newCp.departed && cp.order === 'focus'}
+			<!-- {:else if newCp.departed && cp.order === 'focus'}
 			<ChangeNotifier
 				changed={newCp.departed !== oldCp.departed}
 				class={['flex w-max items-center gap-1 text-[10px]/4 text-muted-foreground']}
@@ -282,7 +282,7 @@
 		{:else if (newCp.arrivalDelay ?? 0) > 5 && cp.order === 'filter'}
 			<div class="flex items-center gap-1 text-[10px]/4 text-muted-foreground">
 				<ClockAlertIcon size={12} /> Expected arrival {newCp.arrivalDelay}m late
-			</div>
+			</div> -->
 		{/if}
 	</div>
 	<ChangeNotifier
