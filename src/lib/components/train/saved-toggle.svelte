@@ -37,7 +37,8 @@
 			service,
 			lastRefreshed: Date.now(),
 			subscriptionId: null,
-			originalArrival: service.callingPoints.find((cp) => cp.order === 'filter')?.times.plan.arr
+			originalArrival:
+				service.callingPoints.find((cp) => cp.order === 'filter')?.times.plan.arr ?? null
 		};
 		const subscriptionId = await subscribeToTrain(
 			rid,
@@ -64,11 +65,11 @@
 	}
 
 	function remove() {
-		const subscriptionId = saved.value.find((s) => s.id === rid)?.subscriptionId;
+		const subscriptionId = saved.value.find((s) => s.service_id === rid)?.subscriptionId;
 		if (subscriptionId) {
 			unsubscribeToTrain(subscriptionId);
 		}
-		saved.value = saved.value.filter((s) => s.id !== rid);
+		saved.value = saved.value.filter((s) => s.service_id !== rid);
 	}
 
 	const afterCallingPoints = $derived.by(() => {

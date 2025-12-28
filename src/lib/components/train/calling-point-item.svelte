@@ -227,7 +227,7 @@
 		<div class="flex items-end gap-1">
 			<div
 				class={[
-					'min-w-0 overflow-hidden text-base/4 text-nowrap text-ellipsis',
+					'min-w-0 overflow-hidden text-base/5 text-nowrap text-ellipsis',
 					{
 						'font-semibold':
 							newCp.order === 'focus' || newCp.order === 'filter' || newCp.isDestination,
