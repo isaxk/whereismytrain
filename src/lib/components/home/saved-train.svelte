@@ -103,15 +103,8 @@
 	const connection = $derived.by(() => {
 		if (!filter || focus?.isCancelled || filter?.isCancelled) return null;
 
-		const connection = saved.value.find((s) => {
-			// if (s.id === service.rid) return false;
-
-			const acrossLondon =
-				londonTerminals.includes(s.focusCrs) &&
-				londonTerminals.includes(filter.crs ?? '') &&
-				s.focusCrs !== filter.crs;
-
-			if (s.focusCrs !== filter.crs && !acrossLondon) return false;
+		let connection = saved.value.find((s) => {
+			if (s.focusCrs !== filter.crs) return false;
 
 			console.log('connection');
 
@@ -126,12 +119,43 @@
 							)
 						: null;
 				console.log(schDiff);
-				if (schDiff && schDiff < (acrossLondon ? 120 : 90) && schDiff > (acrossLondon ? 10 : 1))
-					return true;
+				if (schDiff && schDiff < 90 && schDiff > 1) return true;
 			}
 			return false;
 		});
+		if (!connection) {
+			connection = saved.value.find((s) => {
+				// if (s.id === service.rid) return false;
+
+				const acrossLondon =
+					londonTerminals.includes(s.focusCrs) &&
+					londonTerminals.includes(filter.crs ?? '') &&
+					s.focusCrs !== filter.crs;
+
+				if (s.focusCrs !== filter.crs && !acrossLondon) return false;
+
+				console.log('connection');
+
+				const connectionFocus = s.service.callingPoints.find((cp) => cp.crs === s.focusCrs);
+				console.log('connectionFocus', connectionFocus);
+				if (connectionFocus) {
+					const schDiff =
+						connectionFocus.times.plan.dep && filter.times.plan.arr
+							? dayjsFromHHmm(connectionFocus.times.plan.dep).diff(
+									dayjsFromHHmm(data.originalArrival ?? filter.times.plan.arr),
+									'minute'
+								)
+							: null;
+					console.log(schDiff);
+					if (schDiff && schDiff < (acrossLondon ? 120 : 90) && schDiff > (acrossLondon ? 10 : 1))
+						return true;
+				}
+				return false;
+			});
+		}
+
 		if (!connection) return null;
+
 		const acrossLondon =
 			londonTerminals.includes(connection.focusCrs) &&
 			londonTerminals.includes(filter.crs ?? '') &&
@@ -225,6 +249,37 @@
 	$inspect('service', data);
 </script>
 
+{#snippet connectionAlternative(title, train, acrossLondon, switchTo, switching)}
+	<div class="flex items-center">
+		<div>
+			<div class="font-semibold">
+				{title}
+			</div>
+			<div class="py-0.5 font-normal underline">
+				{train}
+			</div>
+			<div class="flex flex-col gap-0.5 py-0.5 text-[10px] text-muted-foreground">
+				<div>Please check your ticket is valid on this service.</div>
+				{#if acrossLondon}
+					<a href="https://www.nationalrail.co.uk/journey-planner/">
+						The <span class="underline">National Rail journey planner</span> may give more accurate information
+						about connections across London
+					</a>
+				{/if}
+			</div>
+		</div>
+		<div class="flex min-w-24 justify-end">
+			<Button onclick={switchTo}
+				>{#if switching}
+					<Spinner />
+				{:else}
+					Switch
+				{/if}</Button
+			>
+		</div>
+	</div>
+{/snippet}
+
 <div
 	class={[
 		'relative py-4 transition-all duration-300',
@@ -286,12 +341,12 @@
 								<div class="font-semibold">
 									This service was cancelled, but an alternative was found.
 								</div>
-								<div class="font-normal underline">
+								<div class="py-0.5 font-normal underline">
 									{service.times.plan.dep} to {service.destination?.map((d) => d.name).join(', ')} (Exp.
 									{service.times.rt.dep})
 								</div>
-								<div class="text-xs text-muted-foreground">
-									Please check your ticket is valid on this service
+								<div class="py-0.5 text-[10px] text-muted-foreground">
+									<div>Please check your ticket is valid on this service.</div>
 								</div>
 							</div>
 							<Button onclick={switchTo}
@@ -320,31 +375,13 @@
 				{#snippet children(service, switchTo, switching)}
 					<AlertCard status="minor" class="mt-2 font-normal" Icon={GitCompareArrowsIcon}>
 						{#if service}
-							<div class="flex items-center">
-								<div>
-									<div class="font-semibold">
-										Connection {#if connection.acrossLondon}(via Tube){/if} to the {connection.name}
-										may no longer be possible, but an alternative was found.
-									</div>
-									<div class="font-normal underline">
-										{service.times.plan.dep} to {service.destination?.map((d) => d.name).join(', ')}
-										(Exp.
-										{service.times.rt.dep})
-									</div>
-									<div class="text-xs text-muted-foreground">
-										Please check your ticket is valid on this service
-									</div>
-								</div>
-								<div class="flex min-w-24 justify-end">
-									<Button onclick={switchTo}
-										>{#if switching}
-											<Spinner />
-										{:else}
-											Switch
-										{/if}</Button
-									>
-								</div>
-							</div>
+							{@render connectionAlternative(
+								`Connection to the ${connection.name} may no longer be possible.`,
+								`${service.times.plan.dep} to ${service.destination?.map((d) => d.name).join(', ')} (Exp. ${service.times.rt.dep})`,
+								connection.acrossLondon,
+								switchTo,
+								switching
+							)}
 						{:else}
 							<div class="font-semibold">
 								Connection {#if connection.acrossLondon}(via Tube){/if} to the {connection.name} may
@@ -366,44 +403,30 @@
 				{#snippet children(service, switchTo, switching)}
 					<AlertCard status="major" class="mt-2 font-normal" Icon={GitCompareArrowsIcon}>
 						{#if service}
-							<div class="flex items-center">
-								<div>
-									<div class="font-semibold">
-										{#if connection.rtTime < 1}
-											Connection {#if connection.acrossLondon}(via Tube){/if} to the {connection.name}
-											no longer possible, but an alternative was found.
-										{:else}
-											{connection.rtTime}m to change {#if connection.acrossLondon}(via Tube){/if} to
-											the {connection.name} (likely impossible), but an alternative was found.
-										{/if}
-									</div>
-									<div class="font-normal underline">
-										{service.times.plan.dep} to {service.destination?.map((d) => d.name).join(', ')}
-										(Exp.
-										{service.times.rt.dep})
-									</div>
-									<div class="text-xs text-muted-foreground">
-										Please check your ticket is valid on this service
-									</div>
-								</div>
-								<div class="flex min-w-24 justify-end">
-									<Button onclick={switchTo}
-										>{#if switching}
-											<Spinner />
-										{:else}
-											Switch
-										{/if}</Button
-									>
-								</div>
-							</div>
+							{#if connection.rtTime < 1}
+								{@render connectionAlternative(
+									`Connection to the ${connection.name} no longer possible, but an alternative was found.`,
+									`${service.times.plan.dep} to ${service.destination?.map((d) => d.name).join(', ')} (Exp. ${service.times.rt.dep})`,
+									connection.acrossLondon,
+									switchTo,
+									switching
+								)}
+							{:else}
+								{@render connectionAlternative(
+									`Only ${connection.rtTime}m to change to the ${connection.name}, but an alternative was found.`,
+									`${service.times.plan.dep} to ${service.destination?.map((d) => d.name).join(', ')} (Exp. ${service.times.rt.dep})`,
+									connection.acrossLondon,
+									switchTo,
+									switching
+								)}
+							{/if}
 						{:else}
 							<div class="font-semibold">
 								{#if connection.rtTime < 1}
-									Connection {#if connection.acrossLondon}(via Tube){/if} to the {connection.name} no
-									longer possible.
+									Connection to the {connection.name} no longer possible.
 								{:else}
-									{connection.rtTime}m to change {#if connection.acrossLondon}(via Tube){/if} to the
-									{connection.name} (likely impossible).
+									Only {connection.rtTime}m to change to the
+									{connection.name}.
 								{/if}
 							</div>
 						{/if}
@@ -426,36 +449,16 @@
 				{#snippet children(service, switchTo, switching)}
 					<AlertCard status="minor" class="mt-2 font-normal" Icon={GitCompareArrowsIcon}>
 						{#if service}
-							<div class="flex items-center">
-								<div>
-									<div class="font-semibold">
-										Only {connection.rtTime}m to change {#if connection.acrossLondon}(via Tube){/if}
-										to the {connection.name}, you may want to switch to this alternative
-									</div>
-									<div class="font-normal underline">
-										{service?.times.plan.dep} to {service?.destination
-											?.map((d) => d.name)
-											.join(', ')} (Exp.
-										{service?.times.rt.dep})
-									</div>
-									<div class="text-xs text-muted-foreground">
-										Please check your ticket is valid on this service
-									</div>
-								</div>
-								<div class="flex min-w-24 justify-end">
-									<Button onclick={switchTo}
-										>{#if switching}
-											<Spinner />
-										{:else}
-											Switch
-										{/if}</Button
-									>
-								</div>
-							</div>
+							{@render connectionAlternative(
+								`${connection.rtTime}m to change to the ${connection.name}, you may want to switch to this alternative.`,
+								`${service.times.plan.dep} to ${service.destination?.map((d) => d.name).join(', ')} (Exp. ${service.times.rt.dep})`,
+								connection.acrossLondon,
+								switchTo,
+								switching
+							)}
 						{:else}
 							<div class="font-semibold">
-								status='alternative'
-								{connection.rtTime}m to change {#if connection.acrossLondon}(via Tube){/if} to the {connection.name}
+								{connection.rtTime}m to change to the {connection.name}
 							</div>
 						{/if}
 					</AlertCard>

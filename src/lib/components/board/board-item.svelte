@@ -254,7 +254,7 @@
 		{#if connection && connection.rtTime && connection.status === 'ok'}
 			<div class="flex items-center gap-1 pl-0.5 text-xs text-muted-foreground">
 				<GitCompareArrowsIcon size={12} />
-				{connection.rtTime}m to change {#if connection.acrossLondon}(via Tube){/if} to the {connection.name}
+				{connection.rtTime}m to change to the {connection.name}
 			</div>
 		{/if}
 	{:else if isFilterCancelled && !isCancelled}
