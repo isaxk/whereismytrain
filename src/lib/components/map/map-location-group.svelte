@@ -186,7 +186,7 @@
 		}}
 		layout={{ 'line-cap': 'round', 'line-join': 'round' }}
 		paint={{
-			'line-width': 5,
+			'line-width': 6.5,
 			'line-color': color,
 			'line-opacity': page.data.crs
 				? page.data.id === rid
