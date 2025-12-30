@@ -152,6 +152,7 @@
 							await tick();
 							fromFocused = false;
 						}}
+						autocorrect="off"
 						placeholder={[opened ? 'Search for a station...' : 'Find trains...']}
 						class={['px-0', from && fromQ === from ? 'w-14 max-w-14 font-semibold' : '']}
 					/>
@@ -182,6 +183,7 @@
 							}
 							to = null;
 						}}
+						autocorrect="off"
 						onblur={() => (toFocused = false)}
 						placeholder="(optional)"
 					/>
