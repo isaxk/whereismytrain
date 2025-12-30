@@ -145,7 +145,7 @@
 							from = null;
 							window.scrollTo({ top: 0 });
 						}}
-						onkeypress={() => {
+						onkeydown={(e) => {
 							from = null;
 						}}
 						onblur={async () => {
@@ -174,7 +174,12 @@
 							to = null;
 							window.scrollTo({ top: 0 });
 						}}
-						onkeypress={() => {
+						onkeydown={(e) => {
+							console.log(e.keyCode);
+							if (e.keyCode === 8 && toQ.length === 0) {
+								e.preventDefault();
+								fromInput?.select();
+							}
 							to = null;
 						}}
 						onblur={() => (toFocused = false)}
@@ -205,6 +210,13 @@
 								}
 							}
 						}
+						onkeydown={(e) => {
+							console.log(e.keyCode);
+							if (e.keyCode === 8 && hour.length === 0) {
+								e.preventDefault();
+								toInput?.select();
+							}
+						}}
 						bind:ref={hourInput}
 						maxlength="2"
 						placeholder="hh"
@@ -227,6 +239,13 @@
 								minute = maxed.toString();
 							}
 						}
+						onkeydown={(e) => {
+							console.log(e.keyCode);
+							if (e.keyCode === 8 && minute.length === 0) {
+								e.preventDefault();
+								hourInput?.select();
+							}
+						}}
 						bind:ref={minuteInput}
 						onfocus={() => (minuteFocused = true)}
 						onblur={() => (minuteFocused = false)}
