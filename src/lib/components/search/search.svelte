@@ -10,10 +10,12 @@
 	import { browser } from '$app/environment';
 	import Highlight from './highlight.svelte';
 	import type { TransitionEventHandler } from 'svelte/elements';
+	import Popular from '../home/popular.svelte';
 
 	let {
 		trigger,
 		key,
+		origin = null,
 		class: className,
 		selected = $bindable(null),
 		onSelect = () => {}
@@ -31,6 +33,7 @@
 		class?: string;
 		key: string;
 		selected?: string | null;
+		origin?: string | null;
 		onSelect?: (crs: string) => void;
 	} = $props();
 
@@ -131,24 +134,40 @@
 				><X /></button
 			>
 		</div>
-		<div class="px-2 py-4">
+		<div class="px-2">
 			{#if formatted.length}
 				{#each formatted as result, i (results[i].item.crsCode)}
 					<button
 						type={i === 0 ? 'submit' : 'button'}
 						onclick={() => submit(results[i].item.crsCode)}
-						class="flex h-14 w-full items-center border-b border-border px-4 text-left last:border-none"
+						class="flex h-10 w-full items-center border-b border-border px-2 text-left last:border-none"
 					>
-						<div>
-							<div class="text-xl">
-								<Highlight value={(result as any).stationName} />
-							</div>
-							<div class="text-xs">
-								<Highlight value={(result as any).crsCode} />
-							</div>
+						<div class="w-12 text-lg font-semibold">
+							<Highlight value={(result as any).crsCode} />
+						</div>
+						<div class="text-sm">
+							<Highlight value={(result as any).stationName} />
 						</div>
 					</button>
 				{/each}
+			{:else if origin}
+				<Popular crs={origin}>
+					{#snippet children(name, crs, i)}
+						<button
+							type={i === 0 ? 'submit' : 'button'}
+							onclick={() => submit(crs)}
+							class="flex h-10 w-full items-center border-b border-border px-2 text-left last:border-none"
+						>
+							<div class="w-12 text-lg font-semibold">
+								{crs}
+							</div>
+
+							<div class="text-sm">
+								{name}
+							</div>
+						</button>
+					{/snippet}
+				</Popular>
 			{/if}
 		</div>
 	</form>

@@ -23,6 +23,9 @@ importers:
       bits-ui:
         specifier: ^2.14.4
         version: 2.14.4(@internationalized/date@3.10.0)(@sveltejs/kit@2.49.0(@sveltejs/vite-plugin-svelte@6.2.1(svelte@5.43.14)(vite@7.2.4(@types/node@22.19.1)(jiti@2.6.1)(lightningcss@1.30.2)))(svelte@5.43.14)(vite@7.2.4(@types/node@22.19.1)(jiti@2.6.1)(lightningcss@1.30.2)))(svelte@5.43.14)
+      csv-parser:
+        specifier: ^3.2.0
+        version: 3.2.0
       cupertino-pane:
         specifier: ^1.5.4
         version: 1.5.4
@@ -1259,6 +1262,11 @@ packages:
   cssesc@3.0.0:
     resolution: {integrity: sha512-/Tb/JcjK111nNScGob5MNtsntNM1aCNUDipB/TkwZFhyDrrE47SOx/18wF2bbjgc3ZzCSKW1T5nt5EbFoAz/Vg==}
     engines: {node: '>=4'}
+    hasBin: true
+
+  csv-parser@3.2.0:
+    resolution: {integrity: sha512-fgKbp+AJbn1h2dcAHKIdKNSSjfp43BZZykXsCjzALjKy80VXQNHPFJ6T9Afwdzoj24aMkq8GwDS7KGcDPpejrA==}
+    engines: {node: '>= 10'}
     hasBin: true
 
   cupertino-pane@1.5.4:
@@ -3549,6 +3557,8 @@ snapshots:
       which: 2.0.2
 
   cssesc@3.0.0: {}
+
+  csv-parser@3.2.0: {}
 
   cupertino-pane@1.5.4: {}
 

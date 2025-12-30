@@ -20,6 +20,7 @@
 	import PinnedBoardItem from './pinned-board-item.svelte';
 	import { fade, fly, scale } from 'svelte/transition';
 	import { flip } from 'svelte/animate';
+	import Popular from './popular.svelte';
 
 	let from: string | null = $state(null);
 	let to: string | null | undefined = $state(undefined);
@@ -268,27 +269,48 @@
 		<Button type="submit" class="hidden"></Button>
 		{#if opened}
 			<div class="py-4">
-				{#if toFormatted.length > 0 && !to}
-					{#each toFormatted as result, i}
-						<button
-							type="button"
-							onclick={() => {
-								to = toResults[i].item.crsCode;
-								toQ = toResults[i].item.crsCode;
-								hourInput?.select();
-							}}
-							class="flex h-14 w-full items-center border-b border-border px-4 text-left last:border-none"
-						>
-							<div>
-								<div class="text-lg">
-									<Highlight value={(result as any).stationName} />
-								</div>
-								<div class="text-xs">
+				{#if !to && from !== null && toFocused}
+					{#if toFormatted.length > 0}
+						{#each toFormatted as result, i}
+							<button
+								type="button"
+								onclick={() => {
+									to = toResults[i].item.crsCode;
+									toQ = toResults[i].item.crsCode;
+									hourInput?.select();
+								}}
+								class="flex h-10 w-full items-center border-b border-border px-2 text-left last:border-none"
+							>
+								<div class="w-12 text-lg font-semibold">
 									<Highlight value={(result as any).crsCode} />
 								</div>
-							</div>
-						</button>
-					{/each}
+								<div class="text-sm">
+									<Highlight value={(result as any).stationName} />
+								</div>
+							</button>
+						{/each}
+					{:else}
+						<Popular crs={from}>
+							{#snippet children(name, crs)}
+								<button
+									type="button"
+									onclick={() => {
+										to = crs;
+										toQ = crs;
+										hourInput?.select();
+									}}
+									class="flex h-10 w-full items-center border-b border-border px-2 text-left last:border-none"
+								>
+									<div class="w-12 text-lg font-semibold">
+										{crs}
+									</div>
+									<div class="text-sm">
+										{name}
+									</div>
+								</button>
+							{/snippet}
+						</Popular>
+					{/if}
 				{:else if fromFormatted.length > 0 && !from}
 					{#each fromFormatted as result, i}
 						<button
@@ -298,15 +320,13 @@
 								fromQ = fromResults[i].item.crsCode;
 								tick().then(() => toInput?.focus());
 							}}
-							class="flex h-14 w-full items-center border-b border-border px-4 text-left last:border-none"
+							class="flex h-10 w-full items-center border-b border-border px-2 text-left last:border-none"
 						>
-							<div>
-								<div class="text-lg">
-									<Highlight value={(result as any).stationName} />
-								</div>
-								<div class="text-xs">
-									<Highlight value={(result as any).crsCode} />
-								</div>
+							<div class="w-12 text-lg font-semibold">
+								<Highlight value={(result as any).crsCode} />
+							</div>
+							<div class="text-sm">
+								<Highlight value={(result as any).stationName} />
 							</div>
 						</button>
 					{/each}

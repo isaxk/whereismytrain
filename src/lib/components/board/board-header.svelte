@@ -99,6 +99,7 @@
 			</div>
 		{:else}
 			<Search
+				origin={from}
 				key="destination"
 				onSelect={(crs) => crs && crs !== from && goto('?to=' + crs + '&offset=0')}
 			>

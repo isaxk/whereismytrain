@@ -7813,7 +7813,7 @@
 		"constituentCountry": "wales"
 	},
 	{
-		"stationName": "Heathrow Terminal 4 Rail",
+		"stationName": "Heathrow Terminal 4",
 		"lat": 51.458214,
 		"long": -0.445447,
 		"crsCode": "HAF",
@@ -7821,7 +7821,7 @@
 		"constituentCountry": "england"
 	},
 	{
-		"stationName": "Heathrow Terminal 5 Rail",
+		"stationName": "Heathrow Terminal 5",
 		"lat": 51.47,
 		"long": -0.48,
 		"crsCode": "HWV",
@@ -7829,7 +7829,7 @@
 		"constituentCountry": "england"
 	},
 	{
-		"stationName": "Heathrow Terminals 1-2-3 Rail",
+		"stationName": "Heathrow Terminals 1, 2 & 3",
 		"lat": 51.471,
 		"long": -0.456,
 		"crsCode": "HXX",
