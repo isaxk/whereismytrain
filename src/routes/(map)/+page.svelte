@@ -5,11 +5,19 @@
 	import {
 		ArrowUpRight,
 		BellRing,
+		Bug,
 		ChevronRight,
+		CircleHelp,
+		CircleQuestionMark,
 		Download,
+		EllipsisIcon,
+		EllipsisVerticalIcon,
+		HelpCircle,
+		LightbulbIcon,
 		Pin,
 		SearchIcon,
 		Settings,
+		User,
 		X
 	} from 'lucide-svelte';
 	import AllStations from '$lib/data/stations.json';
@@ -27,8 +35,10 @@
 	import * as Item from '$lib/components/ui/item/index.js';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import * as Carousel from '$lib/components/ui/carousel/index.js';
+	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 	import Install from '$lib/components/home/install.svelte';
 	import { iOS } from '$lib/utils.js';
+	import Github from '$lib/components/icons/github.svelte';
 
 	let { data } = $props();
 
@@ -49,19 +59,52 @@
 </svelte:head>
 
 <div
-	class="fixed top-0 right-0 left-0 flex h-24 w-full flex-col justify-center rounded-t-2xl border-b border-border bg-background px-4"
+	class="fixed top-0 right-0 left-0 flex h-18 w-full flex-col justify-center rounded-t-2xl border-b border-border bg-background px-4"
 >
 	<div class="flex items-center justify-start gap-2">
 		<div class="grow text-3xl font-bold">Where is my train?</div>
 		{#if refreshing.current}
 			<Spinner />
 		{/if}
+		<DropdownMenu.Root>
+			<DropdownMenu.Trigger class={buttonVariants({ variant: 'outline', size: 'icon' })}>
+				<EllipsisVerticalIcon />
+			</DropdownMenu.Trigger>
+			<DropdownMenu.Content align="end">
+				<a href="/about">
+					<DropdownMenu.Item>
+						<CircleQuestionMark />
+						About and data sources
+					</DropdownMenu.Item>
+				</a>
+				<a href="https://github.com/isaxk/whereismytrain">
+					<DropdownMenu.Item>
+						<Github />
+						Github
+					</DropdownMenu.Item>
+				</a>
+				<a href="https://github.com/isaxk/whereismytrain/issues">
+					<DropdownMenu.Item>
+						<Bug />
+						Report a bug
+					</DropdownMenu.Item>
+				</a>
+				<a href="https://github.com/isaxk/whereismytrain/issues">
+					<DropdownMenu.Item>
+						<LightbulbIcon />
+						Suggest a feature
+					</DropdownMenu.Item>
+				</a>
+				<a href="https://www.isaxk.com">
+					<DropdownMenu.Item>
+						<User />
+						isaxk.com
+					</DropdownMenu.Item>
+				</a>
+			</DropdownMenu.Content>
+		</DropdownMenu.Root>
 	</div>
-	<div class="flex gap-2 *:text-blue-400 *:underline">
-		<a href="/about">About & Data Sources</a>
-		<a href="https://github.com/isaxk/whereismytrain">GitHub</a>
-		<a href="https://www.isaxk.com">isaxk.com</a>
-	</div>
+
 	<!-- <div class="grow"></div>
 	<div><SearchIcon /></div>
 	<div><Settings /></div> -->

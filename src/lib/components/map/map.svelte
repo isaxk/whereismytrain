@@ -286,10 +286,11 @@
 		}
 	}}
 >
+	<div class="blur-panel fixed top-0 right-0 left-0 z-10000000 h-safe-top"></div>
 	{#if lg.current}
 		<NavigationControl position="top-left" />
 	{/if}
-	<GeolocateControl position="top-left" fitBoundsOptions={{ maxZoom: 12 }} />
+	<!-- <GeolocateControl position="top-left" fitBoundsOptions={{ maxZoom: 12 }} /> -->
 	{#if !mapData.service}
 		{#each saved.value as item, i (item.id)}
 			{#if !page.data.id || page.data.id === item.id}
