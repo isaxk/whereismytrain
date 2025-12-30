@@ -159,7 +159,7 @@ export const POST: RequestHandler = async ({ request }) => {
 			(location) => location.atd || location.ata
 		);
 		const lastDeparted = groupWithCoords[lastDepartedIndex];
-		const next = groupWithCoords[lastDepartedIndex + 1];
+		const next = groupWithCoords.find((l, j) => j > lastDepartedIndex && !l.isCancelled);
 		const { coords, bearing }: { coords: [number, number] | null; bearing: number | null } =
 			lastDeparted
 				? calculateTrainPosition(

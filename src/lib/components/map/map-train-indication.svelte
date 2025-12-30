@@ -1,13 +1,22 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { TrainFront } from 'lucide-svelte';
+	import { TrainFront, TramFront } from 'lucide-svelte';
 	import { Marker } from 'svelte-maplibre';
 	import { Tween } from 'svelte/motion';
 	import { fade } from 'svelte/transition';
 	import Spinner from '../ui/spinner/spinner.svelte';
+	import TrainIconByCategory from '../train/train-icon-by-category.svelte';
 
-	let { trainPosition, trainBearing, refreshing, color, isFormedFromTrain, rid, showDestination } =
-		$props();
+	let {
+		trainPosition,
+		trainBearing,
+		refreshing,
+		color,
+		isFormedFromTrain,
+		rid,
+		showDestination,
+		category
+	} = $props();
 
 	const coordsTween = Tween.of(() => trainPosition);
 </script>
@@ -37,7 +46,7 @@
 					</div>
 				{/if}
 				<div class={['transition-all', refreshing ? 'scale-60' : 'scale-100']}>
-					<TrainFront size={showDestination || isFormedFromTrain ? 14 : 18} />
+					<TrainIconByCategory {category} size={showDestination || isFormedFromTrain ? 14 : 18} />
 				</div>
 			</div>
 			{#if showDestination}

@@ -8,6 +8,7 @@
 	import { fade } from 'svelte/transition';
 	import Spinner from '../ui/spinner/spinner.svelte';
 	import clsx from 'clsx';
+	import TrainIconByCategory from '../train/train-icon-by-category.svelte';
 
 	let {
 		serviceData,
@@ -34,6 +35,7 @@
 					{rid}
 					{crs}
 					{refreshing}
+					category={serviceData.category}
 					filter={group.lineLocations.some((l) => l.crs === filter)
 						? filter
 						: group.lineLocations.some((l) => l.crs === crs)
@@ -106,7 +108,10 @@
 									]}
 								>
 									<div class={['transition-all', refreshing ? 'scale-60' : 'scale-100']}>
-										<TrainFront size={isOfFormedFrom ? 10 : 14} />
+										<TrainIconByCategory
+											category={serviceData.category}
+											size={isOfFormedFrom ? 10 : 14}
+										/>
 									</div>
 									{#if refreshing}
 										<div

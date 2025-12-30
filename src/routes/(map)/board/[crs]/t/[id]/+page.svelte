@@ -13,7 +13,8 @@
 		ChevronLeft,
 		GitBranchIcon,
 		Split,
-		TrainFront
+		TrainFront,
+		TramFront
 	} from 'lucide-svelte';
 	import type { PageData } from './$types';
 	import { invalidate, invalidateAll } from '$app/navigation';
@@ -36,6 +37,7 @@
 	import { dayjsFromHHmm, t } from '$lib/utils';
 	import { flip } from 'svelte/animate';
 	import Share from '$lib/components/train/share.svelte';
+	import TrainIconByCategory from '$lib/components/train/train-icon-by-category.svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -92,6 +94,7 @@
 	);
 
 	let testView = $state(false);
+	let detailedView = $state(false);
 
 	let selectedTestCp: number = $state(0);
 </script>
@@ -102,7 +105,8 @@
 	name: string,
 	operator: Operator,
 	inDivision: boolean,
-	showTrain: boolean
+	showTrain: boolean,
+	category: string
 )}
 	<button class="flex h-8 items-center gap-2 text-left" {onclick}>
 		<div class="flex gap-3">
@@ -124,7 +128,7 @@
 						style:color={operator.color}
 						class="flex h-6 w-6 items-center justify-center rounded-full border-2 bg-white"
 					>
-						<TrainFront size={14} />
+						<TrainIconByCategory {category} size={14} />
 					</div>
 				</div>
 			{/if}
@@ -150,8 +154,17 @@
 </svelte:head>
 
 {#if serviceData}
-	{@const { operator, title, callingPoints, isBus, destination, isToday, date } =
-		serviceData as TrainService}
+	{@const {
+		operator,
+		title,
+		callingPoints,
+		isBus,
+		destination,
+		isToday,
+		date,
+		locations,
+		category
+	} = serviceData as TrainService}
 
 	<div
 		in:fade|global={{ duration: 200 }}
@@ -193,9 +206,9 @@
 			/>
 		</div>
 	</div>
-	<div in:fade|global={{ duration: 200 }} class="flex flex-col gap-4 p-4">
+	<div in:fade|global={{ duration: 200 }} class="flex flex-col gap-4 py-4">
 		{#if isBus || destination.length > 1 || serviceData.reasonCode || !isToday}
-			<div class="flex flex-col gap-2">
+			<div class="flex flex-col gap-2 px-4">
 				{#if isBus}
 					<AlertCard Icon={Bus} status="info">This is a bus service.</AlertCard>
 				{/if}
@@ -222,8 +235,10 @@
 			</div>
 		{/if}
 
-		{#if serviceData.formation && !serviceData.formationLengthOnly}
-			<Formation formation={serviceData.formation} />
+		{#if serviceData.formation && !serviceData.formationLengthOnly && serviceData.formation.length > 0}
+			<div class="px-4">
+				<Formation formation={serviceData.formation} />
+			</div>
 		{:else if !isBus && isToday}
 			<ThirdPartyFormation
 				placeholder={serviceData.formation ?? null}
@@ -234,33 +249,98 @@
 				length={serviceData.formation ? serviceData.formation?.length : null}
 			/>
 		{/if}
-		<div class="flex flex-col">
-			<div class="flex gap-4 text-xs text-muted-foreground">
-				<div class="flex w-28 gap-2">
-					<div class="w-10">Arr.</div>
-					<div class="w-10">Dep.</div>
-				</div>
-				<div class="grow">Station</div>
-				<div>Platform</div>
+		{#if detailedView}
+			<div class="px-4">
+				<Button variant="outline" onclick={() => (detailedView = false)}>Back to simple view</Button
+				>
 			</div>
-			{#each callingPoints as cp, i (cp.tiploc + cp.times.plan.dep + i)}
-				<!-- <div animate:flip={{ duration: 200 }}> -->
-				{#if (cp.order !== 'previous' && cp.order !== 'origin' && !(cp.order === 'post-destination' && previousIncludesStartDivide)) || ((cp.order === 'previous' || cp.order === 'origin' || cp.order === 'post-destination') && showPrevious)}
-					{@const next = callingPoints[i + 1]}
-					{@const prev = callingPoints[i - 1]}
+			<div class="w-full overflow-x-auto">
+				<div class="w-max">
+					<div class="flex min-w-full items-end gap-2 border-b border-border px-4 py-1 text-xs">
+						<div class="">
+							<div class="font-medium">Planned</div>
+							<div class="flex gap-2 text-left text-[10px]">
+								<div class="min-w-12">Arr.</div>
+								<div class="min-w-12">Dep.</div>
+							</div>
+						</div>
+						<div class="">
+							<div class="font-medium">Realtime</div>
 
-					{#if cp.order === 'focus' && callingPoints.filter((c) => c.order === 'previous' || c.order === 'origin').length > 0}
-						{@render lineButton(
-							() => (showPrevious = !showPrevious),
-							showPrevious,
-							'previous',
-							operator,
-							cp.inDivision && !cp.startJoin,
-							(callingPoints[i - 1].departed ||
-								(callingPoints.some((cp, j) => cp.departed && j < i) && !showPrevious)) &&
-								!callingPoints.some((cp, j) => (cp.departed || cp.arrived) && j > i - 1)
-						)}
-						<!-- {:else if cp.order === 'destination' && callingPoints.filter((c) => c.order === 'further').length > 0}
+							<div class="flex gap-2 text-left text-[10px]">
+								<div class="min-w-12">Arr.</div>
+								<div class="min-w-12">Dep.</div>
+							</div>
+						</div>
+						<div class="w-full font-medium">Name</div>
+						<div class="font-medium">Platform</div>
+					</div>
+					{#each locations.flat() as location, i (location.tiploc + location.std + i)}
+						<div
+							class={[
+								'flex min-w-full items-center gap-2 border-b border-border px-4 even:bg-muted/60',
+								location.isCallingPoint ? 'py-1' : 'py-0 opacity-60',
+								location.isCancelled ? 'text-danger line-through' : ''
+							]}
+						>
+							<div class="w-12 min-w-12 font-mono text-xs">
+								{location.sta ? dayjs(location.sta).format('HHmmss') : '------'}
+							</div>
+							<div class="w-12 min-w-12 font-mono text-xs">
+								{location.std ? dayjs(location.std).format('HHmmss') : '------'}
+							</div>
+							<div class={['w-12 min-w-12 font-mono text-xs', location.ata && 'font-semibold']}>
+								{location.ata || location.eta
+									? dayjs(location.ata ?? location.eta).format('HHmmss')
+									: '------'}
+							</div>
+							<div class={['w-12 min-w-12 font-mono text-xs', location.atd && 'font-semibold']}>
+								{location.atd || location.etd
+									? dayjs(location.atd ?? location.etd).format('HHmmss')
+									: '------'}
+							</div>
+							<div
+								class={[
+									'w-full pr-4 text-nowrap',
+									location.isCallingPoint ? 'text-base font-semibold' : 'text-xs'
+								]}
+							>
+								{location.name}
+							</div>
+							<div class="">{location.platform}</div>
+						</div>
+					{/each}
+				</div>
+			</div>
+		{:else}
+			<div class="flex flex-col px-4">
+				<div class="flex gap-4 text-xs text-muted-foreground">
+					<div class="flex w-28 gap-2">
+						<div class="w-10">Arr.</div>
+						<div class="w-10">Dep.</div>
+					</div>
+					<div class="grow">Station</div>
+					<div>Platform</div>
+				</div>
+				{#each callingPoints as cp, i (cp.tiploc + cp.times.plan.dep + i)}
+					<!-- <div animate:flip={{ duration: 200 }}> -->
+					{#if (cp.order !== 'previous' && cp.order !== 'origin' && !(cp.order === 'post-destination' && previousIncludesStartDivide)) || ((cp.order === 'previous' || cp.order === 'origin' || cp.order === 'post-destination') && showPrevious)}
+						{@const next = callingPoints[i + 1]}
+						{@const prev = callingPoints[i - 1]}
+
+						{#if cp.order === 'focus' && callingPoints.filter((c) => c.order === 'previous' || c.order === 'origin').length > 0}
+							{@render lineButton(
+								() => (showPrevious = !showPrevious),
+								showPrevious,
+								'previous',
+								operator,
+								cp.inDivision && !cp.startJoin,
+								(callingPoints[i - 1].departed ||
+									(callingPoints.some((cp, j) => cp.departed && j < i) && !showPrevious)) &&
+									!callingPoints.some((cp, j) => (cp.departed || cp.arrived) && j > i - 1),
+								category
+							)}
+							<!-- {:else if cp.order === 'destination' && callingPoints.filter((c) => c.order === 'further').length > 0}
 						{@render lineButton(
 							() => (showFurther = !showFurther),
 							showFurther,
@@ -268,223 +348,230 @@
 							operator,
 							cp.inDivision
 						)} -->
-					{/if}
-					{#if cp.startDivide}
-						<div class="flex h-8 gap-2">
-							<div class="flex gap-3">
-								<div class="w-10"></div>
-								<div class="w-10"></div>
-							</div>
-							<div
-								style:color={operator.color}
-								class={['flex h-full w-8 flex-col justify-center pl-[3px]']}
-							>
-								<svg
-									width="32"
-									height="31.999998"
-									viewBox="0 0 8.4666667 8.466666"
-									version="1.1"
-									id="svg1"
-									xmlns="http://www.w3.org/2000/svg"
+						{/if}
+						{#if cp.startDivide}
+							<div class="flex h-8 gap-2">
+								<div class="flex gap-3">
+									<div class="w-10"></div>
+									<div class="w-10"></div>
+								</div>
+								<div
+									style:color={operator.color}
+									class={['flex h-full w-8 flex-col justify-center pl-[3px]']}
 								>
-									<defs id="defs1" />
-									<g id="layer1">
-										<path
-											style="fill:currentColor;stroke:currentColor;stroke-width:1.5875;stroke-linecap:square;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
-											d="M 0.80000001,1 V 7.7000003"
-											id="path3"
-										/>
-										<path
-											style="fill:currentColor;stroke:currentColor;stroke-width:1.5875;stroke-linecap:square;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
-											d="M 0.80000001,0.80000003 V 1.0000001 A 2.5370203,2.5370203 68.487467 0 0 1.4823183,2.7310554 l 2.8353635,3.0378895 a 2.5370203,2.5370203 68.487467 0 1 0.6823183,1.7310553 v 0.2000001"
-											id="path4"
-										/>
-									</g>
-								</svg>
+									<svg
+										width="32"
+										height="31.999998"
+										viewBox="0 0 8.4666667 8.466666"
+										version="1.1"
+										id="svg1"
+										xmlns="http://www.w3.org/2000/svg"
+									>
+										<defs id="defs1" />
+										<g id="layer1">
+											<path
+												style="fill:currentColor;stroke:currentColor;stroke-width:1.5875;stroke-linecap:square;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+												d="M 0.80000001,1 V 7.7000003"
+												id="path3"
+											/>
+											<path
+												style="fill:currentColor;stroke:currentColor;stroke-width:1.5875;stroke-linecap:square;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+												d="M 0.80000001,0.80000003 V 1.0000001 A 2.5370203,2.5370203 68.487467 0 0 1.4823183,2.7310554 l 2.8353635,3.0378895 a 2.5370203,2.5370203 68.487467 0 1 0.6823183,1.7310553 v 0.2000001"
+												id="path4"
+											/>
+										</g>
+									</svg>
+								</div>
 							</div>
-						</div>
-						<div class="flex h-4 min-h-4 gap-2">
-							<div class="flex gap-3">
-								<div class="w-10"></div>
-								<div class="w-10"></div>
+							<div class="flex h-4 min-h-4 gap-2">
+								<div class="flex gap-3">
+									<div class="w-10"></div>
+									<div class="w-10"></div>
+								</div>
+								<div class="flex h-full w-12 items-center justify-start pl-[3px]">
+									<div
+										style:background="linear-gradient(to bottom, {operator.color}, transparent)"
+										class="h-4 w-1.5 bg-black"
+									></div>
+									<div class="w-2.5"></div>
+									<div style:background={operator.color} class="h-4 w-1.5 bg-black"></div>
+								</div>
 							</div>
-							<div class="flex h-full w-12 items-center justify-start pl-[3px]">
-								<div
-									style:background="linear-gradient(to bottom, {operator.color}, transparent)"
-									class="h-4 w-1.5 bg-black"
-								></div>
-								<div class="w-2.5"></div>
-								<div style:background={operator.color} class="h-4 w-1.5 bg-black"></div>
+						{:else if cp.startJoin}
+							<div class="flex h-4 min-h-4 gap-2">
+								<div class="flex gap-3">
+									<div class="w-10"></div>
+									<div class="w-10"></div>
+								</div>
+								<div class="flex h-full w-12 items-center justify-start pl-[3px]">
+									<div
+										style:background="linear-gradient(to bottom, {operator.color}, transparent)"
+										class="h-4 w-1.5 bg-black"
+									></div>
+									<div class="w-2.5"></div>
+									<div class="h-4 w-1.5 bg-transparent"></div>
+								</div>
 							</div>
-						</div>
-					{:else if cp.startJoin}
-						<div class="flex h-4 min-h-4 gap-2">
-							<div class="flex gap-3">
-								<div class="w-10"></div>
-								<div class="w-10"></div>
-							</div>
-							<div class="flex h-full w-12 items-center justify-start pl-[3px]">
-								<div
-									style:background="linear-gradient(to bottom, {operator.color}, transparent)"
-									class="h-4 w-1.5 bg-black"
-								></div>
-								<div class="w-2.5"></div>
-								<div class="h-4 w-1.5 bg-transparent"></div>
-							</div>
-						</div>
-					{/if}
+						{/if}
 
-					<CallingPointItem
-						{cp}
-						{operator}
-						index={i}
-						length={callingPoints.length}
-						showTrain={!(cp.departed && callingPoints[i + 1]?.order === 'focus')}
-						greyLine={!callingPoints.some((cp, j) => j > i && !cp.isCancelled) &&
-							cp.isCancelled &&
-							!callingPoints.some((cp) => cp.inDivision)}
-					/>
-					{#if cp.endDivide && (showPrevious || !previousIncludesStartDivide)}
-						<div class="flex h-4 min-h-4 gap-2">
-							<div class="flex gap-3">
-								<div class="w-10"></div>
-								<div class="w-10"></div>
+						<CallingPointItem
+							{cp}
+							{operator}
+							{category}
+							index={i}
+							length={callingPoints.length}
+							showTrain={!(cp.departed && callingPoints[i + 1]?.order === 'focus')}
+							greyLine={!callingPoints.some((cp, j) => j > i && !cp.isCancelled) &&
+								cp.isCancelled &&
+								!callingPoints.some((cp) => cp.inDivision)}
+						/>
+						{#if cp.endDivide && (showPrevious || !previousIncludesStartDivide)}
+							<div class="flex h-4 min-h-4 gap-2">
+								<div class="flex gap-3">
+									<div class="w-10"></div>
+									<div class="w-10"></div>
+								</div>
+								<div class="flex h-full w-12 items-center justify-start pl-[3px]">
+									<div
+										style:background="linear-gradient(to top, {operator.color}, transparent)"
+										class="h-4 w-1.5 bg-black"
+									></div>
+									<div class="w-2.5"></div>
+									<div class="h-4 w-1.5 bg-transparent"></div>
+								</div>
 							</div>
-							<div class="flex h-full w-12 items-center justify-start pl-[3px]">
+						{:else if cp.endJoin}
+							<div class="flex h-4 min-h-4 gap-2">
+								<div class="flex gap-3">
+									<div class="w-10"></div>
+									<div class="w-10"></div>
+								</div>
+								<div class="flex h-full w-12 items-center justify-start pl-[3px]">
+									<div
+										style:background="linear-gradient(to top, {operator.color}, transparent)"
+										class="h-4 w-1.5 bg-black"
+									></div>
+									<div class="w-2.5"></div>
+									<div style:background={operator.color} class="h-4 w-1.5 bg-black"></div>
+								</div>
+							</div>
+							<div class="flex h-8 gap-2">
+								<div class="flex gap-3">
+									<div class="w-10"></div>
+									<div class="w-10"></div>
+								</div>
 								<div
-									style:background="linear-gradient(to top, {operator.color}, transparent)"
-									class="h-4 w-1.5 bg-black"
-								></div>
-								<div class="w-2.5"></div>
-								<div class="h-4 w-1.5 bg-transparent"></div>
-							</div>
-						</div>
-					{:else if cp.endJoin}
-						<div class="flex h-4 min-h-4 gap-2">
-							<div class="flex gap-3">
-								<div class="w-10"></div>
-								<div class="w-10"></div>
-							</div>
-							<div class="flex h-full w-12 items-center justify-start pl-[3px]">
-								<div
-									style:background="linear-gradient(to top, {operator.color}, transparent)"
-									class="h-4 w-1.5 bg-black"
-								></div>
-								<div class="w-2.5"></div>
-								<div style:background={operator.color} class="h-4 w-1.5 bg-black"></div>
-							</div>
-						</div>
-						<div class="flex h-8 gap-2">
-							<div class="flex gap-3">
-								<div class="w-10"></div>
-								<div class="w-10"></div>
-							</div>
-							<div
-								style:color={operator.color}
-								class={['flex h-full w-8 flex-col justify-center pl-[3px]']}
-							>
-								<svg
-									width="32"
-									height="31.999998"
-									viewBox="0 0 8.4666667 8.466666"
-									version="1.1"
-									id="svg1"
-									class={['-scale-y-100']}
-									xmlns="http://www.w3.org/2000/svg"
+									style:color={operator.color}
+									class={['flex h-full w-8 flex-col justify-center pl-[3px]']}
 								>
-									<defs id="defs1" />
-									<g id="layer1">
-										<path
-											style="fill:currentColor;stroke:currentColor;stroke-width:1.5875;stroke-linecap:square;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
-											d="M 0.80000001,1 V 7.7000003"
-											id="path3"
-										/>
-										<path
-											style="fill:currentColor;stroke:currentColor;stroke-width:1.5875;stroke-linecap:square;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
-											d="M 0.80000001,0.80000003 V 1.0000001 A 2.5370203,2.5370203 68.487467 0 0 1.4823183,2.7310554 l 2.8353635,3.0378895 a 2.5370203,2.5370203 68.487467 0 1 0.6823183,1.7310553 v 0.2000001"
-											id="path4"
-										/>
-									</g>
-								</svg>
+									<svg
+										width="32"
+										height="31.999998"
+										viewBox="0 0 8.4666667 8.466666"
+										version="1.1"
+										id="svg1"
+										class={['-scale-y-100']}
+										xmlns="http://www.w3.org/2000/svg"
+									>
+										<defs id="defs1" />
+										<g id="layer1">
+											<path
+												style="fill:currentColor;stroke:currentColor;stroke-width:1.5875;stroke-linecap:square;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+												d="M 0.80000001,1 V 7.7000003"
+												id="path3"
+											/>
+											<path
+												style="fill:currentColor;stroke:currentColor;stroke-width:1.5875;stroke-linecap:square;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1"
+												d="M 0.80000001,0.80000003 V 1.0000001 A 2.5370203,2.5370203 68.487467 0 0 1.4823183,2.7310554 l 2.8353635,3.0378895 a 2.5370203,2.5370203 68.487467 0 1 0.6823183,1.7310553 v 0.2000001"
+												id="path4"
+											/>
+										</g>
+									</svg>
+								</div>
 							</div>
-						</div>
+						{/if}
 					{/if}
-				{/if}
-				<!-- </div> -->
-			{/each}
-			<div class="w-full pt-2">
-				<Share
-					{title}
-					text="Follow this service"
-					url={`/share/${data.crs}/${data.id}/${callingPoints.find((cp) => cp.order === 'filter')?.crs}`}
-				/>
-			</div>
-			{#if testView}
-				<div>
-					<Select.Root type="single" bind:value={selectedTestCp}>
-						<Select.Trigger>
-							{callingPoints[selectedTestCp]?.name}
-						</Select.Trigger>
-						<Select.Content>
-							{#each callingPoints as cp, i}
-								<Select.Item value={i}>{cp.name}</Select.Item>
-							{/each}
-						</Select.Content>
-					</Select.Root>
-					<Button
-						onclick={() => {
-							callingPoints[selectedTestCp].isCancelled =
-								!callingPoints[selectedTestCp].isCancelled;
-							if (callingPoints[selectedTestCp].isCancelled) {
-								callingPoints[selectedTestCp].arrived = false;
-								callingPoints[selectedTestCp].departed = false;
-							}
-							if (selectedTestCp === callingPoints.length - 1) {
-								callingPoints[selectedTestCp - 1].departed = false;
-							}
-						}}
-					>
-						Cancel
-					</Button>
-					<Button
-						disabled={callingPoints[selectedTestCp].isCancelled}
-						onclick={() =>
-							(callingPoints[selectedTestCp].arrived = !callingPoints[selectedTestCp].arrived)}
-					>
-						Arrive
-					</Button>
-					<Button
-						disabled={callingPoints[selectedTestCp].isCancelled ||
-							selectedTestCp === callingPoints.length - 1}
-						onclick={() => {
-							callingPoints[selectedTestCp].departed = !callingPoints[selectedTestCp].departed;
-							if (selectedTestCp !== 0) {
-								callingPoints[selectedTestCp].arrived = true;
-							}
-						}}
-					>
-						Depart
-					</Button>
-					<Button
-						disabled={callingPoints[selectedTestCp].isCancelled}
-						onclick={() => {
-							callingPoints[selectedTestCp].times.rt.arr = dayjsFromHHmm(
-								callingPoints[selectedTestCp].times.rt.arr
-							)
-								.add(5, 'minutes')
-								.format('HH:mm');
-							callingPoints[selectedTestCp].times.rt.dep = dayjsFromHHmm(
-								callingPoints[selectedTestCp].times.rt.dep
-							)
-								.add(5, 'minutes')
-								.format('HH:mm');
-						}}
-					>
-						Delay
-					</Button>
+					<!-- </div> -->
+				{/each}
+				<div class="flex w-full flex-col gap-2 pt-2">
+					<Share
+						{title}
+						text="Follow this service"
+						url={`/share/${data.crs}/${data.id}/${callingPoints.find((cp) => cp.order === 'filter')?.crs}`}
+					/>
+					{#if !detailedView}
+						<Button variant="outline" class="w-full" onclick={() => (detailedView = true)}
+							>Switch to detailed view</Button
+						>
+					{/if}
 				</div>
-			{/if}
-		</div>
+				{#if testView}
+					<div>
+						<Select.Root type="single" bind:value={selectedTestCp}>
+							<Select.Trigger>
+								{callingPoints[selectedTestCp]?.name}
+							</Select.Trigger>
+							<Select.Content>
+								{#each callingPoints as cp, i}
+									<Select.Item value={i}>{cp.name}</Select.Item>
+								{/each}
+							</Select.Content>
+						</Select.Root>
+						<Button
+							onclick={() => {
+								callingPoints[selectedTestCp].isCancelled =
+									!callingPoints[selectedTestCp].isCancelled;
+								if (callingPoints[selectedTestCp].isCancelled) {
+									callingPoints[selectedTestCp].arrived = false;
+									callingPoints[selectedTestCp].departed = false;
+								}
+								if (selectedTestCp === callingPoints.length - 1) {
+									callingPoints[selectedTestCp - 1].departed = false;
+								}
+							}}
+						>
+							Cancel
+						</Button>
+						<Button
+							disabled={callingPoints[selectedTestCp].isCancelled}
+							onclick={() =>
+								(callingPoints[selectedTestCp].arrived = !callingPoints[selectedTestCp].arrived)}
+						>
+							Arrive
+						</Button>
+						<Button
+							disabled={callingPoints[selectedTestCp].isCancelled ||
+								selectedTestCp === callingPoints.length - 1}
+							onclick={() => {
+								callingPoints[selectedTestCp].departed = !callingPoints[selectedTestCp].departed;
+								if (selectedTestCp !== 0) {
+									callingPoints[selectedTestCp].arrived = true;
+								}
+							}}
+						>
+							Depart
+						</Button>
+						<Button
+							disabled={callingPoints[selectedTestCp].isCancelled}
+							onclick={() => {
+								callingPoints[selectedTestCp].times.rt.arr = dayjsFromHHmm(
+									callingPoints[selectedTestCp].times.rt.arr
+								)
+									.add(5, 'minutes')
+									.format('HH:mm');
+								callingPoints[selectedTestCp].times.rt.dep = dayjsFromHHmm(
+									callingPoints[selectedTestCp].times.rt.dep
+								)
+									.add(5, 'minutes')
+									.format('HH:mm');
+							}}
+						>
+							Delay
+						</Button>
+					</div>
+				{/if}
+			</div>
+		{/if}
 	</div>
 {:else if error}
 	<div

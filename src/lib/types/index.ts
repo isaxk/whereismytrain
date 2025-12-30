@@ -152,6 +152,7 @@ export type TrainService = {
 	formation: Carriage[] | null;
 	formationLengthOnly: boolean;
 	destination: DestinationOrigin[];
+	category: 'standard' | 'express';
 };
 
 export type SavedTrain = {

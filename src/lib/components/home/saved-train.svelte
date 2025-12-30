@@ -260,12 +260,11 @@
 			</div>
 			<div class="flex flex-col gap-0.5 py-0.5 text-[10px] text-muted-foreground">
 				<div>Please check your ticket is valid on this service.</div>
-				{#if acrossLondon}
-					<a href="https://www.nationalrail.co.uk/journey-planner/">
-						The <span class="underline">National Rail journey planner</span> may give more accurate information
-						about connections across London
-					</a>
-				{/if}
+
+				<a href="https://www.nationalrail.co.uk/journey-planner/">
+					The <span class="underline">National Rail journey planner</span> may give more accurate information
+					about connections across London, or provide faster alternative routes.
+				</a>
 			</div>
 		</div>
 		<div class="flex min-w-24 justify-end">
@@ -377,7 +376,7 @@
 						{#if service}
 							{@render connectionAlternative(
 								`Connection to the ${connection.name} may no longer be possible.`,
-								`${service.times.plan.dep} to ${service.destination?.map((d) => d.name).join(', ')} (Exp. ${service.times.rt.dep})`,
+								`${service.times.plan.dep} to ${service.destination?.map((d) => d.name).join(', ')} (Exp. ${service.times.rt.dep === service.times.plan.dep ? 'On time' : service.times.rt.dep})`,
 								connection.acrossLondon,
 								switchTo,
 								switching
@@ -406,7 +405,7 @@
 							{#if connection.rtTime < 1}
 								{@render connectionAlternative(
 									`Connection to the ${connection.name} no longer possible, but an alternative was found.`,
-									`${service.times.plan.dep} to ${service.destination?.map((d) => d.name).join(', ')} (Exp. ${service.times.rt.dep})`,
+									`${service.times.plan.dep} to ${service.destination?.map((d) => d.name).join(', ')} (Exp. ${service.times.rt.dep === service.times.plan.dep ? 'On time' : service.times.rt.dep})`,
 									connection.acrossLondon,
 									switchTo,
 									switching
@@ -414,7 +413,7 @@
 							{:else}
 								{@render connectionAlternative(
 									`Only ${connection.rtTime}m to change to the ${connection.name}, but an alternative was found.`,
-									`${service.times.plan.dep} to ${service.destination?.map((d) => d.name).join(', ')} (Exp. ${service.times.rt.dep})`,
+									`${service.times.plan.dep} to ${service.destination?.map((d) => d.name).join(', ')} (Exp. ${service.times.rt.dep === service.times.plan.dep ? 'On time' : service.times.rt.dep})`,
 									connection.acrossLondon,
 									switchTo,
 									switching
@@ -451,7 +450,7 @@
 						{#if service}
 							{@render connectionAlternative(
 								`${connection.rtTime}m to change to the ${connection.name}, you may want to switch to this alternative.`,
-								`${service.times.plan.dep} to ${service.destination?.map((d) => d.name).join(', ')} (Exp. ${service.times.rt.dep})`,
+								`${service.times.plan.dep} to ${service.destination?.map((d) => d.name).join(', ')} (Exp. ${service.times.rt.dep === service.times.plan.dep ? 'On time' : service.times.rt.dep})`,
 								connection.acrossLondon,
 								switchTo,
 								switching

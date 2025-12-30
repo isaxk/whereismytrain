@@ -15,6 +15,7 @@
 		rid,
 		data,
 		index,
+		category,
 		refreshing = false,
 		color,
 		showDestination,
@@ -27,6 +28,7 @@
 		rid: string;
 		data: MapDataLocationGroup;
 		index: number;
+		category: string;
 		color: string;
 		showDestination: boolean;
 		refreshing: boolean;
@@ -246,6 +248,7 @@
 	{/if}
 	{#if data.trainPosition}
 		<MapTrainIndication
+			{category}
 			trainBearing={data.trainBearing}
 			trainPosition={data.trainPosition}
 			isFormedFromTrain={data.isFormedFromTrain}

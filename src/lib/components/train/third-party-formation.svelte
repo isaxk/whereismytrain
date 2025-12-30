@@ -32,12 +32,14 @@
 </script>
 
 {#if data}
-	<Formation formation={data} />
+	<div class="px-4">
+		<Formation formation={data} />
+	</div>
 {:else if op === 'GW'}
-	<div class="flex gap-1 overflow-x-scroll">
+	<div class="flex gap-1 overflow-x-scroll px-4">
 		{#each Array(10)}
 			<div
-				class="bg-background border-border relative flex h-16 min-w-16 flex-col items-center justify-center gap-0.5 rounded border drop-shadow-xs"
+				class="relative flex h-16 min-w-16 flex-col items-center justify-center gap-0.5 rounded border border-border bg-background drop-shadow-xs"
 			></div>
 		{/each}
 	</div>

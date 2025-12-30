@@ -17,8 +17,19 @@ import { TreesIcon } from 'lucide-svelte';
 const nullTime = '0001-01-01T00:00:00';
 
 function parseLocation(l: any): ServiceLocation {
+	if (l.sta === nullTime) l.sta = null;
+	if (l.std === nullTime) l.std = null;
+
+	if (l.eta === nullTime) l.eta = null;
+	if (l.etd === nullTime) l.etd = null;
+
+	if (l.ata === nullTime) l.ata = null;
+	if (l.atd === nullTime) l.atd = null;
+
 	return {
 		crs: l.crs ?? null,
+		name: l.locationName ?? null,
+		platform: l.platform ?? null,
 		isCancelled: l.isCancelled ?? false,
 		tiploc: l.tiploc!,
 		isCallingPoint: l.crs && !l.isPass,
@@ -154,6 +165,8 @@ function parseCallingPoint(
 		showTrain = true;
 	}
 
+	console.log('has arrived or departed', showTrain);
+
 	if (item.isCancelled) {
 		// if the next cp is not cancelled and there are no non-cancelled, non-departed cp before this one
 		if (
@@ -161,20 +174,24 @@ function parseCallingPoint(
 			cpsOnSplit.some((cp) => cp.indexInCPs < index && !cp.atdSpecified && !cp.isCancelled)
 		) {
 			showTrain = false;
+		} else if (cpsOnSplit.some((cp) => cp.indexInCPs < index && cp.atdSpecified)) {
+			showTrain = true;
 		}
-	} else if (
-		item.atd &&
-		cpsOnSplit[cpsOnSplit.findIndex((cp) => cp.indexInCPs === index + 1)]?.isCancelled
-	) {
+	} else if (item.atd && cpsOnSplit.find((cp) => cp.indexInCPs === index + 1)?.isCancelled) {
 		showTrain = false;
 	}
+
+	console.log('first uncancelled', showTrain);
 
 	// if there is an arrival or departure at a later calling point, hide the train
 	if (
 		cpsOnSplit.some((cp) => {
 			if (
 				cp.indexInCPs > index &&
-				(cp.atdSpecified || cp.ataSpecified || cp.atd !== nullTime || cp.ata !== nullTime)
+				(cp.atdSpecified ||
+					cp.ataSpecified ||
+					(cp.atd !== nullTime && cp.atd) ||
+					(cp.ata !== nullTime && cp.ata))
 			) {
 				return true;
 			}
@@ -184,12 +201,16 @@ function parseCallingPoint(
 		showTrain = false;
 	}
 
+	console.log('no later passes', showTrain);
+
 	if (item.inDivision && cpsOnSplit.some((cp) => cp.startJoin)) {
 		const firstAfterDivision = all.find((_, j) => j > cpsOnSplit[cpsOnSplit.length - 1].indexInCPs);
 		if (firstAfterDivision.atdSpecified) {
 			showTrain = false;
 		}
 	}
+
+	console.log('no departs after join', showTrain);
 
 	return {
 		crs: item.crs,
@@ -538,6 +559,17 @@ export const GET = async ({ params }) => {
 			data.operatorCode = findOvergroundLine(data.uid);
 		}
 
+		let category = 'standard';
+		if (data.category === 'XX' || data.category === 'XC') {
+			category = 'express';
+		} else if (data.category === 'XZ') {
+			category = 'sleeper';
+		} else if (data.category === 'BR' || data.category === 'BS') {
+			category = 'bus';
+		} else if (data.category === 'OL') {
+			category = 'metro';
+		}
+
 		const final: TrainService = {
 			rid: data.id,
 			callingPoints: callingPoints.map((cp, i) =>
@@ -552,6 +584,7 @@ export const GET = async ({ params }) => {
 				)
 			),
 			locations,
+			category,
 			isBus: data.serviceType === 'bus' || data.serviceType === 1,
 			operator: {
 				id: data.operatorCode,

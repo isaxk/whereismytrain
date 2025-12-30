@@ -11,6 +11,7 @@
 		ClockAlertIcon,
 		Train,
 		TrainFront,
+		TramFront,
 		X
 	} from 'lucide-svelte';
 	import { slide } from 'svelte/transition';
@@ -19,6 +20,7 @@
 	import Button from '../ui/button/button.svelte';
 	import { dayjsFromHHmm, t } from '$lib/utils';
 	import * as DropdownMenu from '../ui/dropdown-menu';
+	import TrainIconByCategory from './train-icon-by-category.svelte';
 
 	let {
 		cp,
@@ -26,15 +28,16 @@
 		index,
 		length,
 		showTrain = false,
-		greyLine = false
+		greyLine = false,
+		category = 'standard'
 	}: {
 		cp: CallingPoint;
 		operator: Operator;
 		index: number;
 		length: number;
-
 		showTrain?: boolean;
 		greyLine?: boolean;
+		category?: 'standard' | 'express';
 	} = $props();
 
 	let oldCp = $state({ ...cp });
@@ -200,7 +203,7 @@
 					style:color={operator.color}
 					class="flex h-6 w-6 items-center justify-center rounded-full border-2 bg-white"
 				>
-					<TrainFront size={14} />
+					<TrainIconByCategory {category} size={14} />
 				</div>
 			</div>
 		{:else if newCp.arrived && newCp.showTrain && showTrain}
@@ -218,7 +221,7 @@
 					style:color={operator.color}
 					class="flex h-6 w-6 items-center justify-center rounded-full border-2 bg-white"
 				>
-					<TrainFront size={14} />
+					<TrainIconByCategory {category} size={14} />
 				</div>
 			</div>
 		{/if}
