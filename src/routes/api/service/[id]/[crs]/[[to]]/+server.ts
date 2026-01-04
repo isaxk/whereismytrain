@@ -509,7 +509,7 @@ export const GET = async ({ params }) => {
 		}
 
 		if (focusIndex === -1 || filterIndex === -1) {
-   filterIndex = callingPoints.findLastIndex((l, i) => (l.crs === to || destCrsList.includes(l.crs)) && i <= destination[0].indexInCPs );
+   filterIndex = callingPoints.findLastIndex((l, i) => (l.crs === to || destCrsList.includes(l.crs)) );
    focusIndex = callingPoints.findLastIndex(
 				(l, i) => l.crs === crs && i < filterIndex);
 			
