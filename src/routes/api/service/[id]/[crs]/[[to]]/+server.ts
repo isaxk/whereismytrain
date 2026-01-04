@@ -491,7 +491,7 @@ export const GET = async ({ params }) => {
 
 		if ((!filterIndex || filterIndex === -1) && to) {
 			console.log('Could not find filter, retrying');
-			filterIndex = callingPoints.findLastIndex((l, i) => l.crs === to);
+			filterIndex = callingPoints.findLastIndex((l, i) => l.crs === to && i <= destination[0].indexInCPs);
 			focusIndex = callingPoints.findLastIndex(
 				(l, i) => l.crs === crs && i < destination[0].indexInCPs && i < (filterIndex ?? 10000)
 			);
@@ -509,8 +509,16 @@ export const GET = async ({ params }) => {
 		}
 
 		if (focusIndex === -1 || filterIndex === -1) {
-			throw new Error(`Could not query journey: ${crs}->${to ?? destCrsList[0]}, on this service`);
+   filterIndex = callingPoints.findLastIndex((l, i) => (l.crs === to || destCrsList.includes(l.crs)) && i <= destination[0].indexInCPs );
+   focusIndex = callingPoints.findLastIndex(
+				(l, i) => l.crs === crs && i < filterIndex);
+			
 		}
+
+  if (focusIndex === -1 || filterIndex === -1) {
+     throw new Error(`Could not query journey: ${crs}->${to ?? destCrsList[0]}, on this service`);
+  }
+
 
 		const date = callingPoints[focusIndex].std;
 
