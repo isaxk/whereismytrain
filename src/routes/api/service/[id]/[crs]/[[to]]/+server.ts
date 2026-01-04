@@ -516,6 +516,13 @@ export const GET = async ({ params }) => {
 		}
 
   if (focusIndex === -1 || filterIndex === -1) {
+ 
+   focusIndex = callingPoints.findIndex(
+				(l, i) => l.crs === crs);
+			filterIndex = callingPoints.findIndex((l, i) => (l.crs === to || destCrsList.includes(l.crs)) && i > focusIndex);
+		}
+
+  if (focusIndex === -1 || filterIndex === -1) {
      throw new Error(`Could not query journey: ${crs}->${to ?? destCrsList[0]}, on this service`);
   }
 
