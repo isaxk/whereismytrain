@@ -481,12 +481,12 @@ export const GET = async ({ params }) => {
 		// console.log(callingPoints.map((cp) => cp.crs));
 
 		destination = destCrsList.map((item) => {
-			const cp = callingPoints.find((loc: any, i) => loc.crs === item);
+			const cp = callingPoints.find((loc: any, i) => loc.crs === item && i > 0);
 			if (cp) {
 				return {
 					crs: cp.crs,
 					name: cp.locationName,
-					indexInCPs: callingPoints.findIndex((l, i) => l.crs === item)
+					indexInCPs: callingPoints.findIndex((l, i) => l.crs === item && i > 0)
 				};
 			} else {
 				return null;
