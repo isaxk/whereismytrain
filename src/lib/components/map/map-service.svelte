@@ -9,6 +9,7 @@
 	import Spinner from '../ui/spinner/spinner.svelte';
 	import clsx from 'clsx';
 	import TrainIconByCategory from '../train/train-icon-by-category.svelte';
+	import { highlightedStation, paneHeight } from '$lib/state/map.svelte';
 
 	let {
 		serviceData,
@@ -70,7 +71,12 @@
 					{@const filterItem = serviceData.callingPoints.find((cp) => cp.order === 'filter')}
 					<Marker
 						onclick={() => {
-							goto(`/board/${crs}/t/${rid}`);
+							if (page.data.id === rid) {
+								highlightedStation.current = cp.crs + cp.rtDepDate;
+								if (paneHeight.break !== 'top') {
+									paneHeight.break = 'top';
+								}
+							}
 						}}
 						lngLat={tiploc?.coords}
 						zIndex={isTrainAtStation ? 2000 : cp.order === 'further' ? 50 : 100}

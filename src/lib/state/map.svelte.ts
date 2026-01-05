@@ -22,3 +22,9 @@ export const headerColor: {
 } = $state({
 	current: null
 });
+
+export const highlightedStation: {
+	current: string | null;
+} = $state({
+	current: null
+});

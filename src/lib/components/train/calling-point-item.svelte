@@ -20,6 +20,7 @@
 	import { dayjsFromHHmm, t } from '$lib/utils';
 	import * as DropdownMenu from '../ui/dropdown-menu';
 	import TrainIconByCategory from './train-icon-by-category.svelte';
+	import { highlightedStation } from '$lib/state/map.svelte';
 
 	let {
 		cp,
@@ -55,9 +56,26 @@
 		},
 		() => [newCp]
 	);
+
+	let elm: HTMLDivElement;
+
+	$effect(() => {
+		if (highlightedStation.current === cp.crs + cp.rtDepDate) {
+			elm.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'center' });
+			setTimeout(() => {
+				highlightedStation.current = null;
+			}, 2000);
+		}
+	});
 </script>
 
-<div class={['flex h-12 items-center gap-2 px-2']}>
+<div
+	bind:this={elm}
+	class={[
+		'flex h-12 items-center gap-2 rounded-xl px-2 transition-all',
+		highlightedStation.current === cp.crs + cp.rtDepDate && 'animate-pulse bg-amber-100'
+	]}
+>
 	<div
 		class={[
 			'z-0 flex gap-0',

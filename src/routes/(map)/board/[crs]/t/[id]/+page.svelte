@@ -1,6 +1,6 @@
 <script lang="ts">
 	import CallingPointItem from '$lib/components/train/calling-point-item.svelte';
-	import { headerColor, mapData, paneHeight } from '$lib/state/map.svelte.js';
+	import { headerColor, highlightedStation, mapData, paneHeight } from '$lib/state/map.svelte.js';
 	import {
 		ArrowLeft,
 		Bell,
@@ -98,6 +98,16 @@
 	let detailedView = $state(false);
 
 	let selectedTestCp: number = $state(0);
+
+	$effect(() => {
+		if (
+			serviceData?.callingPoints.some(
+				(cp) => cp.order === 'previous' && highlightedStation.current === cp.crs + cp.rtDepDate
+			)
+		) {
+			showPrevious = true;
+		}
+	});
 </script>
 
 {#snippet lineButton(
