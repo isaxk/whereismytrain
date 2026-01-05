@@ -309,7 +309,6 @@
 									location.isCallingPoint ? 'text-base font-semibold' : 'text-xs'
 								]}
 							>
-								{location.tiploc}
 								{location.name}
 							</div>
 							<div class="">{location.platform}</div>
