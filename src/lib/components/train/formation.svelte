@@ -1,26 +1,49 @@
 <script lang="ts">
 	import type { Carriage } from '$lib/types';
-	import { Accessibility, Bike, Toilet, VolumeOffIcon } from 'lucide-svelte';
+	import ArrowRight from '@lucide/svelte/icons/arrow-right';
+	import { Accessibility, ArrowLeft, Bike, Toilet, VolumeOffIcon } from 'lucide-svelte';
 	import { fade, slide } from 'svelte/transition';
 	import { ca } from 'zod/locales';
 
-	let { formation }: { formation: Carriage[] | null } = $props();
+	let {
+		formation,
+		destinations
+	}: { formation: Carriage[] | null; destinations?: string[] | null } = $props();
 
 	const showIconBar = $derived(
 		formation?.some(
 			(c) => c.serviceClass === 'first' || c.toilet || c.toiletIsAccessible || c.bikeSpace
 		)
 	);
+
+	const frontLength = $derived(formation?.filter((c) => c.isFrontSection).length);
 </script>
 
-<div in:fade={{ duration: 200 }}>
-	<div class="flex gap-1 overflow-x-scroll">
+<div in:fade={{ duration: 200 }} class=" overflow-x-scroll">
+	{#if frontLength && formation && frontLength !== formation?.length}
+		<div class="flex gap-1 pb-1 text-xs text-nowrap">
+			<div class="min-w-14"></div>
+			<div
+				class="relative flex items-center justify-end gap-1 px-2"
+				style:min-width="{frontLength * 64 + (frontLength - 1) * 4}px"
+			>
+				<ArrowLeft size={14} />
+				to {destinations?.[0]}
+				<div class="absolute top-0 -right-[3px] -bottom-18 w-px bg-muted-foreground"></div>
+			</div>
+			<div class="flex grow items-center gap-1 px-2">
+				to {destinations?.[1]}
+				<ArrowRight size={14} />
+			</div>
+		</div>
+	{/if}
+	<div class="flex gap-1">
 		<div
-			class="bg-muted border-border h-16 min-w-14 rounded-tl-[100%] rounded-r-md rounded-bl-xl border-2 drop-shadow-xs"
+			class="h-16 min-w-14 rounded-tl-[100%] rounded-r-md rounded-bl-xl border-2 border-border bg-muted drop-shadow-xs"
 		></div>
 		{#each formation as carriage, i (JSON.stringify(carriage) + i)}
 			<div
-				class="bg-background border-border relative flex h-16 min-w-16 flex-col items-center justify-center gap-0.5 overflow-hidden rounded-md border drop-shadow-xs"
+				class="relative flex h-16 min-w-16 flex-col items-center justify-center gap-0.5 overflow-hidden rounded-md border border-border bg-background drop-shadow-xs"
 			>
 				{#if carriage.loading !== null}
 					<div
@@ -42,7 +65,7 @@
 					<div class="z-10 flex h-4 items-center gap-1">
 						{#if carriage.serviceClass === 'first'}
 							<div
-								class="bg-foreground text-background flex items-end rounded px-1 py-px text-[8px]/4 font-bold"
+								class="flex items-end rounded bg-foreground px-1 py-px text-[8px]/4 font-bold text-background"
 							>
 								1
 								<span class="ml-[.5px] text-[6px]/4 font-light"> st</span>
@@ -67,7 +90,7 @@
 	</div>
 
 	{#if formation?.some((f) => f.loading && f.loading !== null)}
-		<div class="text-foreground/60 pt-1 text-right text-[10px]/3">
+		<div class="pt-1 text-right text-[10px]/3 text-foreground/60">
 			* Colours indicate seat availability. <br />
 			A "full" carriage may still have standing room.
 		</div>

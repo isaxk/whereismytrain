@@ -132,6 +132,7 @@ export type Carriage = {
 	toilet: boolean;
 	bikeSpace?: boolean;
 	quietSpace?: boolean;
+	isFrontSection?: boolean;
 	toiletIsAccessible: boolean;
 	loading: number | null;
 };
@@ -142,7 +143,7 @@ export type TrainService = {
 	sdd: string;
 	isBus: boolean;
 	formedFrom: string | null;
-	locations: ServiceLocation[];
+	locations: ServiceLocation[][];
 	callingPoints: CallingPoint[];
 	operator: Operator;
 	isToday: boolean;

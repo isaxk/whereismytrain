@@ -4,13 +4,13 @@
 	import type { Carriage } from '$lib/types';
 	import { getKnownFormation, knownFormations } from '$lib/data/formations';
 
-	let { op, crs, sdd, uid, length, placeholder } = $props();
+	let { op, crs, sdd, uid, length, placeholder, destinations } = $props();
 
-	// console.log('length', length);
+	console.log('length', length);
 
-	async function getFormation(op, length) {
-		const knownFormation = getKnownFormation(op, length);
-		// console.log('knownFormation', knownFormation);
+	async function getFormation(op, length, destinations) {
+		const knownFormation = getKnownFormation(op, length, destinations);
+		console.log('knownFormation', knownFormation);
 		if (knownFormation) {
 			return knownFormation;
 		} else {
@@ -23,7 +23,7 @@
 	let data: Carriage[] | null = $state(placeholder ?? null);
 
 	$effect(() => {
-		getFormation(op, length).then((d) => {
+		getFormation(op, length, destinations).then((d) => {
 			if (d) data = d;
 		});
 	});
@@ -33,7 +33,7 @@
 
 {#if data}
 	<div class="px-4">
-		<Formation formation={data} />
+		<Formation formation={data} {destinations} />
 	</div>
 {:else if op === 'GW'}
 	<div class="flex gap-1 overflow-x-scroll px-4">

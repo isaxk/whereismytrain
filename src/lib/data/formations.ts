@@ -1,52 +1,87 @@
 // some operators with limited fleets have known formations
 
-import type { Carriage } from "$lib/types";
+import type { Carriage } from '$lib/types';
 
 export type CondensedFormation = {
-    coachNumbers: string[],
-    serviceClasses: ("first"|"standard")[],
-    toilets: number[],
-    accessibleToilets: number[],
-    bikeSpaces: number[],
-}
+	coachNumbers: string[];
+	serviceClasses?: ('first' | 'standard')[];
+	toilets?: number[];
+	accessibleToilets?: number[];
+	bikeSpaces?: number[];
+	frontLength?: number;
+};
 
 export const knownFormations: Record<string, Record<number, CondensedFormation>> = {
-    'TL': {
-        12: {
-            coachNumbers: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'],
-            serviceClasses: ['standard', 'standard', 'standard', 'standard', 'standard', 'standard', 'standard', 'standard', 'standard', 'standard', 'standard', 'standard'],
-            // These will be -1 for simplicity
-            toilets: [2, 4, 6, 7, 9, 11], 
-            accessibleToilets: [6, 7],
-            bikeSpaces: [3, 10],
-        },
-        8: {
-            coachNumbers: ['1', '2', '3', '4', '5', '6', '7', '8'],
-            serviceClasses: ['standard', 'standard', 'standard', 'standard', 'standard', 'standard', 'standard', 'standard'],
-            // These will be -1 for simplicity
-            toilets: [2, 4, 5, 7], 
-            accessibleToilets: [4, 5],
-            bikeSpaces: [1, 8],
-        }
-    }
-}
+	TL: {
+		12: {
+			coachNumbers: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'],
+			// These will be -1 for simplicity
+			toilets: [2, 4, 6, 7, 9, 11],
+			accessibleToilets: [6, 7],
+			bikeSpaces: [3, 10],
+			frontLength: 12
+		},
+		8: {
+			coachNumbers: ['1', '2', '3', '4', '5', '6', '7', '8'],
+			// These will be -1 for simplicity
+			toilets: [2, 4, 5, 7],
+			accessibleToilets: [4, 5],
+			bikeSpaces: [1, 8],
+			frontLength: 12
+		}
+	},
+	'Portsmouth HarbourBognor Regis': {
+		12: {
+			coachNumbers: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'],
+			frontLength: 4
+		},
+		8: {
+			coachNumbers: ['1', '2', '3', '4', '5', '6', '7', '8'],
+			frontLength: 4
+		}
+	},
+	'ReigateGatwick Airport': {
+		12: {
+			coachNumbers: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'],
+			frontLength: 4
+		},
+		8: {
+			coachNumbers: ['1', '2', '3', '4', '5', '6', '7', '8'],
+			frontLength: 4
+		}
+	},
+	'CaterhamTattenham Corner': {
+		10: {
+			coachNumbers: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'],
+			frontLength: 5
+		},
+		8: {
+			coachNumbers: ['1', '2', '3', '4', '5', '6', '7', '8'],
+			frontLength: 4
+		}
+	}
+};
 
-export function getKnownFormation(op: string, length: number) {
-    const condensedFormation = knownFormations[op]?.[length] ?? null;
-    if (condensedFormation) {
-        const formation: Carriage[] = condensedFormation.coachNumbers.map((n, i): Carriage =>{
-            return {
-                coachNumber: n,
-                serviceClass: condensedFormation.serviceClasses[i],
-                toilet: condensedFormation.toilets.includes(i + 1),
-                toiletIsAccessible: condensedFormation.accessibleToilets.includes(i + 1),
-                bikeSpace: condensedFormation.bikeSpaces.includes(i + 1),
-                loading: null,
-            }
-        })
-        return formation
-    }
-    else {
-        return null
-    }
+export function getKnownFormation(op: string, length: number, destinations?: string[] | null) {
+	const condensedFormation =
+		(destinations?.length ?? 0) > 1
+			? (knownFormations[destinations?.join('')]?.[length] ?? knownFormations[op]?.[length])
+			: knownFormations[op]?.[length];
+	console.log('condensedFormation:', condensedFormation);
+	if (condensedFormation) {
+		const formation: Carriage[] = condensedFormation.coachNumbers.map((n, i): Carriage => {
+			return {
+				coachNumber: n,
+				serviceClass: condensedFormation.serviceClasses?.[i] ?? 'standard',
+				toilet: condensedFormation.toilets?.includes(i + 1) ?? false,
+				toiletIsAccessible: condensedFormation.accessibleToilets?.includes(i + 1) ?? false,
+				bikeSpace: condensedFormation.bikeSpaces?.includes(i + 1) ?? false,
+				loading: null,
+				isFrontSection: i < (condensedFormation.frontLength ?? Number.POSITIVE_INFINITY)
+			};
+		});
+		return formation;
+	} else {
+		return null;
+	}
 }

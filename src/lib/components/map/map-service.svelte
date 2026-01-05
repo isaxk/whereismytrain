@@ -42,6 +42,7 @@
 							? (serviceData.callingPoints.find((l) => l.startDivide)?.crs ?? null)
 							: null}
 					focus={crs}
+					to={filter}
 					href="/board/{crs}/t/{rid}?{filter ? `to=${filter}&` : ''}backTo=/"
 					isAtStation={false}
 					showDestination={mapData.locations.reduce(

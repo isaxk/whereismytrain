@@ -165,7 +165,7 @@ function parseCallingPoint(
 		showTrain = true;
 	}
 
-	console.log('has arrived or departed', showTrain);
+	// console.log('has arrived or departed', showTrain);
 
 	if (item.isCancelled) {
 		// if the next cp is not cancelled and there are no non-cancelled, non-departed cp before this one
@@ -181,7 +181,7 @@ function parseCallingPoint(
 		showTrain = false;
 	}
 
-	console.log('first uncancelled', showTrain);
+	// console.log('first uncancelled', showTrain);
 
 	// if there is an arrival or departure at a later calling point, hide the train
 	if (
@@ -201,7 +201,7 @@ function parseCallingPoint(
 		showTrain = false;
 	}
 
-	console.log('no later passes', showTrain);
+	// console.log('no later passes', showTrain);
 
 	if (item.inDivision && cpsOnSplit.some((cp) => cp.startJoin)) {
 		const firstAfterDivision = all.find((_, j) => j > cpsOnSplit[cpsOnSplit.length - 1].indexInCPs);
@@ -210,7 +210,7 @@ function parseCallingPoint(
 		}
 	}
 
-	console.log('no departs after join', showTrain);
+	// console.log('no departs after join', showTrain);
 
 	return {
 		crs: item.crs,
@@ -269,7 +269,7 @@ export const GET = async ({ params }) => {
 
 		const data = await response.json();
 		// console.log(data);
-		const locations: ServiceLocation[] = [data.locations.map(parseLocation)];
+		const locations: ServiceLocation[][] = [data.locations.map(parseLocation)];
 		const rawCallingPoints = data.locations.filter((l: any) => !l.isPass && l.crs);
 
 		let callingPoints: any[] = [];
@@ -336,29 +336,64 @@ export const GET = async ({ params }) => {
 
 			if (assocService) {
 				// add the location as a line to the map object
-				const assocParsedLocations = assocService.locations.map(parseLocation);
-				locations.push(assocParsedLocations);
+				// locations.push(assocParsedLocations);
 
-				const assocRawCallingPoints = assocService.locations.filter((l: any) => !l.isPass && l.crs);
+				const assocRawCallingPoints: any[] = assocService.locations.filter(
+					(l: any) => !l.isPass && l.crs
+				);
 				destination.push(assocRawCallingPoints[assocRawCallingPoints.length - 1]);
-				assocRawCallingPoints.forEach((cp: any) => {
-					// Insert the join calling point to the list
 
-					if (cp.associations?.some((l: any) => l.category === 0)) {
-						callingPoints.push({ ...cp, std: null, etd: null, atd: null });
-						rawCallingPoints.forEach((cp: any, i: number) => {
-							callingPoints.push({
-								...cp,
-								inDivision: true,
-								startJoin: i === 0, // and specify where the division starts and ends
-								endJoin: i === rawCallingPoints.length - 1
-							});
-						});
-						callingPoints.push({ ...cp, sta: null, eta: null, ata: null });
-					} else {
-						callingPoints.push(cp);
-					}
-				});
+				const joinIndexOnAssoc = assocRawCallingPoints.findIndex((cp: any) =>
+					cp.associations?.some((l: any) => l.rid === id)
+				);
+				const joinIndexOnAssocLocations = assocService.locations.findIndex((cp: any) =>
+					cp.associations?.some((l: any) => l.rid === id)
+				);
+
+				const joinOnAssoc = assocRawCallingPoints[joinIndexOnAssoc];
+
+				const joinOnAssocLocations = assocService.locations[joinIndexOnAssocLocations];
+
+				const lastOfMain = rawCallingPoints[rawCallingPoints.length - 1];
+				const lastOfAssoc = locations[0][locations[0].length - 1];
+
+				rawCallingPoints[rawCallingPoints.length - 1] = {
+					...lastOfMain,
+					std: joinOnAssoc.std,
+					etd: joinOnAssoc.etd,
+					atd: joinOnAssoc.atd
+				};
+
+				locations[0][rawCallingPoints.length - 1] = {
+					...lastOfAssoc,
+					std: joinIndexOnAssocLocations.std,
+					etd: joinOnAssocLocations.etd,
+					atd: joinOnAssocLocations.atd
+				};
+
+				callingPoints = rawCallingPoints.concat(assocRawCallingPoints.slice(joinIndexOnAssoc + 1));
+				locations[0] = locations[0].concat(
+					assocService.locations.slice(joinIndexOnAssocLocations + 1)
+				);
+
+				// assocRawCallingPoints.forEach((cp: any) => {
+				// 	// Insert the join calling point to the list
+
+				// 	if (cp.associations?.some((l: any) => l.category === 0)) {
+				// 		callingPoints.push({ ...cp, std: null, etd: null, atd: null });
+				// 		rawCallingPoints.forEach((cp: any, i: number) => {
+				// 			callingPoints.push({
+				// 				...cp,
+				// 				inDivision: true,
+				// 				startJoin: i === 0, // and specify where the division starts and ends
+				// 				endJoin: i === rawCallingPoints.length - 1
+				// 			});
+				// 		});
+				// 		callingPoints.push({ ...cp, sta: null, eta: null, ata: null });
+				// 	} else {
+				// 		callingPoints.push(cp);
+				// 	}
+				// });
 			}
 		}
 		// otherwise assume the current service is the primary service, or there is no division

@@ -50,6 +50,7 @@
 				refreshing.map = true;
 				serviceData = r;
 				headerColor.current = r.operator.color;
+				console.log('r.locations', r.locations);
 				const response = await fetch(`/api/mapdata`, {
 					body: JSON.stringify({ locations: r.locations, formedFrom: r.formedFrom }),
 					method: 'POST',
@@ -108,10 +109,9 @@
 	showTrain: boolean,
 	category: string
 )}
-	<button class="flex h-8 items-center gap-2 text-left" {onclick}>
+	<button class="flex h-8 items-center gap-2 px-2 text-left" {onclick}>
 		<div class="flex gap-3">
-			<div class="w-10"></div>
-			<div class="w-10"></div>
+			<div class="min-w-10.5"></div>
 		</div>
 		{#if inDivision}
 			<div class="w-2"></div>
@@ -237,7 +237,10 @@
 
 		{#if serviceData.formation && !serviceData.formationLengthOnly && serviceData.formation.length > 0}
 			<div class="px-4">
-				<Formation formation={serviceData.formation} />
+				<Formation
+					formation={serviceData.formation}
+					destinations={serviceData.destination.map((d) => d.name)}
+				/>
 			</div>
 		{:else if !isBus && isToday}
 			<ThirdPartyFormation
@@ -247,6 +250,7 @@
 				sdd={serviceData.sdd}
 				crs={data.crs}
 				length={serviceData.formation ? serviceData.formation?.length : null}
+				destinations={serviceData.destination.map((d) => d.name)}
 			/>
 		{/if}
 		{#if detailedView}
@@ -314,10 +318,10 @@
 			</div>
 		{:else}
 			<div class="flex flex-col px-4">
-				<div class="flex gap-4 text-xs text-muted-foreground">
-					<div class="flex w-28 gap-2">
-						<div class="w-10">Arr.</div>
-						<div class="w-10">Dep.</div>
+				<div class="flex gap-4 px-2 pb-2 text-xs text-muted-foreground">
+					<div class="w-16">
+						<div class="w-8 text-right">Time</div>
+						<div class="grow"></div>
 					</div>
 					<div class="grow">Station</div>
 					<div>Platform</div>
@@ -350,10 +354,9 @@
 						)} -->
 						{/if}
 						{#if cp.startDivide}
-							<div class="flex h-8 gap-2">
+							<div class="flex h-8 gap-2 px-2">
 								<div class="flex gap-3">
-									<div class="w-10"></div>
-									<div class="w-10"></div>
+									<div class="w-10.5"></div>
 								</div>
 								<div
 									style:color={operator.color}
@@ -383,10 +386,9 @@
 									</svg>
 								</div>
 							</div>
-							<div class="flex h-4 min-h-4 gap-2">
+							<div class="flex h-4 min-h-4 gap-2 px-2">
 								<div class="flex gap-3">
-									<div class="w-10"></div>
-									<div class="w-10"></div>
+									<div class="w-10.5"></div>
 								</div>
 								<div class="flex h-full w-12 items-center justify-start pl-[3px]">
 									<div
@@ -398,10 +400,9 @@
 								</div>
 							</div>
 						{:else if cp.startJoin}
-							<div class="flex h-4 min-h-4 gap-2">
+							<div class="flex h-4 min-h-4 gap-2 px-2">
 								<div class="flex gap-3">
-									<div class="w-10"></div>
-									<div class="w-10"></div>
+									<div class="w-10.5"></div>
 								</div>
 								<div class="flex h-full w-12 items-center justify-start pl-[3px]">
 									<div
@@ -420,16 +421,21 @@
 							{category}
 							index={i}
 							length={callingPoints.length}
+							pickupOnly={!cp.times.plan.arr && i > 0 && !cp.startDivide && !prev.endDivide}
+							setdownOnly={!cp.times.plan.dep &&
+								i < callingPoints.length - 1 &&
+								!cp.endDivide &&
+								!next.startDivide &&
+								!cp.isDestination}
 							showTrain={!(cp.departed && callingPoints[i + 1]?.order === 'focus')}
 							greyLine={!callingPoints.some((cp, j) => j > i && !cp.isCancelled) &&
 								cp.isCancelled &&
 								!callingPoints.some((cp) => cp.inDivision)}
 						/>
 						{#if cp.endDivide && (showPrevious || !previousIncludesStartDivide)}
-							<div class="flex h-4 min-h-4 gap-2">
+							<div class="flex h-4 min-h-4 gap-2 px-2">
 								<div class="flex gap-3">
-									<div class="w-10"></div>
-									<div class="w-10"></div>
+									<div class="w-10.5"></div>
 								</div>
 								<div class="flex h-full w-12 items-center justify-start pl-[3px]">
 									<div
@@ -441,10 +447,9 @@
 								</div>
 							</div>
 						{:else if cp.endJoin}
-							<div class="flex h-4 min-h-4 gap-2">
+							<div class="flex h-4 min-h-4 gap-2 px-2">
 								<div class="flex gap-3">
-									<div class="w-10"></div>
-									<div class="w-10"></div>
+									<div class="w-10.5"></div>
 								</div>
 								<div class="flex h-full w-12 items-center justify-start pl-[3px]">
 									<div
@@ -455,10 +460,9 @@
 									<div style:background={operator.color} class="h-4 w-1.5 bg-black"></div>
 								</div>
 							</div>
-							<div class="flex h-8 gap-2">
+							<div class="flex h-8 gap-2 px-2">
 								<div class="flex gap-3">
-									<div class="w-10"></div>
-									<div class="w-10"></div>
+									<div class="w-10.5"></div>
 								</div>
 								<div
 									style:color={operator.color}

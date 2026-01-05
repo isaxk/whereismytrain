@@ -15,7 +15,8 @@
 		isFormedFromTrain,
 		rid,
 		showDestination,
-		category
+		category,
+		opacity = 100
 	} = $props();
 
 	const coordsTween = Tween.of(() => trainPosition);
@@ -31,6 +32,7 @@
 		<div
 			style:border-color={color}
 			style:color
+			style:opacity
 			class={[
 				'a relative z-20 flex flex-col items-center justify-center rounded-full border-2 bg-white',
 				isFormedFromTrain ? 'h-8 w-8 opacity-20' : 'h-9 w-9 opacity-100'
@@ -74,6 +76,7 @@
 					stroke-width="2"
 				/>
 				<polygon
+					style:opacity
 					points="10,0 0,20 20,20"
 					class={[isFormedFromTrain ? 'opacity-20' : 'opacity-100']}
 					fill="white"

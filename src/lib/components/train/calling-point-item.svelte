@@ -15,7 +15,6 @@
 		X
 	} from 'lucide-svelte';
 	import { slide } from 'svelte/transition';
-	import { isDirty } from 'zod/v3';
 	import ChangeNotifier from '../board/change-notifier.svelte';
 	import Button from '../ui/button/button.svelte';
 	import { dayjsFromHHmm, t } from '$lib/utils';
@@ -29,6 +28,9 @@
 		length,
 		showTrain = false,
 		greyLine = false,
+		pickupOnly = false,
+		setdownOnly = false,
+
 		category = 'standard'
 	}: {
 		cp: CallingPoint;
@@ -37,6 +39,8 @@
 		length: number;
 		showTrain?: boolean;
 		greyLine?: boolean;
+		pickupOnly?: boolean;
+		setdownOnly?: boolean;
 		category?: 'standard' | 'express';
 	} = $props();
 
@@ -53,10 +57,10 @@
 	);
 </script>
 
-<div class={['flex h-12 items-center gap-2']}>
+<div class={['flex h-12 items-center gap-2 px-2']}>
 	<div
 		class={[
-			'z-0 flex gap-4',
+			'z-0 flex gap-0',
 
 			newCp.order === 'focus' || newCp.order === 'filter'
 				? 'font-medium'
@@ -67,88 +71,99 @@
 						: 'opacity-50'
 		]}
 	>
-		<div
-			class={[
-				'w-8 min-w-8 origin-left',
-				newCp.order === 'focus' || newCp.order === 'filter' ? 'scale-100' : 'scale-95'
-			]}
-		>
-			<ChangeNotifier
-				changed={newCp.times.plan.arr === newCp.times.rt.arr &&
-					oldCp.times.plan.arr !== oldCp.times.rt.arr}
+		{#if (['filter', 'subsequent', 'post-destination', 'further'].includes(newCp.order) && newCp.times.plan.arr) || !newCp.times.plan.dep}
+			<div
 				class={[
-					newCp.isCancelled || newCp.arrivalCancelled
-						? 'text-sm text-red-600 line-through'
-						: newCp.times.rt.arr !== newCp.times.plan.arr
-							? newCp.times.rt.arr
-								? 'text-xs/3'
-								: 'text-xs/3'
-							: 'text-sm text-good'
+					'flex w-8 min-w-8 origin-left flex-col items-end',
+					newCp.order === 'focus' || newCp.order === 'filter' ? 'scale-100' : 'scale-95'
 				]}
 			>
-				{newCp.times.plan.arr}
-			</ChangeNotifier>
-			{#if newCp.times.rt.arr !== newCp.times.plan.arr && !newCp.isCancelled && !newCp.arrivalCancelled}
-				{#if newCp.times.rt.arr}
-					<ChangeNotifier
-						changed={newCp.times.rt.arr !== oldCp.times.rt.arr}
-						class="text-sm/3 text-warning"
-					>
-						{newCp.times.rt.arr ?? 'Delayed'}
-					</ChangeNotifier>
-					<!-- {:else if cp.times.rt.arrSource === 'none'}
+				<ChangeNotifier
+					changed={newCp.times.plan.arr === newCp.times.rt.arr &&
+						oldCp.times.plan.arr !== oldCp.times.rt.arr}
+					class={[
+						newCp.isCancelled || newCp.arrivalCancelled
+							? 'text-sm text-red-600 line-through'
+							: newCp.times.rt.arr !== newCp.times.plan.arr
+								? newCp.times.rt.arr
+									? 'text-sm/3'
+									: 'text-sm/3'
+								: 'text-sm text-good'
+					]}
+				>
+					<div>
+						{#if !['filter', 'subsequent', 'post-destination', 'further'].includes(newCp.order)}
+							<span class="text-[10px]">(a)</span>
+						{/if}{newCp.times.plan.arr}
+					</div>
+				</ChangeNotifier>
+				{#if newCp.times.rt.arr !== newCp.times.plan.arr && !newCp.isCancelled && !newCp.arrivalCancelled}
+					{#if newCp.times.rt.arr}
+						<ChangeNotifier
+							changed={newCp.times.rt.arr !== oldCp.times.rt.arr}
+							class="text-sm/3 text-warning"
+						>
+							{newCp.times.rt.arr ?? 'Delayed'}
+						</ChangeNotifier>
+						<!-- {:else if cp.times.rt.arrSource === 'none'}
 					<div class="text-foreground text-[10px]/3">Unknown</div> -->
-				{:else}
-					<ChangeNotifier
-						changed={newCp.times.rt.arr !== oldCp.times.rt.arr}
-						class="text-[10px]/3 text-warning"
-					>
-						Delayed
-					</ChangeNotifier>
+					{:else}
+						<ChangeNotifier
+							changed={newCp.times.rt.arr !== oldCp.times.rt.arr}
+							class="text-[10px]/3 text-warning"
+						>
+							Delayed
+						</ChangeNotifier>
+					{/if}
 				{/if}
-			{/if}
-		</div>
-		<div
-			class={[
-				'w-8 min-w-8 origin-left',
-				newCp.order === 'focus' || newCp.order === 'filter' ? 'scale-100' : 'scale-95'
-			]}
-		>
-			<ChangeNotifier
-				changed={newCp.times.plan.dep === newCp.times.rt.dep &&
-					oldCp.times.plan.dep !== oldCp.times.rt.dep}
+			</div>
+		{:else}
+			<div
 				class={[
-					newCp.isCancelled || newCp.departureCancelled
-						? 'text-sm text-red-600 line-through'
-						: newCp.times.rt.dep !== newCp.times.plan.dep
-							? newCp.times.rt.dep
-								? 'text-xs/3'
-								: 'text-xs/3'
-							: 'text-sm text-good'
+					'flex w-8 min-w-8 origin-left flex-col items-end text-nowrap',
+					newCp.order === 'focus' || newCp.order === 'filter' ? 'scale-100' : 'scale-95'
 				]}
 			>
-				{newCp.times.plan.dep}
-			</ChangeNotifier>
-			{#if newCp.times.rt.dep !== newCp.times.plan.dep && !newCp.isCancelled && !newCp.departureCancelled}
-				{#if newCp.times.rt.dep}
-					<ChangeNotifier
-						changed={newCp.times.rt.dep !== oldCp.times.rt.dep}
-						class="w-max text-sm/3 text-warning"
-					>
-						{newCp.times.rt.dep ?? 'Delayed'}
-					</ChangeNotifier>
-					<!-- {:else if newCp.times.rt.depSource === 'none'}
+				<ChangeNotifier
+					changed={newCp.times.plan.dep === newCp.times.rt.dep &&
+						oldCp.times.plan.dep !== oldCp.times.rt.dep}
+					class={[
+						newCp.isCancelled || newCp.departureCancelled
+							? 'text-sm text-red-600 line-through'
+							: newCp.times.rt.dep !== newCp.times.plan.dep
+								? newCp.times.rt.dep
+									? 'text-xs/3'
+									: 'text-xs/3'
+								: 'text-sm text-good'
+					]}
+				>
+					<div>
+						{#if ['filter', 'subsequent', 'post-destination', 'further'].includes(newCp.order)}
+							<span class="text-[10px]">(d)</span>
+						{/if}{newCp.times.plan.dep}
+					</div>
+				</ChangeNotifier>
+				{#if newCp.times.rt.dep !== newCp.times.plan.dep && !newCp.isCancelled && !newCp.departureCancelled}
+					{#if newCp.times.rt.dep}
+						<ChangeNotifier
+							changed={newCp.times.rt.dep !== oldCp.times.rt.dep}
+							class="w-max text-sm/3 text-warning"
+						>
+							{newCp.times.rt.dep ?? 'Delayed'}
+						</ChangeNotifier>
+						<!-- {:else if newCp.times.rt.depSource === 'none'}
 					<div class="text-foreground text-[10px]/3">Unknown</div> -->
-				{:else}
-					<ChangeNotifier
-						changed={newCp.times.rt.dep !== oldCp.times.rt.dep}
-						class="w-max text-[10px]/3 text-warning"
-					>
-						Delayed
-					</ChangeNotifier>
+					{:else}
+						<ChangeNotifier
+							changed={newCp.times.rt.dep !== oldCp.times.rt.dep}
+							class="w-max text-[10px]/3 text-warning"
+						>
+							Delayed
+						</ChangeNotifier>
+					{/if}
 				{/if}
-			{/if}
-		</div>
+			</div>
+		{/if}
 	</div>
 
 	{#snippet crsBlob(crs: string)}
@@ -160,7 +175,7 @@
 	<div
 		class={[
 			'relative flex h-full flex-col items-center justify-center',
-			newCp.inDivision ? 'min-w-12 pl-5' : 'min-w-8 pl-1',
+			newCp.inDivision ? 'min-w-12 pl-4' : 'min-w-8 pl-0',
 			newCp.isPostDestination || greyLine ? 'opacity-50' : ''
 		]}
 	>
@@ -286,6 +301,14 @@
 			<div class="flex items-center gap-1 text-[10px]/4 text-muted-foreground">
 				<ClockAlertIcon size={12} /> Expected arrival {newCp.arrivalDelay}m late
 			</div> -->
+		{:else if pickupOnly}
+			<div class="flex items-center gap-1 text-[10px]/4 text-muted-foreground">
+				<ArrowUpRight size={12} /> Pick up only
+			</div>
+		{:else if setdownOnly}
+			<div class="flex items-center gap-1 text-[10px]/4 text-muted-foreground">
+				<ArrowDownRight size={12} /> Set down only
+			</div>
 		{/if}
 	</div>
 	<ChangeNotifier

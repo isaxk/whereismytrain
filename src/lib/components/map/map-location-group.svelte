@@ -21,6 +21,7 @@
 		showDestination,
 		isAtStation,
 		filter,
+		to = null,
 		focus
 	}: {
 		href: string;
@@ -34,8 +35,11 @@
 		refreshing: boolean;
 		isAtStation: boolean;
 		filter?: string | null;
+		to?: string | null;
 		focus?: string | null;
 	} = $props();
+
+	console.log(to, data.lineLocations);
 
 	const coordinates = $derived(data.lineLocations.map((l) => l.coords));
 
@@ -249,6 +253,7 @@
 	{#if data.trainPosition}
 		<MapTrainIndication
 			{category}
+			opacity={!to || data.lineLocations.some((l) => l.crs === to && l.crs !== null) ? 1 : 0.2}
 			trainBearing={data.trainBearing}
 			trainPosition={data.trainPosition}
 			isFormedFromTrain={data.isFormedFromTrain}
