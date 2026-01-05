@@ -111,9 +111,10 @@
 				tick().then(() => {
 					toInput?.focus();
 				});
-			} else if (hour.length === 2) {
+			} else if (hour.length === 2 || parseInt(hour) < 10) {
+				hour = hour.padStart(2, '0');
 				minuteInput?.select();
-			} else if (from && to) {
+			} else if (from && to && minuteFocused) {
 				goto(href);
 			}
 		}}
@@ -269,7 +270,7 @@
 		<Button type="submit" class="hidden"></Button>
 		{#if opened}
 			<div class="py-4">
-				{#if !to && from !== null && toFocused}
+				{#if !to && from !== null}
 					{#if toFormatted.length > 0}
 						{#each toFormatted as result, i}
 							<button
