@@ -37,17 +37,25 @@ async function fetchAssocService(rid: string) {
 	}
 }
 
-async function getTiplocs(tiplocs: string[]): Promise<
+async function getTiplocs(
+	tiplocs: string[],
+	crs: string[]
+): Promise<
 	{
 		tiploc: string;
+		crs: string | null;
 		coords: [number, number];
 	}[]
 > {
-	const response = await supabase.from('tiplocs').select('*').in('tiploc', tiplocs);
+	const response = await supabase
+		.from('tiplocs')
+		.select('*')
+		.or(`tiploc.in.(${tiplocs.join(',')}), crs.in.(${crs.join(',')})`);
 	return (
 		response.data?.map((tiploc) => {
 			return {
 				tiploc: tiploc.tiploc,
+				crs: tiploc.crs,
 				coords: [tiploc.long, tiploc.lat]
 			};
 		}) ?? []
@@ -124,6 +132,7 @@ export const POST: RequestHandler = async ({ request }) => {
 	}: { locations: [ServiceLocation[]]; formedFrom?: string | null } = await request.json();
 
 	const tiplocs: string[] = [];
+	const crs: string[] = [];
 
 	const { id: formedFromId, destCrsList: formedFromDest } = formedFrom
 		? parseServiceId(formedFrom)
@@ -132,12 +141,14 @@ export const POST: RequestHandler = async ({ request }) => {
 	locations.forEach((group) => {
 		group.forEach((location) => {
 			tiplocs.push(location.tiploc);
+			if (location.crs) crs.push(location.crs);
 		});
 	});
 
 	// console.log('formedFrom', formedFrom);
 
-	const tiplocsData = await getTiplocs(tiplocs);
+	const tiplocsData = await getTiplocs(tiplocs, crs);
+	console.log(tiplocsData);
 	const parsedLocations: MapDataLocationGroup[] = locations.map((group) => {
 		const groupWithCoords: ServiceLocationWithCoords[] = group.map((item) => {
 			if (item.ata === nullTime) item.ata = null;
@@ -148,7 +159,8 @@ export const POST: RequestHandler = async ({ request }) => {
 			if (item.std === nullTime) item.std = null;
 			return {
 				...item,
-				coords: tiplocsData.find((tiploc) => tiploc.tiploc === item.tiploc)?.coords ?? [0, 0]
+				coords: tiplocsData.find((tiploc) => item.crs && tiploc.crs === item.crs)?.coords ??
+					tiplocsData.find((tiploc) => tiploc.tiploc === item.tiploc)?.coords ?? [0, 0]
 			};
 		});
 
@@ -198,7 +210,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		if (data && data.locations) {
 			const parsed: ServiceLocation[] = data.locations.map(parseLocation);
 			const tiplocs = parsed.map((item) => item.tiploc);
-			const tiplocsData = await getTiplocs(tiplocs);
+			const tiplocsData = await getTiplocs(tiplocs, []);
 
 			const groupWithCoords: ServiceLocationWithCoords[] = parsed.map((item) => {
 				return {
