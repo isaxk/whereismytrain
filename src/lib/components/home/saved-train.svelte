@@ -384,7 +384,7 @@
 
 			<a href={`/board/${data.focusCrs}/t/${data.service_id}?to=${data.filterCrs}&backTo=/`}>
 				<div class="flex h-16 items-center">
-					<div class="flex w-12 flex-col items-end">
+					<div class="flex min-w-12 flex-col items-end">
 						{#if focus.isCancelled}
 							<div class="text-base/4 text-danger">{focus.times.plan.dep}</div>
 						{:else if focus.delay === null}
@@ -399,48 +399,51 @@
 							<div class="text-sm/3 text-warning">{focus.times.rt.dep}</div>
 						{/if}
 					</div>
-					<div class="flex h-16 w-10 flex-col items-center justify-center">
+					<div class="flex h-16 min-w-10 flex-col items-center justify-center">
 						<div class="w-1.5 grow"></div>
 						<div class="flex h-1.5 min-w-4" style:background={service.operator.color}></div>
 						<div class="w-1.5 grow" style:background={service.operator.color}></div>
 					</div>
 
-					<div class="grow">
-						<div class="text-base/6 font-medium">
-							{focus.name}
-						</div>
-						<div class="flex items-center text-muted-foreground">
-							<div class="flex grow items-center gap-1 text-xs/3">
-								<div
-									class="h-max w-max truncate rounded-sm px-1.5 py-0.5 text-[10px] text-white"
-									style:background={service.operator.color}
-								>
-									{service.operator.name}
-								</div>
-								{#if focus.isCancelled}
-									<div class="text-xs/3 font-medium text-danger">Cancelled</div>
+					<div class="min-w-0 grow">
+						<div class="flex">
+							<div class="grow text-base/6 font-medium">
+								{focus.name}
+							</div>
+							<ChangeNotifier
+								changed={false}
+								class={[
+									'-mr-1 items-center justify-center gap-1 px-1 text-right text-base/5',
+									focus.platform === 'BUS' && 'text-sm text-warning'
+								]}
+							>
+								{#if focus.platform === 'BUS'}
+									<Bus size={16} /> Bus service
 								{:else}
+									<span class="text-xs/4 text-muted-foreground sm:text-xs/6">Platform </span>
+
+									{focus.platform !== 'BUS' ? (focus.platform ?? '-') : ''}
+								{/if}
+							</ChangeNotifier>
+						</div>
+						<div class="flex w-full items-center gap-1 truncate text-xs/4 text-muted-foreground">
+							<div
+								class="h-max w-max rounded-sm px-1.5 py-0.5 text-[10px]/3 text-white"
+								style:background={service.operator.color}
+							>
+								{service.operator.name}
+							</div>
+
+							{#if focus.isCancelled}
+								<div class="text-xs/3 font-medium text-danger">Cancelled</div>
+							{:else}
+								<div class="min-w-0 grow truncate">
 									to
 									{service.destination.map((d) => d.name).join(', ')}
-								{/if}
-							</div>
+								</div>
+							{/if}
 						</div>
 					</div>
-					<ChangeNotifier
-						changed={false}
-						class={[
-							'-mr-1 items-end justify-center px-1 text-right',
-							focus.platform === 'BUS' && 'text-sm text-warning'
-						]}
-					>
-						{#if focus.platform === 'BUS'}
-							<Bus size={16} /> Bus service
-						{:else}
-							<span class="text-xs/6 text-muted-foreground">Platform </span>
-
-							{focus.platform !== 'BUS' ? (focus.platform ?? '-') : ''}
-						{/if}
-					</ChangeNotifier>
 				</div>
 
 				<div class="flex h-5 items-center">
@@ -648,7 +651,7 @@
 	{/if}
 	<DropdownMenu.Root>
 		<DropdownMenu.Trigger
-			class={['absolute top-16 right-0', buttonVariants({ variant: 'outline', size: 'icon' })]}
+			class={['absolute top-26 right-0', buttonVariants({ variant: 'outline', size: 'icon' })]}
 		>
 			<EllipsisVertical />
 		</DropdownMenu.Trigger>
