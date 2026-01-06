@@ -121,7 +121,7 @@
 )}
 	<button class="flex h-8 items-center gap-2 px-2 text-left" {onclick}>
 		<div class="flex gap-3">
-			<div class="min-w-10.5"></div>
+			<div class="min-w-12.5"></div>
 		</div>
 		{#if inDivision}
 			<div class="w-2"></div>
@@ -330,7 +330,7 @@
 			<div class="flex flex-col px-4">
 				<div class="flex gap-4 px-2 pb-2 text-xs text-muted-foreground">
 					<div class="w-16">
-						<div class="w-8 text-right">Time</div>
+						<div class="w-10 text-right">Time</div>
 						<div class="grow"></div>
 					</div>
 					<div class="grow">Station</div>
@@ -366,7 +366,7 @@
 						{#if cp.startDivide}
 							<div class="flex h-8 gap-2 px-2">
 								<div class="flex gap-3">
-									<div class="w-10.5"></div>
+									<div class="w-12.5"></div>
 								</div>
 								<div
 									style:color={operator.color}
@@ -398,7 +398,7 @@
 							</div>
 							<div class="flex h-4 min-h-4 gap-2 px-2">
 								<div class="flex gap-3">
-									<div class="w-10.5"></div>
+									<div class="w-12.5"></div>
 								</div>
 								<div class="flex h-full w-12 items-center justify-start pl-[3px]">
 									<div
@@ -412,7 +412,7 @@
 						{:else if cp.startJoin}
 							<div class="flex h-4 min-h-4 gap-2 px-2">
 								<div class="flex gap-3">
-									<div class="w-10.5"></div>
+									<div class="w-12.5"></div>
 								</div>
 								<div class="flex h-full w-12 items-center justify-start pl-[3px]">
 									<div
@@ -445,7 +445,7 @@
 						{#if cp.endDivide && (showPrevious || !previousIncludesStartDivide)}
 							<div class="flex h-4 min-h-4 gap-2 px-2">
 								<div class="flex gap-3">
-									<div class="w-10.5"></div>
+									<div class="w-12.5"></div>
 								</div>
 								<div class="flex h-full w-12 items-center justify-start pl-[3px]">
 									<div
@@ -459,7 +459,7 @@
 						{:else if cp.endJoin}
 							<div class="flex h-4 min-h-4 gap-2 px-2">
 								<div class="flex gap-3">
-									<div class="w-10.5"></div>
+									<div class="w-12.5"></div>
 								</div>
 								<div class="flex h-full w-12 items-center justify-start pl-[3px]">
 									<div
@@ -472,7 +472,7 @@
 							</div>
 							<div class="flex h-8 gap-2 px-2">
 								<div class="flex gap-3">
-									<div class="w-10.5"></div>
+									<div class="w-12.5"></div>
 								</div>
 								<div
 									style:color={operator.color}

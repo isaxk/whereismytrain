@@ -92,7 +92,7 @@
 		{#if (['filter', 'subsequent', 'post-destination', 'further'].includes(newCp.order) && newCp.times.plan.arr) || !newCp.times.plan.dep}
 			<div
 				class={[
-					'flex w-8 min-w-8 origin-left flex-col items-end',
+					'flex w-10 min-w-10 origin-left flex-col items-end',
 					newCp.order === 'focus' || newCp.order === 'filter' ? 'scale-100' : 'scale-95'
 				]}
 			>
@@ -138,7 +138,7 @@
 		{:else}
 			<div
 				class={[
-					'flex w-8 min-w-8 origin-left flex-col items-end text-nowrap',
+					'flex w-10 min-w-10 origin-left flex-col items-end text-nowrap',
 					newCp.order === 'focus' || newCp.order === 'filter' ? 'scale-100' : 'scale-95'
 				]}
 			>
