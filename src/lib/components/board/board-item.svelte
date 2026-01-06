@@ -9,7 +9,7 @@
 	import ChangeNotifier from './change-notifier.svelte';
 	import Button from '../ui/button/button.svelte';
 	import { size } from 'zod';
-	import { dayjsFromHHmm } from '$lib/utils';
+	import { cn, dayjsFromHHmm } from '$lib/utils';
 
 	let {
 		crs,
@@ -30,6 +30,7 @@
 		operator,
 		date = null,
 		isToday = true,
+		class: className = '',
 		filterName = null,
 		connection = null
 	}: {
@@ -58,6 +59,7 @@
 		date?: string | null;
 		isToday?: boolean;
 		filterName?: string | null;
+		class?: string;
 		connection?: {
 			schTime: number;
 			rtTime: number | null;
@@ -99,14 +101,15 @@
 
 <a
 	{href}
-	class={[
+	class={cn([
 		'flex w-full flex-col justify-center rounded  text-left',
 		connection && connection.rtTime && connection.status === 'ok'
 			? 'h-28 gap-1'
 			: filter
 				? 'h-22 gap-1'
-				: 'h-22'
-	]}
+				: 'h-22',
+		className
+	])}
 >
 	<div class="flex h-max items-center gap-2">
 		<div class="font-medium">

@@ -11,21 +11,37 @@
 	let { from, to, time, index, children, existingRid, allowance = 0 } = $props();
 
 	let switching = $state(false);
+	let failed = $state(false);
+
+	async function search(from: string, to: string, offset: number) {
+		try {
+			const response = await fetch(`/api/fastest/${from}/${to}/${offset + allowance}`);
+
+			if (response.ok) {
+				const data = await response.json();
+				if (data?.rid && existingRid !== data?.rid) {
+					service = data;
+					failed = false;
+				} else {
+					console.log('failed');
+					service = null;
+					failed = true;
+				}
+			} else {
+				console.log('failed');
+				service = null;
+				failed = true;
+			}
+		} catch (e) {
+			console.log('error caught', e);
+			service = null;
+			failed = true;
+		}
+	}
 
 	$effect(() => {
 		const offset = dayjsFromHHmm(time).diff(dayjs(), 'minutes');
-		fetch(`/api/fastest/${from}/${to}/${offset + allowance}`)
-			.then(async (response) => {
-				const data = await response.json();
-				if (response.ok && data?.rid && existingRid !== data?.rid) {
-					service = data;
-				} else {
-					service = null;
-				}
-			})
-			.catch(() => {
-				service = null;
-			});
+		search(from, to, offset + allowance);
 	});
 
 	async function switchTo() {
@@ -60,13 +76,16 @@
 			}
 		} else {
 			console.error('Failed to switch to alternative service');
+
+			return false;
 		}
 		switching = false;
+		return true;
 	}
 </script>
 
 {#if service}
-	{@render children(service, switchTo, switching)}
+	{@render children(service, switchTo, switching, failed)}
 {:else}
-	{@render children(null, () => {}, false)}
+	{@render children(null, () => {}, false, failed)}
 {/if}
