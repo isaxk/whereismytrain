@@ -24,7 +24,7 @@
 	import AlertCard from '../ui/alert-card.svelte';
 	import { londonTerminals } from '$lib/data/favourites';
 	import Button, { buttonVariants } from '../ui/button/button.svelte';
-	import AlternativeConnection from './alternative.svelte';
+	import AlternativeConnection from './alternative-provider.svelte';
 	import { explicitEffect } from '$lib/state/utils.svelte';
 	import Spinner from '../ui/spinner/spinner.svelte';
 	import ChangeNotifier from '../board/change-notifier.svelte';
@@ -32,8 +32,11 @@
 	import * as Dialog from '../ui/dialog';
 	import * as Item from '../ui/item';
 	import * as Card from '../ui/card';
+	import * as Popover from '$lib/components/ui/popover/index.js';
 	import { operatorList } from '$lib/data/operators';
 	import Input from '../ui/input/input.svelte';
+	import { fly } from 'svelte/transition';
+	import AlternativeDisplay from './alternative-display.svelte';
 
 	let { data, index }: { data: SavedTrain; index: number } = $props();
 
@@ -112,17 +115,19 @@
 	const duration = $derived.by(() => {
 		if (!focus || !filter) return null;
 
-		let diff = dayjsFromHHmm(filter.times.plan.arr!).diff(
-			dayjsFromHHmm(focus.times.plan.dep!),
-			'minutes'
-		);
+		let arrival = dayjsFromHHmm(filter.times.plan.arr!);
+		let departure = dayjsFromHHmm(focus.times.plan.dep!);
 
-		if (filter.times.rt.arr && filter.times.rt.dep) {
-			diff = dayjsFromHHmm(filter.times.rt.arr!).diff(
-				dayjsFromHHmm(focus.times.rt.dep!),
-				'minutes'
-			);
+		if (filter.times.rt.arr && focus.times.rt.dep) {
+			arrival = dayjsFromHHmm(filter.times.rt.arr);
+			departure = dayjsFromHHmm(focus.times.rt.dep);
 		}
+
+		if (arrival.isBefore(departure)) {
+			arrival = arrival.add(1, 'day');
+		}
+
+		let diff = arrival.diff(departure, 'minutes');
 
 		if (diff >= 60) {
 			return `${Math.floor(diff / 60)}h ${diff % 60}m`;
@@ -231,6 +236,16 @@
 							'minute'
 						)
 					: null;
+			const newSchDiff =
+				connectionFocus.times.plan.dep && filter.times.plan.arr
+					? dayjsFromHHmm(connectionFocus.times.plan.dep).diff(
+							dayjsFromHHmm(filter.times.plan.arr),
+							'minute'
+						)
+					: null;
+			console.log('sch Connection Start', data.originalArrival ?? filter.times.plan.arr);
+			console.log('sch Connection End', connectionFocus.times.plan.dep);
+			console.log('sch Connection Duration', schDiff);
 			const rtDiff =
 				connectionFocus.times.rt.dep && filter.times.rt.arr
 					? dayjsFromHHmm(connectionFocus.times.rt.dep).diff(
@@ -275,11 +290,12 @@
 
 			const connectionIndex = saved.value.findIndex((saved) => saved.id === connection.id);
 
-			if (rtDiff && schDiff) {
+			if (rtDiff !== null && schDiff) {
 				return {
 					rid: connection.service_id,
 					rtTime: rtDiff,
 					schTime: schDiff,
+					newSchDiff: newSchDiff,
 					name: `${connectionFocus.times.plan.dep}`,
 					status,
 					acrossLondon,
@@ -291,6 +307,7 @@
 				return {
 					rid: connection.service_id,
 					schTime: schDiff,
+					newSchDiff: newSchDiff,
 					rtTime: null,
 					name: `${connectionFocus.times.plan.dep}`,
 					status,
@@ -340,7 +357,7 @@
 
 <div
 	class={[
-		'relative py-3 transition-all duration-300',
+		'relative min-h-[176px] py-3 transition-all duration-300',
 		!refreshed && 'opacity-40',
 		refreshing.current && !refreshed && 'animate-pulse'
 	]}
@@ -355,8 +372,7 @@
 		</div>
 	{/if} -->
 	{#key data.service_id}
-		{#if focus && filter}
-			<!-- <BoardItem
+		<!-- <BoardItem
 				href={`/board/${data.focusCrs}/t/${data.service_id}?to=${data.filterCrs}&backTo=/`}
 				id={data.service_id}
 				planDep={focus?.times.plan.dep ?? 'N/A'}
@@ -382,7 +398,12 @@
 					: null}
 			/> -->
 
-			<a href={`/board/${data.focusCrs}/t/${data.service_id}?to=${data.filterCrs}&backTo=/`}>
+		<a
+			out:fly={{ duration: 200, y: 150 }}
+			in:fly={{ duration: 200, y: -150, delay: 201 }}
+			href={`/board/${data.focusCrs}/t/${data.service_id}?to=${data.filterCrs}&backTo=/`}
+		>
+			{#if focus && filter}
 				<div class="flex h-16 items-center">
 					<div class="flex min-w-12 flex-col items-end">
 						{#if focus.isCancelled}
@@ -486,26 +507,211 @@
 						{/if}
 					</div>
 				</div>
-			</a>
-			{#if connection?.status === 'ok'}
-				<div class="relative h-5">
-					<div class="absolute -top-2 right-0 left-0 flex h-18 items-center">
-						<div class="w-12"></div>
-						<div class="flex h-16 w-10 flex-col items-center justify-center gap-0.5">
-							<div class="w-px grow rounded-full bg-muted-foreground"></div>
-							<GitCompareArrowsIcon size={15} />
-							<div class="w-px grow rounded-full bg-muted-foreground"></div>
-						</div>
-						<div class="grow text-xs">
-							{connection.rtTime}m to change
-						</div>
+			{/if}
+		</a>
+		{#if connection?.status === 'ok'}
+			<div class="relative h-5">
+				<div class="absolute -top-2 right-0 left-0 flex h-18 items-center">
+					<div class="w-12"></div>
+					<div class="flex h-16 w-10 flex-col items-center justify-center gap-0.5">
+						<div class="w-px grow rounded-full bg-muted-foreground"></div>
+						<GitCompareArrowsIcon size={15} />
+						<div class="w-px grow rounded-full bg-muted-foreground"></div>
+					</div>
+					<div class="grow text-xs">
+						{#if connection.newSchDiff !== connection.rtTime}
+							<span class="line-through opacity-80">{connection.newSchDiff}m</span>
+						{/if}
+						{connection.rtTime}m to change
 					</div>
 				</div>
-			{:else if !connection}
-				<div class="relative h-1">
-					<div class="absolute top-5 right-0 left-0 h-px border-b border-border"></div>
+			</div>
+		{:else if connection && connection?.status !== 'ok'}
+			<div class="relative h-5">
+				<div
+					class={[
+						'absolute -top-3 right-0 left-0 flex h-18 items-center',
+						{
+							'text-amber-500':
+								connection?.status === 'warning' || connection.status === 'alternative',
+
+							'text-red-500': connection?.status === 'impossible'
+						}
+					]}
+				>
+					<div class="w-12"></div>
+					<div class={['flex h-16 w-10 flex-col items-center justify-center gap-0.5']}>
+						<div
+							class={[
+								'w-px grow rounded-full',
+								{
+									'bg-amber-500':
+										connection?.status === 'warning' || connection.status === 'alternative',
+
+									'bg-red-500': connection?.status === 'impossible'
+								}
+							]}
+						></div>
+						<GitCompareArrowsIcon size={15} />
+						<div
+							class={[
+								'w-px grow rounded-full',
+								{
+									'bg-amber-500':
+										connection?.status === 'warning' || connection.status === 'alternative',
+
+									'bg-red-500': connection?.status === 'impossible'
+								}
+							]}
+						></div>
+					</div>
+					<div class="grow text-xs">
+						{#if connection.status === 'impossible'}
+							<div class="line-through opacity-80">
+								{(connection.newSchDiff ?? 0) < 0 ? connection.schTime : connection.newSchDiff}m to
+								change
+							</div>
+							Change not possible
+						{:else}
+							<span class="line-through opacity-80">{connection.newSchDiff}m</span>
+							{connection.rtTime}m to change
+						{/if}
+					</div>
+					{#if connection.status === 'impossible' || connection.status === 'alternative' || connection.status === 'warning'}
+						<Popover.Root>
+							<Popover.Trigger
+								class={[buttonVariants({ variant: 'secondary', size: 'sm' }), 'z-10']}
+								>Find alternative
+							</Popover.Trigger>
+							<Popover.Content class="min-h-56 w-sm max-w-full p-0">
+								<AlternativeConnection
+									from={connection.from}
+									to={connection.to}
+									time={filter?.times.rt.arr}
+									allowance={Math.max(
+										connection.acrossLondon ? 15 : 3, // The minimum allowance
+										Math.min(
+											connection.acrossLondon ? 45 : 8, // The maximum allowance
+											connection.newSchDiff && connection.newSchDiff > 1
+												? Math.min(connection.newSchDiff, connection.schTime)
+												: (connection.schTime ?? 0)
+										)
+									)}
+									existingRid={connection.rid}
+									index={connection.connectionIndex}
+								>
+									{#snippet children(service, switchTo, switching, failed)}
+										<AlternativeDisplay
+											{service}
+											{switchTo}
+											{switching}
+											{failed}
+											from={connection.from}
+											to={connection.to}
+											offset={dayjsFromHHmm(filter?.times.rt.arr ?? filter?.times.plan.arr).diff(
+												dayjs(),
+												'minute'
+											)}
+										/>
+										<!-- <Item.Root>
+											{#if failed}
+												<div>
+													<Item.Title>Could not find an alternative in the next 2 hours</Item.Title>
+													<Item.Description
+														><a
+															class="block"
+															href="/board/{data.focusCrs}?to={data.filterCrs}&offset={dayjs(
+																data.service.date
+															).diff(dayjs(), 'minute')}">Make a search</a
+														>
+														<a href="https://www.nationalrail.co.uk"
+															>or use the national rail journey planner</a
+														></Item.Description
+													>
+												</div>
+												<Item.Actions class="flex w-full max-w-full  gap-2">
+													<Button
+														href="/board/{connection.from}?to={connection.to}&offset={dayjsFromHHmm(
+															filter?.times.rt.arr ?? filter?.times.plan.arr
+														).diff(dayjs(), 'minute')}"
+														variant="secondary"
+														class="w-1/2 grow"
+													>
+														Make a search
+													</Button>
+													<Button
+														href="https://nationalrail.co.uk"
+														variant="secondary"
+														class="w-1/2 grow"
+													>
+														NR Journey Planner
+													</Button>
+												</Item.Actions>
+											{:else if service}
+												<div class="w-full">
+													<Item.Title>An alternative was found</Item.Title>
+													<Item.Description class="grow text-foreground">
+														<div>
+															<BoardItem
+																class="h-18 pt-2"
+																id={service.rid}
+																href="#"
+																crs={data.focusCrs}
+																rtDep={service.times.rt.dep}
+																planDep={service.times.plan.dep}
+																destination={service.destination}
+																isCancelled={service.isCancelled}
+																departed={service.departed}
+																platform={service.platform}
+																operator={service.operator}
+															></BoardItem>
+														</div>
+													</Item.Description>
+												</div>
+												<Item.Actions class="flex w-full max-w-full flex-col gap-2">
+													<Button
+														variant="default"
+														class="w-full grow"
+														onclick={() => switchTo().then(() => (showMissedDialog = false))}
+													>
+														{#if switching}
+															<Spinner />
+														{:else}
+															Switch
+														{/if}
+													</Button>
+													<div class="flex w-full gap-2">
+														<Button
+															href="/board/{connection.from}?to={connection.to}&offset={dayjsFromHHmm(
+																filter?.times.rt.arr ?? filter?.times.plan.arr
+															).diff(dayjs(), 'minute')}"
+															variant="secondary"
+															class="w-1/2 grow"
+														>
+															More alternatives
+														</Button>
+														<Button
+															href="https://nationalrail.co.uk"
+															variant="secondary"
+															class="w-1/2 grow"
+														>
+															NR Journey Planner
+														</Button>
+													</div>
+												</Item.Actions>
+											{:else}
+												<Item.Title><Spinner /> Searching for an alternative</Item.Title>
+											{/if}
+										</Item.Root> -->
+									{/snippet}
+								</AlternativeConnection>
+							</Popover.Content>
+						</Popover.Root>
+					{/if}
 				</div>
-			{/if}
+			</div>
+		{:else if !connection}
+			<div class="absolute right-0 bottom-0 left-0 h-px border-b border-border"></div>
 		{/if}
 	{/key}
 	{#if focus?.isCancelled || filter?.isCancelled}
@@ -545,6 +751,7 @@
 			{/snippet}
 		</AlternativeConnection>
 	{/if}
+	<!--
 	{#if connection && connection.schTime}
 		{#if !connection?.rtTime}
 			<AlternativeConnection
@@ -648,7 +855,7 @@
 				{/snippet}
 			</AlternativeConnection>
 		{/if}
-	{/if}
+	{/if} -->
 	<DropdownMenu.Root>
 		<DropdownMenu.Trigger
 			class={['absolute top-26 right-0', buttonVariants({ variant: 'outline', size: 'icon' })]}
@@ -668,11 +875,11 @@
 	<Dialog.Root bind:open={showMissedDialog}>
 		<Dialog.Content>
 			<Dialog.Title>Missed train, what now?</Dialog.Title>
-			<div>
+			<Dialog.Description>
 				If you have an "Advance" ticket, you will need to buy a new ticket. However, if this is a
 				connecting train you will be entitled to take the next train (this includes split tickets).
 				Most other tickets will be valid on the next train(s).
-			</div>
+			</Dialog.Description>
 			<div>
 				<AlternativeConnection
 					from={data.focusCrs}
@@ -683,7 +890,18 @@
 					{index}
 				>
 					{#snippet children(service, switchTo, switching, failed)}
-						<Item.Root variant="outline">
+						<AlternativeDisplay
+							showDescription={false}
+							outline
+							{service}
+							{switchTo}
+							{switching}
+							{failed}
+							from={data.focusCrs}
+							to={data.filterCrs}
+							offset={dayjs(data.service.date).add(15, 'minutes').diff(dayjs(), 'minute')}
+						/>
+						<!-- <Item.Root variant="outline">
 							{#if failed}
 								<div>
 									<Item.Title>Could not find an alternative</Item.Title>
@@ -738,7 +956,7 @@
 							{:else}
 								<Item.Title><Spinner /> Searching for an alternative</Item.Title>
 							{/if}
-						</Item.Root>
+						</Item.Root> -->
 					{/snippet}
 				</AlternativeConnection>
 			</div>
