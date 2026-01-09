@@ -51,6 +51,7 @@
 		"@turf/bbox": "^7.3.0",
 		"@types/geojson": "^7946.0.16",
 		"@types/maplibre-gl": "^1.14.0",
+		"@vercel/analytics": "^1.6.1",
 		"bits-ui": "^2.14.4",
 		"csv-parser": "^3.2.0",
 		"cupertino-pane": "^1.5.4",
