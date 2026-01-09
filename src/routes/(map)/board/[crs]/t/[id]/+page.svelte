@@ -313,7 +313,7 @@
 		{:else}
 			<div class="flex flex-col px-4">
 				<div class="flex gap-4 px-2 pb-2 text-xs text-muted-foreground">
-					<div class="w-16">
+					<div class="w-18">
 						<div class="w-10 text-right">Time</div>
 						<div class="grow"></div>
 					</div>

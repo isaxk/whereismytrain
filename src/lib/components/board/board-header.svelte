@@ -78,7 +78,7 @@
 			</div>
 		{:else}
 			<div
-				class="justify-center4gap-1 flex items-center px-2 text-xs text-nowrap text-muted-foreground"
+				class="flex items-center justify-center gap-1 px-2 text-xs text-nowrap text-muted-foreground"
 			>
 				<div class="min-w-3">
 					<Clock size={12} />
