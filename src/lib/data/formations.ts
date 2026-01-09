@@ -30,7 +30,7 @@ export const knownFormations: Record<string, Record<number, CondensedFormation>>
 			frontLength: 12
 		}
 	},
-	'Portsmouth HarbourBognor Regis': {
+	'SN-2Dest': {
 		12: {
 			coachNumbers: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'],
 			frontLength: 4
@@ -38,36 +38,24 @@ export const knownFormations: Record<string, Record<number, CondensedFormation>>
 		8: {
 			coachNumbers: ['1', '2', '3', '4', '5', '6', '7', '8'],
 			frontLength: 4
-		}
-	},
-	'ReigateGatwick Airport': {
-		12: {
-			coachNumbers: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'],
-			frontLength: 4
 		},
-		8: {
-			coachNumbers: ['1', '2', '3', '4', '5', '6', '7', '8'],
-			frontLength: 4
-		}
-	},
-	'CaterhamTattenham Corner': {
 		10: {
 			coachNumbers: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'],
 			frontLength: 5
-		},
-		8: {
-			coachNumbers: ['1', '2', '3', '4', '5', '6', '7', '8'],
-			frontLength: 4
 		}
 	}
 };
 
 export function getKnownFormation(op: string, length: number, destinations?: string[] | null) {
-	const condensedFormation =
-		(destinations?.length ?? 0) > 1
-			? (knownFormations[destinations?.join('')]?.[length] ?? knownFormations[op]?.[length])
-			: knownFormations[op]?.[length];
+	if (op === 'SN' && (destinations?.length ?? 0) > 1) {
+		if (length === 8 || length === 12 || length === 10) {
+			op = 'SN-2Dest';
+		}
+	}
+
+	const condensedFormation = knownFormations[op]?.[length];
 	console.log('condensedFormation:', condensedFormation);
+
 	if (condensedFormation) {
 		const formation: Carriage[] = condensedFormation.coachNumbers.map((n, i): Carriage => {
 			return {

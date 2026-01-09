@@ -19,7 +19,7 @@
 	const frontLength = $derived(formation?.filter((c) => c.isFrontSection).length);
 </script>
 
-<div in:fade={{ duration: 200 }} class=" overflow-x-scroll">
+<div in:fade={{ duration: 200 }} class=" h-max min-h-max overflow-x-scroll overflow-y-clip">
 	{#if frontLength && formation && frontLength !== formation?.length}
 		<div class="flex gap-1 pb-1 text-xs text-nowrap">
 			<div class="min-w-14"></div>

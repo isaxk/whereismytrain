@@ -11,6 +11,7 @@
 	import TrainIconByCategory from '../train/train-icon-by-category.svelte';
 	import { highlightedStation, paneHeight } from '$lib/state/map.svelte';
 	import { explicitEffect } from '$lib/state/utils.svelte';
+	import { MediaQuery } from 'svelte/reactivity';
 
 	let {
 		serviceData,
@@ -30,6 +31,8 @@
 		onBounds?: (bounds: [number, number][]) => void;
 	} = $props();
 
+	const lg = new MediaQuery('(min-width: 1024px)');
+
 	explicitEffect(
 		() => {
 			const flatten = mapData.locations.map((l) => l.lineLocations).flat();
@@ -39,7 +42,7 @@
 				: flatten.length - 1;
 			const train = mapData.locations[0]!.trainPosition ?? null;
 			const route = flatten.slice(focusIndex, filterIndex + 1);
-			if (paneHeight.current > 400) {
+			if (paneHeight.current > 400 || lg.current) {
 				onBounds(train ? [...route.map((l) => l.coords), train] : route.map((l) => l.coords));
 			} else {
 				onBounds(
