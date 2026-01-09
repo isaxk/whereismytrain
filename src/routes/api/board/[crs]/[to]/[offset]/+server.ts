@@ -75,8 +75,6 @@ export const GET: RequestHandler = async ({ params }) => {
 					.replace('Status and Disruptions.', 'More info')
 			}));
 
-		console.log(data.nrccMessages);
-
 		const board: Board = {
 			services,
 			details: {

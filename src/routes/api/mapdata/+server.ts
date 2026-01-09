@@ -148,7 +148,7 @@ export const POST: RequestHandler = async ({ request }) => {
 	// console.log('formedFrom', formedFrom);
 
 	const tiplocsData = await getTiplocs(tiplocs, crs);
-	console.log(tiplocsData);
+	// console.log(tiplocsData);
 	const parsedLocations: MapDataLocationGroup[] = locations.map((group) => {
 		const groupWithCoords: ServiceLocationWithCoords[] = group.map((item) => {
 			if (item.ata === nullTime) item.ata = null;
@@ -257,5 +257,5 @@ export const POST: RequestHandler = async ({ request }) => {
 		}
 	}
 
-	return json({ locations: parsedLocations, tiplocData: tiplocsData });
+	return json({ locations: parsedLocations, tiplocData: tiplocsData, type: 'service' });
 };

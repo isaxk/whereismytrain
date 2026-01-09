@@ -2,10 +2,12 @@
 	import '../../app.css';
 	import { MediaQuery } from 'svelte/reactivity';
 	import Map from '$lib/components/map/map.svelte';
-	import { Toaster } from 'svelte-sonner';
+	import { Toaster } from '$lib/components/ui/sonner/index.js';
+	import { toast } from 'svelte-sonner';
 	import { ModeWatcher } from 'mode-watcher';
 	import Pane from '$lib/components/pane/pane.svelte';
 	import { onMount } from 'svelte';
+	import { updated } from '$app/state';
 	import { initializeNotifications, setupForegroundMessageHandler } from '$lib/notifications';
 	import { pwa } from '$lib/state/saved.svelte';
 	import { browser } from '$app/environment';
@@ -22,6 +24,19 @@
 		}
 		setupForegroundMessageHandler();
 		initializeNotifications();
+	});
+
+	$effect(() => {
+		if (updated.current) {
+			toast('New version of WhereIsMyTrain is available.', {
+				action: {
+					label: 'Update',
+					onClick: () => {
+						window.location.reload();
+					}
+				}
+			});
+		}
 	});
 </script>
 

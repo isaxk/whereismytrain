@@ -47,24 +47,8 @@
 	$effect(() => {
 		data.service
 			.then(async (r) => {
-				refreshing.map = true;
 				serviceData = r;
 				headerColor.current = r.operator.color;
-				console.log('r.locations', r.locations);
-				const response = await fetch(`/api/mapdata`, {
-					body: JSON.stringify({ locations: r.locations, formedFrom: r.formedFrom }),
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json'
-					}
-				});
-				if (response.ok) {
-					const data = await response.json();
-					mapData.service = data;
-				}
-				setTimeout(() => {
-					refreshing.map = false;
-				}, 250);
 			})
 			.catch((e) => {
 				error = e;

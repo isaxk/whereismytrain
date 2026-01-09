@@ -3,85 +3,91 @@
 
 import { build, files, version } from '$service-worker';
 
-// Create a unique cache name for this deployment
 const CACHE = `cache-${version}`;
-
-const ASSETS = [
-	...build, // the app itself
-	...files // everything in `static`
-];
+const ASSETS = [...build, ...files];
 
 self.addEventListener('install', (event) => {
-	// Create a new cache and add all files to it
-	async function addFilesToCache() {
-		const cache = await caches.open(CACHE);
-		await cache.addAll(ASSETS);
-	}
+	event.waitUntil(
+		(async () => {
+			const cache = await caches.open(CACHE);
+			await cache.addAll(ASSETS);
 
-	console.log('installing service worker for version', version);
-	console.log('caching assets', ASSETS);
-	console.log('caching build', build);
-
-	event.waitUntil(addFilesToCache());
+			// Ensure the SPA shell is cached
+			if (!ASSETS.includes('/')) {
+				await cache.add('/');
+			}
+		})()
+	);
 });
 
 self.addEventListener('activate', (event) => {
-	// Remove previous cached data from disk
-	async function deleteOldCaches() {
-		for (const key of await caches.keys()) {
-			if (key !== CACHE) await caches.delete(key);
-		}
-	}
-
-	event.waitUntil(deleteOldCaches());
+	event.waitUntil(
+		(async () => {
+			for (const key of await caches.keys()) {
+				if (key !== CACHE) {
+					await caches.delete(key);
+				}
+			}
+			await self.clients.claim();
+		})()
+	);
 });
 
 self.addEventListener('fetch', (event) => {
-	// ignore POST requests etc
-	if (event.request.method !== 'GET') return;
+	const url = new URL(event.request.url);
 
-	async function respond() {
-		const url = new URL(event.request.url);
-		const cache = await caches.open(CACHE);
+	let skipCache = false;
 
-		// `build`/`files` can always be served from the cache
-		if (ASSETS.includes(url.pathname)) {
-			const response = await cache.match(url.pathname);
+	if (event.request.method !== 'GET') skipCache = true;
 
-			if (response) {
-				return response;
-			}
-		}
+	// Never cache SvelteKit page data
+	if (url.pathname.endsWith('/__data.json')) skipCache = true;
 
-		// for everything else, try the network first, but
-		// fall back to the cache if we're offline
-		try {
-			const response = await fetch(event.request);
+	// Never cache API routes
+	if (url.pathname.startsWith('/api/')) skipCache = true;
 
-			// if we're offline, fetch can return a value that is not a Response
-			// instead of throwing - and we can't pass this non-Response to respondWith
-			if (!(response instanceof Response)) {
-				throw new Error('invalid response from fetch');
-			}
+	if (skipCache) return;
 
-			if (response.status === 200) {
+	event.respondWith(cacheFirstWithSpaFallback(event));
+});
+
+async function cacheFirstWithSpaFallback(event) {
+	const cache = await caches.open(CACHE);
+	const cachedResponse = await cache.match(event.request);
+
+	const isNavigation =
+		event.request.mode === 'navigate' || event.request.headers.get('accept')?.includes('text/html');
+
+	// Start background update
+	const networkUpdate = fetch(event.request)
+		.then((response) => {
+			if (response && response.status === 200) {
 				cache.put(event.request, response.clone());
 			}
-
 			return response;
-		} catch (err) {
-			const response = await cache.match(event.request);
+		})
+		.catch(() => undefined);
 
-			if (response) {
-				console.log(`Returning from Cache`, event.request.url);
-				return response;
-			}
+	event.waitUntil(networkUpdate);
 
-			// if there's no cache, then just error out
-			// as there is nothing we can do to respond to this request
-			throw err;
+	// 1️⃣ Serve cache immediately
+	if (cachedResponse) {
+		return cachedResponse;
+	}
+
+	// 2️⃣ Try network
+	const networkResponse = await networkUpdate;
+	if (networkResponse) {
+		return networkResponse;
+	}
+
+	// 3️⃣ Offline navigation → serve SPA shell
+	if (isNavigation) {
+		const shell = await cache.match('/');
+		if (shell) {
+			return shell;
 		}
 	}
 
-	event.respondWith(respond());
-});
+	throw new Error('No cached response and network unavailable');
+}

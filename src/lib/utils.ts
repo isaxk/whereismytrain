@@ -1,6 +1,8 @@
+import bbox from '@turf/bbox';
 import { clsx, type ClassValue } from 'clsx';
 import dayjs from 'dayjs';
-import type { LngLatLike } from 'maplibre-gl';
+import type { Feature } from 'geojson';
+import type { LngLatBoundsLike, LngLatLike } from 'maplibre-gl';
 import { crossfade } from 'svelte/transition';
 import { twMerge } from 'tailwind-merge';
 

@@ -1,5 +1,6 @@
 import type { Board } from '$lib/types/index.js';
 import { error } from '@sveltejs/kit';
+import AllStationsJSON from '$lib/data/stations.json';
 
 export const load = async ({ params, fetch, url }) => {
 	const { crs } = params;
@@ -22,6 +23,19 @@ export const load = async ({ params, fetch, url }) => {
 		crs: crs.toUpperCase(),
 		to: to?.toUpperCase() ?? null,
 		board: getBoard(),
-		offset
+		offset,
+		map: (async () => ({
+			type: 'board',
+			from: [
+				AllStationsJSON.find((s) => s.crsCode === crs)?.long,
+				AllStationsJSON.find((s) => s.crsCode === crs)?.lat
+			],
+			to: to
+				? [
+						AllStationsJSON.find((s) => s.crsCode === to)?.long,
+						AllStationsJSON.find((s) => s.crsCode === to)?.lat
+					]
+				: null
+		}))()
 	};
 };

@@ -7,7 +7,7 @@ export const GET: RequestHandler = async ({ params }) => {
 	let formation: Carriage[] = [];
 
 	if (op === 'GW') {
-		console.log(`https://railinfo-api.gwr.com/trainoccupancy?trainUid=${uid}&date=${sdd}`);
+		// console.log(`https://railinfo-api.gwr.com/trainoccupancy?trainUid=${uid}&date=${sdd}`);
 		const response = await fetch(
 			`https://railinfo-api.gwr.com/trainoccupancy?trainUid=${uid}&date=${sdd}`
 		);

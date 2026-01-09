@@ -1,3 +1,3 @@
-import adapter from '@sveltejs/adapter-vercel';
+import adapter from '@sveltejs/adapter-auto';
 
 export default { kit: { adapter: adapter(), serviceWorker: { register: true } } };

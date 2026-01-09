@@ -188,10 +188,19 @@ export type MapDataLocationGroup = {
 	destination: ServiceLocationWithCoords;
 };
 
+export type MapData = ServiceMapData | BoardMapData;
+
 export type ServiceMapData = {
+	type: 'service';
 	locations: MapDataLocationGroup[];
 	tiplocData: {
 		tiploc: string;
 		coords: [number, number];
 	}[];
+};
+
+export type BoardMapData = {
+	type: 'board';
+	from: [number, number];
+	to: [number, number] | null;
 };

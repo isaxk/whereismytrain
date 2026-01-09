@@ -8,7 +8,7 @@
 	import Highlight from '../search/highlight.svelte';
 	import { onMount, tick } from 'svelte';
 	import { ChevronRight, Clock, X } from 'lucide-svelte';
-	import { goto } from '$app/navigation';
+	import { goto, preloadCode } from '$app/navigation';
 	import dayjs from 'dayjs';
 	import Button from '../ui/button/button.svelte';
 	import { dayjsFromHHmm, t } from '$lib/utils';
@@ -75,6 +75,12 @@
 			}
 		} else {
 			return `#`;
+		}
+	});
+
+	$effect(() => {
+		if (href !== '#') {
+			preloadCode(href);
 		}
 	});
 

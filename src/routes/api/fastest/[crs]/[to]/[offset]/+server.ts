@@ -26,8 +26,6 @@ export const GET: RequestHandler = async ({ params }) => {
 		}
 	}
 
-	console.log(url);
-
 	const response = await fetch(url, {
 		headers: shouldUseRailData
 			? {
@@ -44,7 +42,6 @@ export const GET: RequestHandler = async ({ params }) => {
 	const data = await response.json();
 
 	if (data.departures?.[0]?.service?.rid) {
-		console.log(data.departures[0].service?.rid);
 		const parsed = parseBoardItem(data.departures[0].service);
 		return json(parsed);
 	} else {

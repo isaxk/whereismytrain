@@ -10,6 +10,7 @@
 	import clsx from 'clsx';
 	import TrainIconByCategory from '../train/train-icon-by-category.svelte';
 	import { highlightedStation, paneHeight } from '$lib/state/map.svelte';
+	import { explicitEffect } from '$lib/state/utils.svelte';
 
 	let {
 		serviceData,
@@ -17,7 +18,8 @@
 		crs,
 		filter = null,
 		refreshing = false,
-		rid
+		rid,
+		onBounds = () => {}
 	}: {
 		serviceData: TrainService;
 		mapData: ServiceMapData;
@@ -25,7 +27,33 @@
 		filter?: string | null;
 		refreshing: boolean;
 		rid: string;
+		onBounds?: (bounds: [number, number][]) => void;
 	} = $props();
+
+	explicitEffect(
+		() => {
+			const flatten = mapData.locations.map((l) => l.lineLocations).flat();
+			const focusIndex = flatten.findIndex((l) => l.crs === page.data.crs);
+			const filterIndex = page.data.to
+				? flatten.findIndex((l) => l.crs === page.data.to)
+				: flatten.length - 1;
+			const train = mapData.locations[0]!.trainPosition ?? null;
+			const route = flatten.slice(focusIndex, filterIndex + 1);
+			if (paneHeight.current > 400) {
+				onBounds(train ? [...route.map((l) => l.coords), train] : route.map((l) => l.coords));
+			} else {
+				onBounds(
+					mapData.locations[0].trainPosition
+						? [
+								...(mapData.tiplocData.map((t) => t.coords) ?? []),
+								mapData.locations[0].trainPosition
+							]
+						: (mapData.tiplocData.map((t) => t.coords) ?? [])
+				);
+			}
+		},
+		() => [mapData, paneHeight.current]
+	);
 </script>
 
 {#if mapData}

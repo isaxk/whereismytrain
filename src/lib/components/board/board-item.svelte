@@ -10,6 +10,7 @@
 	import Button from '../ui/button/button.svelte';
 	import { size } from 'zod';
 	import { cn, dayjsFromHHmm } from '$lib/utils';
+	import { preloadCode } from '$app/navigation';
 
 	let {
 		crs,
@@ -75,6 +76,12 @@
 	let oldisCancelled = $state(isCancelled);
 	let oldisFilterCancelled = $state(isFilterCancelled);
 	let oldFilter = $state(filter);
+
+	$effect(() => {
+		if (href !== '#') {
+			preloadCode(href);
+		}
+	});
 
 	explicitEffect(
 		() => {

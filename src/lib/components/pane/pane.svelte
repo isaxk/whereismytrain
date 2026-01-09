@@ -22,7 +22,7 @@
 					middle: { enabled: true, height: 500, bounce: true },
 					bottom: { enabled: true, height: 150, bounce: true }
 				},
-				events: { onDrag: (event) => console.log('Drag event', event) },
+				events: {},
 				buttonDestroy: false
 			});
 
