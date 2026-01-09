@@ -47,28 +47,11 @@
 
 	const refreshed = $derived.by(() => {
 		// console.log(Date.now() - data.lastRefreshed);
-		if (data.lastRefreshed && Date.now() - data.lastRefreshed > 20000) {
+		if (data.lastRefreshed && now.diff(dayjs(data.lastRefreshed)) > 25000) {
 			return false;
 		}
 		return true;
 	});
-
-	async function refetch() {
-		const res = await fetch(`/api/service/${data.service_id}/${data.focusCrs}`);
-		if (res.ok) {
-			const s = await res.json();
-			if (s) {
-				service = s;
-				if (saved.value.find((s) => s.id === data.id)) {
-					saved.value.find((s) => s.id === data.id)!.service = s;
-				}
-			} else {
-				saved.value = saved.value.filter((s) => s.id !== data.id);
-			}
-		} else {
-			return null;
-		}
-	}
 
 	function remove() {
 		if (data.subscriptionId) {
@@ -358,8 +341,8 @@
 <div
 	class={[
 		'relative min-h-[176px] py-3 transition-all duration-300',
-		!refreshed && 'opacity-40',
-		refreshing.current && !refreshed && 'animate-pulse'
+		!refreshed && !refreshing.current ? 'opacity-40' : 'opacity-100',
+		!refreshed && refreshing.current ? 'animate-pulse' : ''
 	]}
 >
 	<!-- {#if !focus?.departed}

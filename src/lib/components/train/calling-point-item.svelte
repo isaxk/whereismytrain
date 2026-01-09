@@ -89,7 +89,7 @@
 						: 'opacity-50'
 		]}
 	>
-		{#if (['filter', 'subsequent', 'post-destination', 'further'].includes(newCp.order) && newCp.times.plan.arr && !(newCp.departureCancelled && !newCp.arrivalCancelled)) || !newCp.times.plan.dep || (newCp.departureCancelled && !newCp.arrivalCancelled)}
+		{#if (['filter', 'subsequent', 'post-destination', 'further'].includes(newCp.order) && newCp.times.plan.arr && !(newCp.arrivalCancelled && !newCp.departureCancelled)) || !newCp.times.plan.dep || (!newCp.arrivalCancelled && newCp.departureCancelled)}
 			<div
 				class={[
 					'flex w-10 min-w-10 origin-left flex-col items-end',
