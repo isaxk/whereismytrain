@@ -91,3 +91,23 @@ async function cacheFirstWithSpaFallback(event) {
 
 	throw new Error('No cached response and network unavailable');
 }
+
+self.addEventListener('message', (event) => {
+	if (event.data?.type === 'GET_VERSION') {
+		console.log('SW received message wow cool', event.data, 'ports', event.ports);
+		if (event.data?.type === 'GET_VERSION') {
+			const port = event.ports[0];
+			if (port) {
+				port.postMessage(version);
+			} else {
+				console.warn('No port received!');
+			}
+		}
+	}
+
+	if (event.data?.type === 'SKIP_WAITING') {
+		self.skipWaiting();
+	}
+});
+
+// update test new sw
