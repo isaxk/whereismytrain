@@ -70,9 +70,10 @@ export const GET: RequestHandler = async ({ params }) => {
 				category: typeof m.category === 'number' ? m.category : Category[m.category],
 				severity:
 					typeof m.severity === 'number' ? m.severity : (Severity[m.severity.toLowerCase()] ?? 0),
-				xhtmlMessage: m.xhtmlMessage
-					.replace('Latest information can be found in', '')
-					.replace('Status and Disruptions.', 'More info')
+				xhtmlMessage: m.xhtmlMessage.replace(
+					/More information can be found in\s*<a href="([^"]+)">[^<]+<\/a>/,
+					'<a href="$1">More info</a>'
+				)
 			}));
 
 		const board: Board = {
