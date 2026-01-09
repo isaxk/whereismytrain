@@ -62,7 +62,7 @@
 	class="fixed top-0 right-0 left-0 flex h-18 w-full flex-col justify-center rounded-t-2xl border-b border-border bg-background px-4"
 >
 	<div class="flex items-center justify-start gap-2">
-		<div class="grow text-3xl font-bold">Where is my train? dudum13</div>
+		<div class="grow text-3xl font-bold">Where is my train?</div>
 		{#if refreshing.current}
 			<Spinner />
 		{/if}
