@@ -1,26 +1,16 @@
 <script lang="ts">
-	import { page } from '$app/state';
+	import { ArrowDownRight, ArrowUpRight, X } from 'lucide-svelte';
+
+	import { highlightedStation } from '$lib/state/map.svelte';
 	import { explicitEffect } from '$lib/state/utils.svelte';
 	import type { CallingPoint, Operator } from '$lib/types';
-	import Check from '@lucide/svelte/icons/check';
-	import {
-		ArrowDownRight,
-		ArrowDownRightFromCircle,
-		ArrowRight,
-		ArrowUpRight,
-		ClockAlertIcon,
-		Train,
-		TrainFront,
-		TramFront,
-		X
-	} from 'lucide-svelte';
-	import { slide } from 'svelte/transition';
+	import { t } from '$lib/utils';
+
 	import ChangeNotifier from '../board/change-notifier.svelte';
-	import Button from '../ui/button/button.svelte';
-	import { dayjsFromHHmm, t } from '$lib/utils';
-	import * as DropdownMenu from '../ui/dropdown-menu';
+
 	import TrainIconByCategory from './train-icon-by-category.svelte';
-	import { highlightedStation } from '$lib/state/map.svelte';
+
+	const { send, receive } = t;
 
 	let {
 		cp,
@@ -60,7 +50,7 @@
 	let elm: HTMLDivElement;
 
 	$effect(() => {
-		if (highlightedStation.current === cp.crs + cp.rtDepDate) {
+		if (highlightedStation.current === cp.crs + (cp.rtDepDate || '')) {
 			elm.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'center' });
 			setTimeout(() => {
 				highlightedStation.current = null;
@@ -73,7 +63,7 @@
 	bind:this={elm}
 	class={[
 		'flex h-12 items-center gap-2 rounded-xl px-2 transition-all',
-		highlightedStation.current === cp.crs + cp.rtDepDate && 'animate-pulse bg-amber-100'
+		highlightedStation.current === cp.crs + (cp.rtDepDate || '') && 'animate-pulse bg-amber-100'
 	]}
 >
 	<div
@@ -83,10 +73,10 @@
 			newCp.order === 'focus' || newCp.order === 'filter'
 				? 'font-medium'
 				: newCp.order === 'further'
-					? 'opacity-40'
+					? 'opacity-80'
 					: newCp.order === 'post-destination'
-						? 'opacity-25'
-						: 'opacity-50'
+						? 'opacity-60'
+						: 'opacity-100'
 		]}
 	>
 		{#if (['filter', 'subsequent', 'post-destination', 'further'].includes(newCp.order) && newCp.times.plan.arr && !(newCp.arrivalCancelled && !newCp.departureCancelled)) || !newCp.times.plan.dep || (!newCp.arrivalCancelled && newCp.departureCancelled)}
@@ -184,17 +174,11 @@
 		{/if}
 	</div>
 
-	{#snippet crsBlob(crs: string)}
-		<div class="relative h-1.5 w-1.5">
-			<div class="absolute h-8 w-8 text-[10px]" style:background={operator.color}>{crs}</div>
-		</div>
-	{/snippet}
-
 	<div
 		class={[
 			'relative flex h-full flex-col items-center justify-center',
 			newCp.inDivision ? 'min-w-12 pl-4' : 'min-w-8 pl-0',
-			newCp.isPostDestination || greyLine ? 'opacity-50' : ''
+			newCp.isPostDestination || greyLine ? 'opacity-75' : ''
 		]}
 	>
 		{#if cp.isOrigin || newCp.startJoin}
@@ -208,12 +192,12 @@
 		{:else if newCp.isDestination || (newCp.departureCancelled && !newCp.isCancelled)}
 			<div style:background={operator.color} class="w-1.5 grow bg-black"></div>
 			<div style:background={operator.color} class="h-1.5 w-4"></div>
-			<div style:background={operator.color} class="w-1.5 grow bg-black opacity-50"></div>
+			<div style:background={operator.color} class="w-1.5 grow bg-black opacity-75"></div>
 		{:else}
 			<div style:background={operator.color} class="w-1.5 grow bg-black"></div>
 			<div class="flex w-4">
 				<div class="w-[5px]"></div>
-				<div style:background={operator.color} class={['h-1.5 w-[6px]']}></div>
+				<div style:background={operator.color} class={['h-1.5 w-1.5']}></div>
 				<div
 					style:background={operator.color}
 					class={['h-1.5 grow', cp.isCancelled && 'opacity-50']}
@@ -224,10 +208,10 @@
 		{#if (newCp.departed || newCp.isCancelled) && newCp.showTrain && showTrain}
 			<div
 				class="absolute top-9 z-10"
-				in:t.receive|global={{
+				in:receive|global={{
 					key: newCp.inDivision ? 'train-pos-icon-division' : 'train-pos-icon-'
 				}}
-				out:t.send|global={{
+				out:send|global={{
 					key: newCp.inDivision ? 'train-pos-icon-division' : 'train-pos-icon-'
 				}}
 			>
@@ -242,10 +226,10 @@
 		{:else if newCp.arrived && newCp.showTrain && showTrain}
 			<div
 				class="absolute top-1/2 z-10 -translate-y-1/2"
-				in:t.receive|global={{
+				in:receive|global={{
 					key: newCp.inDivision ? 'train-pos-icon-division' : 'train-pos-icon-'
 				}}
-				out:t.send|global={{
+				out:send|global={{
 					key: newCp.inDivision ? 'train-pos-icon-division' : 'train-pos-icon-'
 				}}
 			>

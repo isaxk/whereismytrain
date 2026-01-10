@@ -1,14 +1,16 @@
 <script lang="ts">
 	import { onNavigate } from '$app/navigation';
-	import { paneHeight } from '$lib/state/map.svelte';
+
 	import { CupertinoPane } from 'cupertino-pane';
-	import type { Snippet } from 'svelte';
 	import { MediaQuery } from 'svelte/reactivity';
+
+	import { paneHeight } from '$lib/state/map.svelte';
+
+	import type { Snippet } from 'svelte';
 
 	let { children }: { children: Snippet } = $props();
 
 	let paneElm: HTMLDivElement | undefined = $state();
-	let mounted = $state(false);
 	let pane: CupertinoPane;
 	const lg = new MediaQuery('(min-width: 1024px)');
 

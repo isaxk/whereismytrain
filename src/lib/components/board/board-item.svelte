@@ -1,20 +1,16 @@
 <script lang="ts">
-	import { page } from '$app/state';
-	import { saved } from '$lib/state/saved.svelte';
-	import { explicitEffect } from '$lib/state/utils.svelte';
-	import type { BoardItem, DestinationOrigin, Operator, SavedTrain } from '$lib/types';
-	import dayjs from 'dayjs';
-	import { ArrowDownRight, Bus, Check, ClockAlert, GitCompareArrowsIcon, X } from 'lucide-svelte';
-	import { onMount } from 'svelte';
-	import ChangeNotifier from './change-notifier.svelte';
-	import Button from '../ui/button/button.svelte';
-	import { size } from 'zod';
-	import { cn, dayjsFromHHmm } from '$lib/utils';
 	import { preloadCode } from '$app/navigation';
 
+	import dayjs from 'dayjs';
+	import { ArrowDownRight, Bus, Check, ClockAlert, GitCompareArrowsIcon, X } from 'lucide-svelte';
+
+	import { explicitEffect } from '$lib/state/utils.svelte';
+	import type { DestinationOrigin, Operator } from '$lib/types';
+	import { cn } from '$lib/utils';
+
+	import ChangeNotifier from './change-notifier.svelte';
+
 	let {
-		crs,
-		id,
 		href,
 		trainid,
 		uid,
@@ -22,7 +18,7 @@
 		isFilterCancelled = false,
 		rtDep,
 		planDep,
-		delay = null,
+
 		departed,
 		focus = null,
 		destination,
@@ -35,8 +31,6 @@
 		filterName = null,
 		connection = null
 	}: {
-		crs: string;
-		id: string;
 		href: string;
 		trainid?: string;
 		uid?: string;
@@ -44,7 +38,6 @@
 		isFilterCancelled?: boolean;
 		rtDep: string | null;
 		planDep: string;
-		delay?: number | null;
 		departed: boolean;
 		focus?: string | null;
 		destination: DestinationOrigin[];
@@ -98,13 +91,6 @@
 		() => [rtDep, departed, platform, isCancelled, isFilterCancelled, filter]
 	);
 </script>
-
-{#snippet figure(image)}
-	<figure>
-		<img src={image.src} alt={image.caption} width={image.width} height={image.height} />
-		<figcaption>{image.caption}</figcaption>
-	</figure>
-{/snippet}
 
 <a
 	{href}
@@ -278,14 +264,3 @@
 		</div>
 	{/if}
 </a>
-<!-- <div class="flex">
-	<Button size="sm" onclick={() => (departed = true)}>Depart</Button>
-	<Button size="sm" onclick={() => (rtDep = dayjsFromHHmm(rtDep).add(5, 'minutes').format('HH:mm'))}
-		>Delay</Button
-	>
-	<Button size="sm" onclick={() => (isCancelled = !isCancelled)}>Cancel</Button>
-	<Button size="sm" onclick={() => (platform = Math.floor(Math.random() * 10).toString())}
-		>Platform</Button
-	>
-	<Button size="sm" onclick={() => (isFilterCancelled = !isFilterCancelled)}>Filter Cancel</Button>
-</div> -->

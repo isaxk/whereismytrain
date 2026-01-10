@@ -1,14 +1,14 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import Formation from './formation.svelte';
+	import { getKnownFormation } from '$lib/data/formations';
 	import type { Carriage } from '$lib/types';
-	import { getKnownFormation, knownFormations } from '$lib/data/formations';
+
+	import Formation from './formation.svelte';
 
 	let { op, crs, sdd, uid, length, placeholder, destinations } = $props();
 
 	console.log('length', length);
 
-	async function getFormation(op, length, destinations) {
+	async function getFormation(op: string, length: number, destinations: string[]) {
 		const knownFormation = getKnownFormation(op, length, destinations);
 		console.log('knownFormation', knownFormation);
 		if (knownFormation) {
@@ -27,8 +27,6 @@
 			if (d) data = d;
 		});
 	});
-
-	$inspect(data);
 </script>
 
 {#if data}

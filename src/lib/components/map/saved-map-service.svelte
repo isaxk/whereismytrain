@@ -1,8 +1,8 @@
 <script lang="ts">
-	import type { ServiceMapData, TrainService } from '$lib/types';
-	import { onMount } from 'svelte';
-	import MapService from './map-service.svelte';
 	import { refreshing, servicesSub } from '$lib/state/services-subscriber.svelte';
+	import type { ServiceMapData, TrainService } from '$lib/types';
+
+	import MapService from './map-service.svelte';
 
 	let { rid, crs, filter = null } = $props();
 

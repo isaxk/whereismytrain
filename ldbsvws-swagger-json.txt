@@ -1,0 +1,2307 @@
+{
+   "swagger": "2.0",
+   "info":    {
+      "version": "v1",
+      "title": "LDBSVWebService"
+   },
+   "host": "realtime.nationalrail.co.uk",
+   "basePath": "/LDBSVWS",
+   "schemes": ["https"],
+   "paths":    {
+      "/api/ref/20211101/GetReasonCode/{reasonCode}": {"get":       {
+         "tags": ["_20211101Ref"],
+         "operationId": "_20211101Ref_GetReasonCode",
+         "consumes": [],
+         "produces":          [
+            "application/json",
+            "text/json",
+            "application/xml",
+            "text/xml"
+         ],
+         "parameters": [         {
+            "name": "reasonCode",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "format": "int32"
+         }],
+         "responses": {"200":          {
+            "description": "OK",
+            "schema": {"$ref": "#/definitions/ReasonDescription"}
+         }}
+      }},
+      "/api/ref/20211101/GetReasonCodeList": {"get":       {
+         "tags": ["_20211101Ref"],
+         "operationId": "_20211101Ref_GetReasonCodeList",
+         "consumes": [],
+         "produces":          [
+            "application/json",
+            "text/json",
+            "application/xml",
+            "text/xml"
+         ],
+         "responses": {"200":          {
+            "description": "OK",
+            "schema":             {
+               "type": "array",
+               "items": {"$ref": "#/definitions/ReasonDescription"}
+            }
+         }}
+      }},
+      "/api/ref/20211101/GetSourceInstanceNames": {"get":       {
+         "tags": ["_20211101Ref"],
+         "operationId": "_20211101Ref_GetSourceInstanceNames",
+         "consumes": [],
+         "produces":          [
+            "application/json",
+            "text/json",
+            "application/xml",
+            "text/xml"
+         ],
+         "responses": {"200":          {
+            "description": "OK",
+            "schema":             {
+               "type": "array",
+               "items": {"$ref": "#/definitions/SourceInstanceName"}
+            }
+         }}
+      }},
+      "/api/ref/20211101/GetTOCList/{currentVersion}": {"get":       {
+         "tags": ["_20211101Ref"],
+         "operationId": "_20211101Ref_GetTOCList",
+         "consumes": [],
+         "produces":          [
+            "application/json",
+            "text/json",
+            "application/xml",
+            "text/xml"
+         ],
+         "parameters": [         {
+            "name": "currentVersion",
+            "in": "path",
+            "required": true,
+            "type": "string"
+         }],
+         "responses": {"200":          {
+            "description": "OK",
+            "schema": {"$ref": "#/definitions/TOCRefData"}
+         }}
+      }},
+      "/api/ref/20211101/GetStationList/{currentVersion}": {"get":       {
+         "tags": ["_20211101Ref"],
+         "operationId": "_20211101Ref_GetStationList",
+         "consumes": [],
+         "produces":          [
+            "application/json",
+            "text/json",
+            "application/xml",
+            "text/xml"
+         ],
+         "parameters": [         {
+            "name": "currentVersion",
+            "in": "path",
+            "required": true,
+            "type": "string"
+         }],
+         "responses": {"200":          {
+            "description": "OK",
+            "schema": {"$ref": "#/definitions/StationRefData"}
+         }}
+      }},
+      "/api/ref/20211101/GetLoadingCategoryData/{currentVersion}": {"get":       {
+         "tags": ["_20211101Ref"],
+         "operationId": "_20211101Ref_GetLoadingCategoryList",
+         "consumes": [],
+         "produces":          [
+            "application/json",
+            "text/json",
+            "application/xml",
+            "text/xml"
+         ],
+         "parameters": [         {
+            "name": "currentVersion",
+            "in": "path",
+            "required": true,
+            "type": "string"
+         }],
+         "responses": {"200":          {
+            "description": "OK",
+            "schema": {"$ref": "#/definitions/LoadingCategoryRefData"}
+         }}
+      }},
+      "/api/20220120/GetArrivalDepartureBoardByCRS/{crs}/{time}": {"get":       {
+         "tags": ["_20220120"],
+         "operationId": "_20220120_GetArrivalDepartureBoardByCRS",
+         "consumes": [],
+         "produces":          [
+            "application/json",
+            "text/json",
+            "application/xml",
+            "text/xml"
+         ],
+         "parameters":          [
+                        {
+               "name": "crs",
+               "in": "path",
+               "required": true,
+               "type": "string"
+            },
+                        {
+               "name": "time",
+               "in": "path",
+               "required": true,
+               "type": "string"
+            },
+                        {
+               "name": "numRows",
+               "in": "query",
+               "required": false,
+               "type": "integer",
+               "format": "int32",
+               "default": "10"
+            },
+                        {
+               "name": "timeWindow",
+               "in": "query",
+               "required": false,
+               "type": "integer",
+               "format": "int32",
+               "default": "120"
+            },
+                        {
+               "name": "filterCRS",
+               "in": "query",
+               "required": false,
+               "type": "string",
+               "default": "null"
+            },
+                        {
+               "name": "filterType",
+               "in": "query",
+               "required": false,
+               "type": "string",
+               "default": "to",
+               "enum":                [
+                  "to",
+                  "from"
+               ]
+            },
+                        {
+               "name": "filterTOC",
+               "in": "query",
+               "required": false,
+               "type": "string",
+               "default": "null"
+            },
+                        {
+               "name": "services",
+               "in": "query",
+               "required": false,
+               "type": "string",
+               "default": "P"
+            },
+                        {
+               "name": "getNonPassengerServices",
+               "in": "query",
+               "required": false,
+               "type": "boolean",
+               "default": "false"
+            }
+         ],
+         "responses": {"200":          {
+            "description": "OK",
+            "schema": {"$ref": "#/definitions/StationBoard"}
+         }}
+      }},
+      "/api/20220120/GetArrivalDepartureBoardByTIPLOC/{tiploc}/{time}": {"get":       {
+         "tags": ["_20220120"],
+         "operationId": "_20220120_GetArrivalDepartureBoardByTIPLOC",
+         "consumes": [],
+         "produces":          [
+            "application/json",
+            "text/json",
+            "application/xml",
+            "text/xml"
+         ],
+         "parameters":          [
+                        {
+               "name": "tiploc",
+               "in": "path",
+               "required": true,
+               "type": "string"
+            },
+                        {
+               "name": "time",
+               "in": "path",
+               "required": true,
+               "type": "string"
+            },
+                        {
+               "name": "numRows",
+               "in": "query",
+               "required": false,
+               "type": "integer",
+               "format": "int32",
+               "default": "10"
+            },
+                        {
+               "name": "timeWindow",
+               "in": "query",
+               "required": false,
+               "type": "integer",
+               "format": "int32",
+               "default": "120"
+            },
+                        {
+               "name": "filterCRS",
+               "in": "query",
+               "required": false,
+               "type": "string",
+               "default": "null"
+            },
+                        {
+               "name": "filterType",
+               "in": "query",
+               "required": false,
+               "type": "string",
+               "default": "to",
+               "enum":                [
+                  "to",
+                  "from"
+               ]
+            },
+                        {
+               "name": "filterTOC",
+               "in": "query",
+               "required": false,
+               "type": "string",
+               "default": "null"
+            },
+                        {
+               "name": "services",
+               "in": "query",
+               "required": false,
+               "type": "string",
+               "default": "P"
+            },
+                        {
+               "name": "getNonPassengerServices",
+               "in": "query",
+               "required": false,
+               "type": "boolean",
+               "default": "false"
+            }
+         ],
+         "responses": {"200":          {
+            "description": "OK",
+            "schema": {"$ref": "#/definitions/StationBoard"}
+         }}
+      }},
+      "/api/20220120/GetArrivalBoardByCRS/{crs}/{time}": {"get":       {
+         "tags": ["_20220120"],
+         "operationId": "_20220120_GetArrivalBoardByCRS",
+         "consumes": [],
+         "produces":          [
+            "application/json",
+            "text/json",
+            "application/xml",
+            "text/xml"
+         ],
+         "parameters":          [
+                        {
+               "name": "crs",
+               "in": "path",
+               "required": true,
+               "type": "string"
+            },
+                        {
+               "name": "time",
+               "in": "path",
+               "required": true,
+               "type": "string"
+            },
+                        {
+               "name": "numRows",
+               "in": "query",
+               "required": false,
+               "type": "integer",
+               "format": "int32",
+               "default": "10"
+            },
+                        {
+               "name": "timeWindow",
+               "in": "query",
+               "required": false,
+               "type": "integer",
+               "format": "int32",
+               "default": "120"
+            },
+                        {
+               "name": "filterCRS",
+               "in": "query",
+               "required": false,
+               "type": "string",
+               "default": "null"
+            },
+                        {
+               "name": "filterType",
+               "in": "query",
+               "required": false,
+               "type": "string",
+               "default": "to",
+               "enum":                [
+                  "to",
+                  "from"
+               ]
+            },
+                        {
+               "name": "filterTOC",
+               "in": "query",
+               "required": false,
+               "type": "string",
+               "default": "null"
+            },
+                        {
+               "name": "services",
+               "in": "query",
+               "required": false,
+               "type": "string",
+               "default": "P"
+            },
+                        {
+               "name": "getNonPassengerServices",
+               "in": "query",
+               "required": false,
+               "type": "boolean",
+               "default": "false"
+            }
+         ],
+         "responses": {"200":          {
+            "description": "OK",
+            "schema": {"$ref": "#/definitions/StationBoard"}
+         }}
+      }},
+      "/api/20220120/GetArrivalBoardByTIPLOC/{tiploc}/{time}": {"get":       {
+         "tags": ["_20220120"],
+         "operationId": "_20220120_GetArrivalBoardByTIPLOC",
+         "consumes": [],
+         "produces":          [
+            "application/json",
+            "text/json",
+            "application/xml",
+            "text/xml"
+         ],
+         "parameters":          [
+                        {
+               "name": "tiploc",
+               "in": "path",
+               "required": true,
+               "type": "string"
+            },
+                        {
+               "name": "time",
+               "in": "path",
+               "required": true,
+               "type": "string"
+            },
+                        {
+               "name": "numRows",
+               "in": "query",
+               "required": false,
+               "type": "integer",
+               "format": "int32",
+               "default": "10"
+            },
+                        {
+               "name": "timeWindow",
+               "in": "query",
+               "required": false,
+               "type": "integer",
+               "format": "int32",
+               "default": "120"
+            },
+                        {
+               "name": "filterCRS",
+               "in": "query",
+               "required": false,
+               "type": "string",
+               "default": "null"
+            },
+                        {
+               "name": "filterType",
+               "in": "query",
+               "required": false,
+               "type": "string",
+               "default": "to",
+               "enum":                [
+                  "to",
+                  "from"
+               ]
+            },
+                        {
+               "name": "filterTOC",
+               "in": "query",
+               "required": false,
+               "type": "string",
+               "default": "null"
+            },
+                        {
+               "name": "services",
+               "in": "query",
+               "required": false,
+               "type": "string",
+               "default": "P"
+            },
+                        {
+               "name": "getNonPassengerServices",
+               "in": "query",
+               "required": false,
+               "type": "boolean",
+               "default": "false"
+            }
+         ],
+         "responses": {"200":          {
+            "description": "OK",
+            "schema": {"$ref": "#/definitions/StationBoard"}
+         }}
+      }},
+      "/api/20220120/GetDepartureBoardByCRS/{crs}/{time}": {"get":       {
+         "tags": ["_20220120"],
+         "operationId": "_20220120_GetDepartureBoardByCRS",
+         "consumes": [],
+         "produces":          [
+            "application/json",
+            "text/json",
+            "application/xml",
+            "text/xml"
+         ],
+         "parameters":          [
+                        {
+               "name": "crs",
+               "in": "path",
+               "required": true,
+               "type": "string"
+            },
+                        {
+               "name": "time",
+               "in": "path",
+               "required": true,
+               "type": "string"
+            },
+                        {
+               "name": "numRows",
+               "in": "query",
+               "required": false,
+               "type": "integer",
+               "format": "int32",
+               "default": "10"
+            },
+                        {
+               "name": "timeWindow",
+               "in": "query",
+               "required": false,
+               "type": "integer",
+               "format": "int32",
+               "default": "120"
+            },
+                        {
+               "name": "filterCRS",
+               "in": "query",
+               "required": false,
+               "type": "string",
+               "default": "null"
+            },
+                        {
+               "name": "filterType",
+               "in": "query",
+               "required": false,
+               "type": "string",
+               "default": "to",
+               "enum":                [
+                  "to",
+                  "from"
+               ]
+            },
+                        {
+               "name": "filterTOC",
+               "in": "query",
+               "required": false,
+               "type": "string",
+               "default": "null"
+            },
+                        {
+               "name": "services",
+               "in": "query",
+               "required": false,
+               "type": "string",
+               "default": "P"
+            },
+                        {
+               "name": "getNonPassengerServices",
+               "in": "query",
+               "required": false,
+               "type": "boolean",
+               "default": "false"
+            }
+         ],
+         "responses": {"200":          {
+            "description": "OK",
+            "schema": {"$ref": "#/definitions/StationBoard"}
+         }}
+      }},
+      "/api/20220120/GetDepartureBoardByTIPLOC/{tiploc}/{time}": {"get":       {
+         "tags": ["_20220120"],
+         "operationId": "_20220120_GetDepartureBoardByTIPLOC",
+         "consumes": [],
+         "produces":          [
+            "application/json",
+            "text/json",
+            "application/xml",
+            "text/xml"
+         ],
+         "parameters":          [
+                        {
+               "name": "tiploc",
+               "in": "path",
+               "required": true,
+               "type": "string"
+            },
+                        {
+               "name": "time",
+               "in": "path",
+               "required": true,
+               "type": "string"
+            },
+                        {
+               "name": "numRows",
+               "in": "query",
+               "required": false,
+               "type": "integer",
+               "format": "int32",
+               "default": "10"
+            },
+                        {
+               "name": "timeWindow",
+               "in": "query",
+               "required": false,
+               "type": "integer",
+               "format": "int32",
+               "default": "120"
+            },
+                        {
+               "name": "filterCRS",
+               "in": "query",
+               "required": false,
+               "type": "string",
+               "default": "null"
+            },
+                        {
+               "name": "filterType",
+               "in": "query",
+               "required": false,
+               "type": "string",
+               "default": "to",
+               "enum":                [
+                  "to",
+                  "from"
+               ]
+            },
+                        {
+               "name": "filterTOC",
+               "in": "query",
+               "required": false,
+               "type": "string",
+               "default": "null"
+            },
+                        {
+               "name": "services",
+               "in": "query",
+               "required": false,
+               "type": "string",
+               "default": "P"
+            },
+                        {
+               "name": "getNonPassengerServices",
+               "in": "query",
+               "required": false,
+               "type": "boolean",
+               "default": "false"
+            }
+         ],
+         "responses": {"200":          {
+            "description": "OK",
+            "schema": {"$ref": "#/definitions/StationBoard"}
+         }}
+      }},
+      "/api/20220120/GetArrBoardWithDetails/{crs}/{time}": {"get":       {
+         "tags": ["_20220120"],
+         "operationId": "_20220120_GetArrBoardWithDetails",
+         "consumes": [],
+         "produces":          [
+            "application/json",
+            "text/json",
+            "application/xml",
+            "text/xml"
+         ],
+         "parameters":          [
+                        {
+               "name": "crs",
+               "in": "path",
+               "required": true,
+               "type": "string"
+            },
+                        {
+               "name": "time",
+               "in": "path",
+               "required": true,
+               "type": "string"
+            },
+                        {
+               "name": "numRows",
+               "in": "query",
+               "required": false,
+               "type": "integer",
+               "format": "int32",
+               "default": "10"
+            },
+                        {
+               "name": "timeWindow",
+               "in": "query",
+               "required": false,
+               "type": "integer",
+               "format": "int32",
+               "default": "120"
+            },
+                        {
+               "name": "filterCRS",
+               "in": "query",
+               "required": false,
+               "type": "string",
+               "default": "null"
+            },
+                        {
+               "name": "filterType",
+               "in": "query",
+               "required": false,
+               "type": "string",
+               "default": "to",
+               "enum":                [
+                  "to",
+                  "from"
+               ]
+            },
+                        {
+               "name": "filterTOC",
+               "in": "query",
+               "required": false,
+               "type": "string",
+               "default": "null"
+            },
+                        {
+               "name": "services",
+               "in": "query",
+               "required": false,
+               "type": "string",
+               "default": "P"
+            },
+                        {
+               "name": "getNonPassengerServices",
+               "in": "query",
+               "required": false,
+               "type": "boolean",
+               "default": "false"
+            }
+         ],
+         "responses": {"200":          {
+            "description": "OK",
+            "schema": {"$ref": "#/definitions/StationBoardWithDetails"}
+         }}
+      }},
+      "/api/20220120/GetDepBoardWithDetails/{crs}/{time}": {"get":       {
+         "tags": ["_20220120"],
+         "operationId": "_20220120_GetDepBoardWithDetails",
+         "consumes": [],
+         "produces":          [
+            "application/json",
+            "text/json",
+            "application/xml",
+            "text/xml"
+         ],
+         "parameters":          [
+                        {
+               "name": "crs",
+               "in": "path",
+               "required": true,
+               "type": "string"
+            },
+                        {
+               "name": "time",
+               "in": "path",
+               "required": true,
+               "type": "string"
+            },
+                        {
+               "name": "numRows",
+               "in": "query",
+               "required": false,
+               "type": "integer",
+               "format": "int32",
+               "default": "10"
+            },
+                        {
+               "name": "timeWindow",
+               "in": "query",
+               "required": false,
+               "type": "integer",
+               "format": "int32",
+               "default": "120"
+            },
+                        {
+               "name": "filterCRS",
+               "in": "query",
+               "required": false,
+               "type": "string",
+               "default": "null"
+            },
+                        {
+               "name": "filterType",
+               "in": "query",
+               "required": false,
+               "type": "string",
+               "default": "to",
+               "enum":                [
+                  "to",
+                  "from"
+               ]
+            },
+                        {
+               "name": "filterTOC",
+               "in": "query",
+               "required": false,
+               "type": "string",
+               "default": "null"
+            },
+                        {
+               "name": "services",
+               "in": "query",
+               "required": false,
+               "type": "string",
+               "default": "P"
+            },
+                        {
+               "name": "getNonPassengerServices",
+               "in": "query",
+               "required": false,
+               "type": "boolean",
+               "default": "false"
+            }
+         ],
+         "responses": {"200":          {
+            "description": "OK",
+            "schema": {"$ref": "#/definitions/StationBoardWithDetails"}
+         }}
+      }},
+      "/api/20220120/GetArrDepBoardWithDetails/{crs}/{time}": {"get":       {
+         "tags": ["_20220120"],
+         "operationId": "_20220120_GetArrDepBoardWithDetails",
+         "consumes": [],
+         "produces":          [
+            "application/json",
+            "text/json",
+            "application/xml",
+            "text/xml"
+         ],
+         "parameters":          [
+                        {
+               "name": "crs",
+               "in": "path",
+               "required": true,
+               "type": "string"
+            },
+                        {
+               "name": "time",
+               "in": "path",
+               "required": true,
+               "type": "string"
+            },
+                        {
+               "name": "numRows",
+               "in": "query",
+               "required": false,
+               "type": "integer",
+               "format": "int32",
+               "default": "10"
+            },
+                        {
+               "name": "timeWindow",
+               "in": "query",
+               "required": false,
+               "type": "integer",
+               "format": "int32",
+               "default": "120"
+            },
+                        {
+               "name": "filterCRS",
+               "in": "query",
+               "required": false,
+               "type": "string",
+               "default": "null"
+            },
+                        {
+               "name": "filterType",
+               "in": "query",
+               "required": false,
+               "type": "string",
+               "default": "to",
+               "enum":                [
+                  "to",
+                  "from"
+               ]
+            },
+                        {
+               "name": "filterTOC",
+               "in": "query",
+               "required": false,
+               "type": "string",
+               "default": "null"
+            },
+                        {
+               "name": "services",
+               "in": "query",
+               "required": false,
+               "type": "string",
+               "default": "P"
+            },
+                        {
+               "name": "getNonPassengerServices",
+               "in": "query",
+               "required": false,
+               "type": "boolean",
+               "default": "false"
+            }
+         ],
+         "responses": {"200":          {
+            "description": "OK",
+            "schema": {"$ref": "#/definitions/StationBoardWithDetails"}
+         }}
+      }},
+      "/api/20220120/GetFastestDepartures/{crs}/{filterList}/{time}": {"get":       {
+         "tags": ["_20220120"],
+         "operationId": "_20220120_GetFastestDepartures",
+         "consumes": [],
+         "produces":          [
+            "application/json",
+            "text/json",
+            "application/xml",
+            "text/xml"
+         ],
+         "parameters":          [
+                        {
+               "name": "crs",
+               "in": "path",
+               "required": true,
+               "type": "string"
+            },
+                        {
+               "name": "filterList",
+               "in": "path",
+               "required": true,
+               "type": "string"
+            },
+                        {
+               "name": "time",
+               "in": "path",
+               "required": true,
+               "type": "string"
+            },
+                        {
+               "name": "timeWindow",
+               "in": "query",
+               "required": false,
+               "type": "integer",
+               "format": "int32",
+               "default": "120"
+            },
+                        {
+               "name": "filterTOC",
+               "in": "query",
+               "required": false,
+               "type": "string",
+               "default": "null"
+            },
+                        {
+               "name": "services",
+               "in": "query",
+               "required": false,
+               "type": "string",
+               "default": "P"
+            }
+         ],
+         "responses": {"200":          {
+            "description": "OK",
+            "schema": {"$ref": "#/definitions/DeparturesBoard"}
+         }}
+      }},
+      "/api/20220120/GetFastestDeparturesWithDetails/{crs}/{filterList}/{time}": {"get":       {
+         "tags": ["_20220120"],
+         "operationId": "_20220120_GetFastestDeparturesWithDetails",
+         "consumes": [],
+         "produces":          [
+            "application/json",
+            "text/json",
+            "application/xml",
+            "text/xml"
+         ],
+         "parameters":          [
+                        {
+               "name": "crs",
+               "in": "path",
+               "required": true,
+               "type": "string"
+            },
+                        {
+               "name": "filterList",
+               "in": "path",
+               "required": true,
+               "type": "string"
+            },
+                        {
+               "name": "time",
+               "in": "path",
+               "required": true,
+               "type": "string"
+            },
+                        {
+               "name": "timeWindow",
+               "in": "query",
+               "required": false,
+               "type": "integer",
+               "format": "int32",
+               "default": "120"
+            },
+                        {
+               "name": "filterTOC",
+               "in": "query",
+               "required": false,
+               "type": "string",
+               "default": "null"
+            },
+                        {
+               "name": "services",
+               "in": "query",
+               "required": false,
+               "type": "string",
+               "default": "P"
+            }
+         ],
+         "responses": {"200":          {
+            "description": "OK",
+            "schema": {"$ref": "#/definitions/DeparturesBoardWithDetails"}
+         }}
+      }},
+      "/api/20220120/GetNextDepartures/{crs}/{filterList}/{time}": {"get":       {
+         "tags": ["_20220120"],
+         "operationId": "_20220120_GetNextDepartures",
+         "consumes": [],
+         "produces":          [
+            "application/json",
+            "text/json",
+            "application/xml",
+            "text/xml"
+         ],
+         "parameters":          [
+                        {
+               "name": "crs",
+               "in": "path",
+               "required": true,
+               "type": "string"
+            },
+                        {
+               "name": "filterList",
+               "in": "path",
+               "required": true,
+               "type": "string"
+            },
+                        {
+               "name": "time",
+               "in": "path",
+               "required": true,
+               "type": "string"
+            },
+                        {
+               "name": "timeWindow",
+               "in": "query",
+               "required": false,
+               "type": "integer",
+               "format": "int32",
+               "default": "120"
+            },
+                        {
+               "name": "filterTOC",
+               "in": "query",
+               "required": false,
+               "type": "string",
+               "default": "null"
+            },
+                        {
+               "name": "services",
+               "in": "query",
+               "required": false,
+               "type": "string",
+               "default": "P"
+            }
+         ],
+         "responses": {"200":          {
+            "description": "OK",
+            "schema": {"$ref": "#/definitions/DeparturesBoard"}
+         }}
+      }},
+      "/api/20220120/GetNextDeparturesWithDetails/{crs}/{filterList}/{time}": {"get":       {
+         "tags": ["_20220120"],
+         "operationId": "_20220120_GetNextDeparturesWithDetails",
+         "consumes": [],
+         "produces":          [
+            "application/json",
+            "text/json",
+            "application/xml",
+            "text/xml"
+         ],
+         "parameters":          [
+                        {
+               "name": "crs",
+               "in": "path",
+               "required": true,
+               "type": "string"
+            },
+                        {
+               "name": "filterList",
+               "in": "path",
+               "required": true,
+               "type": "string"
+            },
+                        {
+               "name": "time",
+               "in": "path",
+               "required": true,
+               "type": "string"
+            },
+                        {
+               "name": "timeWindow",
+               "in": "query",
+               "required": false,
+               "type": "integer",
+               "format": "int32",
+               "default": "120"
+            },
+                        {
+               "name": "filterTOC",
+               "in": "query",
+               "required": false,
+               "type": "string",
+               "default": "null"
+            },
+                        {
+               "name": "services",
+               "in": "query",
+               "required": false,
+               "type": "string",
+               "default": "P"
+            }
+         ],
+         "responses": {"200":          {
+            "description": "OK",
+            "schema": {"$ref": "#/definitions/DeparturesBoardWithDetails"}
+         }}
+      }},
+      "/api/20220120/GetServiceDetailsByRID/{rid}": {"get":       {
+         "tags": ["_20220120"],
+         "operationId": "_20220120_GetServiceDetailsByRID",
+         "consumes": [],
+         "produces":          [
+            "application/json",
+            "text/json",
+            "application/xml",
+            "text/xml"
+         ],
+         "parameters": [         {
+            "name": "rid",
+            "in": "path",
+            "required": true,
+            "type": "string"
+         }],
+         "responses": {"200":          {
+            "description": "OK",
+            "schema": {"$ref": "#/definitions/ServiceDetails"}
+         }}
+      }},
+      "/api/20220120/QueryServices/{serviceID}/{sdd}": {"get":       {
+         "tags": ["_20220120"],
+         "operationId": "_20220120_QueryServices",
+         "consumes": [],
+         "produces":          [
+            "application/json",
+            "text/json",
+            "application/xml",
+            "text/xml"
+         ],
+         "parameters":          [
+                        {
+               "name": "serviceID",
+               "in": "path",
+               "required": true,
+               "type": "string"
+            },
+                        {
+               "name": "sdd",
+               "in": "path",
+               "required": true,
+               "type": "string"
+            },
+                        {
+               "name": "filterTime",
+               "in": "query",
+               "required": false,
+               "type": "string",
+               "default": "null"
+            },
+                        {
+               "name": "filterCRS",
+               "in": "query",
+               "required": false,
+               "type": "string",
+               "default": "null"
+            },
+                        {
+               "name": "filterTOC",
+               "in": "query",
+               "required": false,
+               "type": "string",
+               "default": "null"
+            }
+         ],
+         "responses": {"200":          {
+            "description": "OK",
+            "schema": {"$ref": "#/definitions/ServiceList"}
+         }}
+      }},
+      "/api/20220120/GetReasonCode/{reasonCode}": {"get":       {
+         "tags": ["_20220120"],
+         "operationId": "_20220120_GetReasonCode",
+         "consumes": [],
+         "produces":          [
+            "application/json",
+            "text/json",
+            "application/xml",
+            "text/xml"
+         ],
+         "parameters": [         {
+            "name": "reasonCode",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "format": "int32"
+         }],
+         "responses": {"200":          {
+            "description": "OK",
+            "schema": {"$ref": "#/definitions/ReasonDescription"}
+         }}
+      }},
+      "/api/20220120/GetReasonCodeList": {"get":       {
+         "tags": ["_20220120"],
+         "operationId": "_20220120_GetReasonCodeList",
+         "consumes": [],
+         "produces":          [
+            "application/json",
+            "text/json",
+            "application/xml",
+            "text/xml"
+         ],
+         "responses": {"200":          {
+            "description": "OK",
+            "schema":             {
+               "type": "array",
+               "items": {"$ref": "#/definitions/ReasonDescription"}
+            }
+         }}
+      }},
+      "/api/20220120/GetDisruptionList/{CRSList}": {"get":       {
+         "tags": ["_20220120"],
+         "operationId": "_20220120_GetDisruptionList",
+         "consumes": [],
+         "produces":          [
+            "application/json",
+            "text/json",
+            "application/xml",
+            "text/xml"
+         ],
+         "parameters": [         {
+            "name": "CRSList",
+            "in": "path",
+            "required": true,
+            "type": "string"
+         }],
+         "responses": {"200":          {
+            "description": "OK",
+            "schema":             {
+               "type": "array",
+               "items": {"$ref": "#/definitions/DisruptionItem"}
+            }
+         }}
+      }},
+      "/api/20220120/GetSourceInstanceNames": {"get":       {
+         "tags": ["_20220120"],
+         "operationId": "_20220120_GetSourceInstanceNames",
+         "consumes": [],
+         "produces":          [
+            "application/json",
+            "text/json",
+            "application/xml",
+            "text/xml"
+         ],
+         "responses": {"200":          {
+            "description": "OK",
+            "schema":             {
+               "type": "array",
+               "items": {"$ref": "#/definitions/SourceInstanceName"}
+            }
+         }}
+      }}
+   },
+   "definitions":    {
+      "ReasonDescription":       {
+         "type": "object",
+         "properties":          {
+            "code":             {
+               "format": "int32",
+               "type": "integer"
+            },
+            "lateReason": {"type": "string"},
+            "cancReason": {"type": "string"},
+            "Xmlns": {"$ref": "#/definitions/XmlSerializerNamespaces"}
+         }
+      },
+      "XmlSerializerNamespaces":       {
+         "type": "object",
+         "properties": {"Count":          {
+            "format": "int32",
+            "type": "integer",
+            "readOnly": true
+         }}
+      },
+      "SourceInstanceName":       {
+         "type": "object",
+         "properties":          {
+            "id": {"type": "string"},
+            "name": {"type": "string"},
+            "Xmlns": {"$ref": "#/definitions/XmlSerializerNamespaces"}
+         }
+      },
+      "TOCRefData":       {
+         "type": "object",
+         "properties":          {
+            "version": {"type": "string"},
+            "TOCList":             {
+               "type": "array",
+               "items": {"$ref": "#/definitions/TOCName"}
+            }
+         }
+      },
+      "TOCName":       {
+         "type": "object",
+         "properties":          {
+            "toc": {"type": "string"},
+            "Value": {"type": "string"}
+         }
+      },
+      "StationRefData":       {
+         "type": "object",
+         "properties":          {
+            "version": {"type": "string"},
+            "StationList":             {
+               "type": "array",
+               "items": {"$ref": "#/definitions/StationName"}
+            }
+         }
+      },
+      "StationName":       {
+         "type": "object",
+         "properties":          {
+            "crs": {"type": "string"},
+            "Value": {"type": "string"}
+         }
+      },
+      "LoadingCategoryRefData":       {
+         "type": "object",
+         "properties":          {
+            "version": {"type": "string"},
+            "CategoryList":             {
+               "type": "array",
+               "items": {"$ref": "#/definitions/LoadingCategoryRefDataCategory"}
+            }
+         }
+      },
+      "LoadingCategoryRefDataCategory":       {
+         "type": "object",
+         "properties":          {
+            "data":             {
+               "type": "array",
+               "items": {"$ref": "#/definitions/CategoryData"}
+            },
+            "code": {"type": "string"},
+            "name": {"type": "string"}
+         }
+      },
+      "CategoryData":       {
+         "type": "object",
+         "properties":          {
+            "typicalDescription": {"type": "string"},
+            "expectedDescription": {"type": "string"},
+            "definition": {"type": "string"},
+            "colour": {"type": "string"},
+            "image": {"type": "string"},
+            "toc": {"type": "string"}
+         }
+      },
+      "StationBoard":       {
+         "type": "object",
+         "properties":          {
+            "trainServices":             {
+               "type": "array",
+               "items": {"$ref": "#/definitions/ServiceItem"}
+            },
+            "busServices":             {
+               "type": "array",
+               "items": {"$ref": "#/definitions/ServiceItem"}
+            },
+            "ferryServices":             {
+               "type": "array",
+               "items": {"$ref": "#/definitions/ServiceItem"}
+            },
+            "qos":             {
+               "format": "float",
+               "type": "number"
+            },
+            "qosSpecified": {"type": "boolean"},
+            "isTruncated": {"type": "boolean"},
+            "generatedAt":             {
+               "format": "date-time",
+               "type": "string"
+            },
+            "locationName": {"type": "string"},
+            "crs": {"type": "string"},
+            "filterLocationName": {"type": "string"},
+            "filtercrs": {"type": "string"},
+            "filterType":             {
+               "enum":                [
+                  "to",
+                  "from"
+               ],
+               "type": "string"
+            },
+            "stationManager": {"type": "string"},
+            "stationManagerCode": {"type": "string"},
+            "nrccMessages":             {
+               "type": "array",
+               "items": {"$ref": "#/definitions/NRCCMessage"}
+            },
+            "platformsAreHidden": {"type": "boolean"},
+            "servicesAreUnavailable": {"type": "boolean"},
+            "Xmlns": {"$ref": "#/definitions/XmlSerializerNamespaces"}
+         }
+      },
+      "ServiceItem":       {
+         "type": "object",
+         "properties":          {
+            "formation": {"$ref": "#/definitions/FormationData"},
+            "origin":             {
+               "type": "array",
+               "items": {"$ref": "#/definitions/EndPointLocation"}
+            },
+            "destination":             {
+               "type": "array",
+               "items": {"$ref": "#/definitions/EndPointLocation"}
+            },
+            "currentOrigins":             {
+               "type": "array",
+               "items": {"$ref": "#/definitions/EndPointLocation"}
+            },
+            "currentDestinations":             {
+               "type": "array",
+               "items": {"$ref": "#/definitions/EndPointLocation"}
+            },
+            "cancelReason": {"$ref": "#/definitions/ReasonCodeWithLocation"},
+            "delayReason": {"$ref": "#/definitions/ReasonCodeWithLocation"},
+            "category": {"type": "string"},
+            "activities": {"type": "string"},
+            "length":             {
+               "format": "int32",
+               "type": "integer"
+            },
+            "isReverseFormation": {"type": "boolean"},
+            "detachFront": {"type": "boolean"},
+            "futureDelay": {"type": "boolean"},
+            "futureCancellation": {"type": "boolean"},
+            "diversion": {"$ref": "#/definitions/BaseServiceItemDiversion"},
+            "uncertainty": {"$ref": "#/definitions/UncertaintyType"},
+            "affectedBy": {"type": "string"},
+            "rid": {"type": "string"},
+            "uid": {"type": "string"},
+            "trainid": {"type": "string"},
+            "rsid": {"type": "string"},
+            "sdd":             {
+               "format": "date-time",
+               "type": "string"
+            },
+            "operator": {"type": "string"},
+            "operatorCode": {"type": "string"},
+            "isPassengerService": {"type": "boolean"},
+            "isCharter": {"type": "boolean"},
+            "isCancelled": {"type": "boolean"},
+            "isCircularRoute": {"type": "boolean"},
+            "filterLocationCancelled": {"type": "boolean"},
+            "filterLocationOperational": {"type": "boolean"},
+            "isOperationalCall": {"type": "boolean"},
+            "sta":             {
+               "format": "date-time",
+               "type": "string"
+            },
+            "staSpecified": {"type": "boolean"},
+            "ata":             {
+               "format": "date-time",
+               "type": "string"
+            },
+            "ataSpecified": {"type": "boolean"},
+            "eta":             {
+               "format": "date-time",
+               "type": "string"
+            },
+            "etaSpecified": {"type": "boolean"},
+            "arrivalType":             {
+               "enum":                [
+                  "Forecast",
+                  "Actual",
+                  "NoLog",
+                  "Delayed"
+               ],
+               "type": "string"
+            },
+            "arrivalTypeSpecified": {"type": "boolean"},
+            "arrivalSource": {"type": "string"},
+            "arrivalSourceInstance": {"type": "string"},
+            "std":             {
+               "format": "date-time",
+               "type": "string"
+            },
+            "stdSpecified": {"type": "boolean"},
+            "atd":             {
+               "format": "date-time",
+               "type": "string"
+            },
+            "atdSpecified": {"type": "boolean"},
+            "etd":             {
+               "format": "date-time",
+               "type": "string"
+            },
+            "etdSpecified": {"type": "boolean"},
+            "departureType":             {
+               "enum":                [
+                  "Forecast",
+                  "Actual",
+                  "NoLog",
+                  "Delayed"
+               ],
+               "type": "string"
+            },
+            "departureTypeSpecified": {"type": "boolean"},
+            "departureSource": {"type": "string"},
+            "departureSourceInstance": {"type": "string"},
+            "platform": {"type": "string"},
+            "platformIsHidden": {"type": "boolean"},
+            "serviceIsSuppressed": {"type": "boolean"},
+            "adhocAlerts":             {
+               "type": "array",
+               "items": {"type": "string"}
+            }
+         }
+      },
+      "NRCCMessage":       {
+         "type": "object",
+         "properties":          {
+            "category":             {
+               "enum":                [
+                  "Trainservice",
+                  "Station",
+                  "Connectingservices",
+                  "Systemrelated",
+                  "Miscellaneous",
+                  "Priortrains",
+                  "Priorother"
+               ],
+               "type": "string"
+            },
+            "severity":             {
+               "enum":                [
+                  "Normal",
+                  "Minor",
+                  "Major",
+                  "Severe"
+               ],
+               "type": "string"
+            },
+            "xhtmlMessage": {"type": "string"}
+         }
+      },
+      "FormationData":       {
+         "type": "object",
+         "properties":          {
+            "serviceLoading": {"$ref": "#/definitions/FormationDataServiceLoading"},
+            "coaches":             {
+               "type": "array",
+               "items": {"$ref": "#/definitions/CoachData"}
+            },
+            "source": {"type": "string"},
+            "sourceInstance": {"type": "string"}
+         }
+      },
+      "EndPointLocation":       {
+         "type": "object",
+         "properties":          {
+            "isOperationalEndPoint": {"type": "boolean"},
+            "locationName": {"type": "string"},
+            "crs": {"type": "string"},
+            "tiploc": {"type": "string"},
+            "via": {"type": "string"},
+            "futureChangeTo":             {
+               "enum":                [
+                  "train",
+                  "bus",
+                  "ferry"
+               ],
+               "type": "string"
+            },
+            "futureChangeToSpecified": {"type": "boolean"}
+         }
+      },
+      "ReasonCodeWithLocation":       {
+         "type": "object",
+         "properties":          {
+            "tiploc": {"type": "string"},
+            "near": {"type": "boolean"},
+            "Value":             {
+               "format": "int32",
+               "type": "integer"
+            }
+         }
+      },
+      "BaseServiceItemDiversion":       {
+         "type": "object",
+         "properties":          {
+            "reason": {"$ref": "#/definitions/ReasonCodeWithLocation"},
+            "divertedVia": {"$ref": "#/definitions/BaseServiceItemDiversionDivertedVia"},
+            "between": {"$ref": "#/definitions/BaseServiceItemDiversionBetween"},
+            "rerouteDelay":             {
+               "format": "int32",
+               "type": "integer"
+            }
+         }
+      },
+      "UncertaintyType":       {
+         "type": "object",
+         "properties":          {
+            "reason": {"$ref": "#/definitions/ReasonCodeWithLocation"},
+            "status":             {
+               "enum":                [
+                  "Delay",
+                  "Cancellation",
+                  "Other"
+               ],
+               "type": "string"
+            }
+         }
+      },
+      "FormationDataServiceLoading":       {
+         "type": "object",
+         "properties":          {
+            "loadingCategory": {"$ref": "#/definitions/FormationDataServiceLoadingLoadingCategory"},
+            "loadingPercentage": {"$ref": "#/definitions/FormationDataServiceLoadingLoadingPercentage"}
+         }
+      },
+      "CoachData":       {
+         "type": "object",
+         "properties":          {
+            "coachClass": {"type": "string"},
+            "toilet": {"$ref": "#/definitions/ToiletAvailabilityType"},
+            "loading": {"$ref": "#/definitions/CoachDataLoading"},
+            "number": {"type": "string"}
+         }
+      },
+      "BaseServiceItemDiversionDivertedVia":       {
+         "type": "object",
+         "properties":          {
+            "tiploc": {"type": "string"},
+            "Value": {"type": "string"}
+         }
+      },
+      "BaseServiceItemDiversionBetween":       {
+         "type": "object",
+         "properties":          {
+            "start": {"type": "string"},
+            "end": {"type": "string"}
+         }
+      },
+      "FormationDataServiceLoadingLoadingCategory":       {
+         "type": "object",
+         "properties":          {
+            "type":             {
+               "enum":                [
+                  "Typical",
+                  "Expected"
+               ],
+               "type": "string"
+            },
+            "src": {"type": "string"},
+            "srcInst": {"type": "string"},
+            "Value": {"type": "string"}
+         }
+      },
+      "FormationDataServiceLoadingLoadingPercentage":       {
+         "type": "object",
+         "properties":          {
+            "type":             {
+               "enum":                [
+                  "Typical",
+                  "Expected"
+               ],
+               "type": "string"
+            },
+            "src": {"type": "string"},
+            "srcInst": {"type": "string"},
+            "Value":             {
+               "format": "int32",
+               "type": "integer"
+            }
+         }
+      },
+      "ToiletAvailabilityType":       {
+         "type": "object",
+         "properties":          {
+            "status":             {
+               "enum":                [
+                  "Unknown",
+                  "InService",
+                  "NotInService"
+               ],
+               "type": "string"
+            },
+            "Value": {"type": "string"}
+         }
+      },
+      "CoachDataLoading":       {
+         "type": "object",
+         "properties":          {
+            "source": {"type": "string"},
+            "sourceInstance": {"type": "string"},
+            "Value":             {
+               "format": "int32",
+               "type": "integer"
+            }
+         }
+      },
+      "StationBoardWithDetails":       {
+         "type": "object",
+         "properties":          {
+            "trainServices":             {
+               "type": "array",
+               "items": {"$ref": "#/definitions/ServiceItemWithLocations"}
+            },
+            "busServices":             {
+               "type": "array",
+               "items": {"$ref": "#/definitions/ServiceItemWithLocations"}
+            },
+            "ferryServices":             {
+               "type": "array",
+               "items": {"$ref": "#/definitions/ServiceItemWithLocations"}
+            },
+            "isTruncated": {"type": "boolean"},
+            "generatedAt":             {
+               "format": "date-time",
+               "type": "string"
+            },
+            "locationName": {"type": "string"},
+            "crs": {"type": "string"},
+            "filterLocationName": {"type": "string"},
+            "filtercrs": {"type": "string"},
+            "filterType":             {
+               "enum":                [
+                  "to",
+                  "from"
+               ],
+               "type": "string"
+            },
+            "stationManager": {"type": "string"},
+            "stationManagerCode": {"type": "string"},
+            "nrccMessages":             {
+               "type": "array",
+               "items": {"$ref": "#/definitions/NRCCMessage"}
+            },
+            "platformsAreHidden": {"type": "boolean"},
+            "servicesAreUnavailable": {"type": "boolean"},
+            "Xmlns": {"$ref": "#/definitions/XmlSerializerNamespaces"}
+         }
+      },
+      "ServiceItemWithLocations":       {
+         "type": "object",
+         "properties":          {
+            "previousLocations":             {
+               "type": "array",
+               "items": {"$ref": "#/definitions/ServiceItemLocation"}
+            },
+            "subsequentLocations":             {
+               "type": "array",
+               "items": {"$ref": "#/definitions/ServiceItemLocation"}
+            },
+            "formation": {"$ref": "#/definitions/FormationData"},
+            "origin":             {
+               "type": "array",
+               "items": {"$ref": "#/definitions/EndPointLocation"}
+            },
+            "destination":             {
+               "type": "array",
+               "items": {"$ref": "#/definitions/EndPointLocation"}
+            },
+            "currentOrigins":             {
+               "type": "array",
+               "items": {"$ref": "#/definitions/EndPointLocation"}
+            },
+            "currentDestinations":             {
+               "type": "array",
+               "items": {"$ref": "#/definitions/EndPointLocation"}
+            },
+            "cancelReason": {"$ref": "#/definitions/ReasonCodeWithLocation"},
+            "delayReason": {"$ref": "#/definitions/ReasonCodeWithLocation"},
+            "category": {"type": "string"},
+            "activities": {"type": "string"},
+            "length":             {
+               "format": "int32",
+               "type": "integer"
+            },
+            "isReverseFormation": {"type": "boolean"},
+            "detachFront": {"type": "boolean"},
+            "futureDelay": {"type": "boolean"},
+            "futureCancellation": {"type": "boolean"},
+            "diversion": {"$ref": "#/definitions/BaseServiceItemDiversion"},
+            "uncertainty": {"$ref": "#/definitions/UncertaintyType"},
+            "affectedBy": {"type": "string"},
+            "rid": {"type": "string"},
+            "uid": {"type": "string"},
+            "trainid": {"type": "string"},
+            "rsid": {"type": "string"},
+            "sdd":             {
+               "format": "date-time",
+               "type": "string"
+            },
+            "operator": {"type": "string"},
+            "operatorCode": {"type": "string"},
+            "isPassengerService": {"type": "boolean"},
+            "isCharter": {"type": "boolean"},
+            "isCancelled": {"type": "boolean"},
+            "isCircularRoute": {"type": "boolean"},
+            "filterLocationCancelled": {"type": "boolean"},
+            "filterLocationOperational": {"type": "boolean"},
+            "isOperationalCall": {"type": "boolean"},
+            "sta":             {
+               "format": "date-time",
+               "type": "string"
+            },
+            "staSpecified": {"type": "boolean"},
+            "ata":             {
+               "format": "date-time",
+               "type": "string"
+            },
+            "ataSpecified": {"type": "boolean"},
+            "eta":             {
+               "format": "date-time",
+               "type": "string"
+            },
+            "etaSpecified": {"type": "boolean"},
+            "arrivalType":             {
+               "enum":                [
+                  "Forecast",
+                  "Actual",
+                  "NoLog",
+                  "Delayed"
+               ],
+               "type": "string"
+            },
+            "arrivalTypeSpecified": {"type": "boolean"},
+            "arrivalSource": {"type": "string"},
+            "arrivalSourceInstance": {"type": "string"},
+            "std":             {
+               "format": "date-time",
+               "type": "string"
+            },
+            "stdSpecified": {"type": "boolean"},
+            "atd":             {
+               "format": "date-time",
+               "type": "string"
+            },
+            "atdSpecified": {"type": "boolean"},
+            "etd":             {
+               "format": "date-time",
+               "type": "string"
+            },
+            "etdSpecified": {"type": "boolean"},
+            "departureType":             {
+               "enum":                [
+                  "Forecast",
+                  "Actual",
+                  "NoLog",
+                  "Delayed"
+               ],
+               "type": "string"
+            },
+            "departureTypeSpecified": {"type": "boolean"},
+            "departureSource": {"type": "string"},
+            "departureSourceInstance": {"type": "string"},
+            "platform": {"type": "string"},
+            "platformIsHidden": {"type": "boolean"},
+            "serviceIsSuppressed": {"type": "boolean"},
+            "adhocAlerts":             {
+               "type": "array",
+               "items": {"type": "string"}
+            }
+         }
+      },
+      "ServiceItemLocation":       {
+         "type": "object",
+         "properties":          {
+            "cancelReason": {"$ref": "#/definitions/ReasonCodeWithLocation"},
+            "delayReason": {"$ref": "#/definitions/ReasonCodeWithLocation"},
+            "locationName": {"type": "string"},
+            "tiploc": {"type": "string"},
+            "crs": {"type": "string"},
+            "isOperational": {"type": "boolean"},
+            "isPass": {"type": "boolean"},
+            "isCancelled": {"type": "boolean"},
+            "platform": {"type": "string"},
+            "platformIsHidden": {"type": "boolean"},
+            "serviceIsSuppressed": {"type": "boolean"},
+            "sta":             {
+               "format": "date-time",
+               "type": "string"
+            },
+            "staSpecified": {"type": "boolean"},
+            "ata":             {
+               "format": "date-time",
+               "type": "string"
+            },
+            "ataSpecified": {"type": "boolean"},
+            "eta":             {
+               "format": "date-time",
+               "type": "string"
+            },
+            "etaSpecified": {"type": "boolean"},
+            "arrivalType":             {
+               "enum":                [
+                  "Forecast",
+                  "Actual",
+                  "NoLog",
+                  "Delayed"
+               ],
+               "type": "string"
+            },
+            "arrivalTypeSpecified": {"type": "boolean"},
+            "arrivalSource": {"type": "string"},
+            "arrivalSourceInstance": {"type": "string"},
+            "std":             {
+               "format": "date-time",
+               "type": "string"
+            },
+            "stdSpecified": {"type": "boolean"},
+            "atd":             {
+               "format": "date-time",
+               "type": "string"
+            },
+            "atdSpecified": {"type": "boolean"},
+            "etd":             {
+               "format": "date-time",
+               "type": "string"
+            },
+            "etdSpecified": {"type": "boolean"},
+            "departureType":             {
+               "enum":                [
+                  "Forecast",
+                  "Actual",
+                  "NoLog",
+                  "Delayed"
+               ],
+               "type": "string"
+            },
+            "departureTypeSpecified": {"type": "boolean"},
+            "departureSource": {"type": "string"},
+            "departureSourceInstance": {"type": "string"},
+            "lateness": {"type": "string"},
+            "associations":             {
+               "type": "array",
+               "items": {"$ref": "#/definitions/Association"}
+            },
+            "adhocAlerts":             {
+               "type": "array",
+               "items": {"type": "string"}
+            }
+         }
+      },
+      "Association":       {
+         "type": "object",
+         "properties":          {
+            "category":             {
+               "enum":                [
+                  "join",
+                  "divide",
+                  "LinkFrom",
+                  "LinkTo",
+                  "next"
+               ],
+               "type": "string"
+            },
+            "rid": {"type": "string"},
+            "uid": {"type": "string"},
+            "trainid": {"type": "string"},
+            "rsid": {"type": "string"},
+            "sdd":             {
+               "format": "date-time",
+               "type": "string"
+            },
+            "origin": {"type": "string"},
+            "originCRS": {"type": "string"},
+            "originTiploc": {"type": "string"},
+            "destination": {"type": "string"},
+            "destCRS": {"type": "string"},
+            "destTiploc": {"type": "string"},
+            "isCancelled": {"type": "boolean"}
+         }
+      },
+      "DeparturesBoard":       {
+         "type": "object",
+         "properties":          {
+            "departures":             {
+               "type": "array",
+               "items": {"$ref": "#/definitions/DepartureItem"}
+            },
+            "generatedAt":             {
+               "format": "date-time",
+               "type": "string"
+            },
+            "locationName": {"type": "string"},
+            "crs": {"type": "string"},
+            "filterLocationName": {"type": "string"},
+            "filtercrs": {"type": "string"},
+            "filterType":             {
+               "enum":                [
+                  "to",
+                  "from"
+               ],
+               "type": "string"
+            },
+            "stationManager": {"type": "string"},
+            "stationManagerCode": {"type": "string"},
+            "nrccMessages":             {
+               "type": "array",
+               "items": {"$ref": "#/definitions/NRCCMessage"}
+            },
+            "platformsAreHidden": {"type": "boolean"},
+            "servicesAreUnavailable": {"type": "boolean"},
+            "Xmlns": {"$ref": "#/definitions/XmlSerializerNamespaces"}
+         }
+      },
+      "DepartureItem":       {
+         "type": "object",
+         "properties":          {
+            "service": {"$ref": "#/definitions/ServiceItem"},
+            "crs": {"type": "string"}
+         }
+      },
+      "DeparturesBoardWithDetails":       {
+         "type": "object",
+         "properties":          {
+            "departures":             {
+               "type": "array",
+               "items": {"$ref": "#/definitions/DepartureItemWithLocations"}
+            },
+            "generatedAt":             {
+               "format": "date-time",
+               "type": "string"
+            },
+            "locationName": {"type": "string"},
+            "crs": {"type": "string"},
+            "filterLocationName": {"type": "string"},
+            "filtercrs": {"type": "string"},
+            "filterType":             {
+               "enum":                [
+                  "to",
+                  "from"
+               ],
+               "type": "string"
+            },
+            "stationManager": {"type": "string"},
+            "stationManagerCode": {"type": "string"},
+            "nrccMessages":             {
+               "type": "array",
+               "items": {"$ref": "#/definitions/NRCCMessage"}
+            },
+            "platformsAreHidden": {"type": "boolean"},
+            "servicesAreUnavailable": {"type": "boolean"},
+            "Xmlns": {"$ref": "#/definitions/XmlSerializerNamespaces"}
+         }
+      },
+      "DepartureItemWithLocations":       {
+         "type": "object",
+         "properties":          {
+            "service": {"$ref": "#/definitions/ServiceItemWithLocations"},
+            "crs": {"type": "string"}
+         }
+      },
+      "ServiceDetails":       {
+         "type": "object",
+         "properties":          {
+            "locations":             {
+               "type": "array",
+               "items": {"$ref": "#/definitions/ServiceLocation"}
+            },
+            "formation":             {
+               "type": "array",
+               "items": {"$ref": "#/definitions/LocFormationData"}
+            },
+            "cancelReason": {"$ref": "#/definitions/ReasonCodeWithLocation"},
+            "delayReason": {"$ref": "#/definitions/ReasonCodeWithLocation"},
+            "category": {"type": "string"},
+            "isReverseFormation": {"type": "boolean"},
+            "divertedVia": {"$ref": "#/definitions/BaseServiceDetailsDivertedVia"},
+            "diversionReason": {"$ref": "#/definitions/ReasonCodeWithLocation"},
+            "generatedAt":             {
+               "format": "date-time",
+               "type": "string"
+            },
+            "rid": {"type": "string"},
+            "uid": {"type": "string"},
+            "trainid": {"type": "string"},
+            "rsid": {"type": "string"},
+            "sdd":             {
+               "format": "date-time",
+               "type": "string"
+            },
+            "operator": {"type": "string"},
+            "operatorCode": {"type": "string"},
+            "serviceType":             {
+               "enum":                [
+                  "train",
+                  "bus",
+                  "ferry"
+               ],
+               "type": "string"
+            },
+            "isPassengerService": {"type": "boolean"},
+            "isCharter": {"type": "boolean"},
+            "Xmlns": {"$ref": "#/definitions/XmlSerializerNamespaces"}
+         }
+      },
+      "ServiceLocation":       {
+         "type": "object",
+         "properties":          {
+            "cancelReason": {"$ref": "#/definitions/ReasonCodeWithLocation"},
+            "delayReason": {"$ref": "#/definitions/ReasonCodeWithLocation"},
+            "affectedByDiversion": {"type": "boolean"},
+            "rerouteDelay":             {
+               "format": "int32",
+               "type": "integer"
+            },
+            "uncertainty": {"$ref": "#/definitions/UncertaintyType"},
+            "affectedBy": {"type": "string"},
+            "locationName": {"type": "string"},
+            "tiploc": {"type": "string"},
+            "crs": {"type": "string"},
+            "associations":             {
+               "type": "array",
+               "items": {"$ref": "#/definitions/Association"}
+            },
+            "adhocAlerts":             {
+               "type": "array",
+               "items": {"type": "string"}
+            },
+            "activities": {"type": "string"},
+            "length":             {
+               "format": "int32",
+               "type": "integer"
+            },
+            "detachFront": {"type": "boolean"},
+            "isOperational": {"type": "boolean"},
+            "isPass": {"type": "boolean"},
+            "isCancelled": {"type": "boolean"},
+            "falseDest": {"type": "string"},
+            "fdTiploc": {"type": "string"},
+            "platform": {"type": "string"},
+            "platformIsHidden": {"type": "boolean"},
+            "serviceIsSuppressed": {"type": "boolean"},
+            "sta":             {
+               "format": "date-time",
+               "type": "string"
+            },
+            "staSpecified": {"type": "boolean"},
+            "ata":             {
+               "format": "date-time",
+               "type": "string"
+            },
+            "ataSpecified": {"type": "boolean"},
+            "eta":             {
+               "format": "date-time",
+               "type": "string"
+            },
+            "etaSpecified": {"type": "boolean"},
+            "arrivalType":             {
+               "enum":                [
+                  "Forecast",
+                  "Actual",
+                  "NoLog",
+                  "Delayed"
+               ],
+               "type": "string"
+            },
+            "arrivalTypeSpecified": {"type": "boolean"},
+            "arrivalSource": {"type": "string"},
+            "arrivalSourceInstance": {"type": "string"},
+            "std":             {
+               "format": "date-time",
+               "type": "string"
+            },
+            "stdSpecified": {"type": "boolean"},
+            "atd":             {
+               "format": "date-time",
+               "type": "string"
+            },
+            "atdSpecified": {"type": "boolean"},
+            "etd":             {
+               "format": "date-time",
+               "type": "string"
+            },
+            "etdSpecified": {"type": "boolean"},
+            "departureType":             {
+               "enum":                [
+                  "Forecast",
+                  "Actual",
+                  "NoLog",
+                  "Delayed"
+               ],
+               "type": "string"
+            },
+            "departureTypeSpecified": {"type": "boolean"},
+            "departureSource": {"type": "string"},
+            "departureSourceInstance": {"type": "string"},
+            "lateness": {"type": "string"},
+            "Xmlns": {"$ref": "#/definitions/XmlSerializerNamespaces"}
+         }
+      },
+      "LocFormationData":       {
+         "type": "object",
+         "properties":          {
+            "tiploc": {"type": "string"},
+            "serviceLoading": {"$ref": "#/definitions/FormationDataServiceLoading"},
+            "coaches":             {
+               "type": "array",
+               "items": {"$ref": "#/definitions/CoachData"}
+            },
+            "source": {"type": "string"},
+            "sourceInstance": {"type": "string"}
+         }
+      },
+      "BaseServiceDetailsDivertedVia":       {
+         "type": "object",
+         "properties":          {
+            "tiploc": {"type": "string"},
+            "Value": {"type": "string"}
+         }
+      },
+      "ServiceList":       {
+         "type": "object",
+         "properties":          {
+            "scheduleStartDate":             {
+               "format": "date-time",
+               "type": "string"
+            },
+            "serviceList":             {
+               "type": "array",
+               "items": {"$ref": "#/definitions/ServiceListItem"}
+            },
+            "Xmlns": {"$ref": "#/definitions/XmlSerializerNamespaces"}
+         }
+      },
+      "ServiceListItem":       {
+         "type": "object",
+         "properties":          {
+            "rid": {"type": "string"},
+            "uid": {"type": "string"},
+            "trainid": {"type": "string"},
+            "rsid": {"type": "string"},
+            "originName": {"type": "string"},
+            "originCrs": {"type": "string"},
+            "destinationName": {"type": "string"},
+            "destinationCrs": {"type": "string"},
+            "scheduledDeparture":             {
+               "format": "date-time",
+               "type": "string"
+            },
+            "scheduledArrival":             {
+               "format": "date-time",
+               "type": "string"
+            }
+         }
+      },
+      "DisruptionItem":       {
+         "type": "object",
+         "properties":          {
+            "generatedAt":             {
+               "format": "date-time",
+               "type": "string"
+            },
+            "crs": {"type": "string"},
+            "disruptions":             {
+               "type": "array",
+               "items": {"$ref": "#/definitions/DisruptionMessage"}
+            },
+            "Xmlns": {"$ref": "#/definitions/XmlSerializerNamespaces"}
+         }
+      },
+      "DisruptionMessage":       {
+         "type": "object",
+         "properties":          {
+            "id":             {
+               "format": "int32",
+               "type": "integer"
+            },
+            "category":             {
+               "enum":                [
+                  "Train service",
+                  "Station",
+                  "Connecting services",
+                  "System related",
+                  "Miscellaneous",
+                  "Prior (trains)",
+                  "Prior (other)"
+               ],
+               "type": "string"
+            },
+            "severity":             {
+               "enum":                [
+                  "Normal",
+                  "Minor",
+                  "Major",
+                  "Severe"
+               ],
+               "type": "string"
+            },
+            "isSuppressed": {"type": "boolean"},
+            "xhtmlMessage": {"type": "string"},
+            "description": {"type": "string"}
+         }
+      }
+   }
+}

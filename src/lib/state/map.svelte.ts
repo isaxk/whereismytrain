@@ -1,4 +1,5 @@
 import type { ServiceMapData } from '$lib/types';
+
 import type { LngLatLike } from 'svelte-maplibre';
 
 export const mapData: {

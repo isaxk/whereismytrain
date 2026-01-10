@@ -1,11 +1,12 @@
-import { operatorList } from '$lib/data/operators';
-import { findOvergroundLine } from '$lib/data/overground';
-import type { BoardItem } from '$lib/types';
 import dayjs from 'dayjs';
+
+import { operatorList } from '$lib/data/operators';
+import type { BoardItem } from '$lib/types';
+import type { ServiceItem } from '$lib/types/api';
 
 export const NULL_TIME = '0001-01-01T00:00:00';
 
-export function parseBoardItem(item: any): BoardItem {
+export function parseBoardItem(item: ServiceItem): BoardItem {
 	if (item.ata === NULL_TIME) item.ata = null;
 	if (item.atd === NULL_TIME) item.atd = null;
 	if (item.eta === NULL_TIME) item.eta = null;
@@ -15,12 +16,12 @@ export function parseBoardItem(item: any): BoardItem {
 
 	let delay = null;
 
-	const rta = item.ata || item.eta ? dayjs(item.ata ?? item.eta) : null;
+	// const rta = item.ata || item.eta ? dayjs(item.ata ?? item.eta) : null;
 	const rtd = item.atd || item.etd ? dayjs(item.atd ?? item.etd) : null;
-	const pta = item.sta ? dayjs(item.sta) : null;
+	// const pta = item.sta ? dayjs(item.sta) : null;
 	const ptd = item.std ? dayjs(item.std) : null;
 
-	item.rid = `${item.rid}d${item.destination.map((d) => d.crs).join('d')}`;
+	item.rid = `${item.rid}d${item.destination?.map((d) => d.crs).join('d')}`;
 
 	if (rtd && ptd) {
 		delay = rtd.diff(ptd, 'minutes');
@@ -43,27 +44,29 @@ export function parseBoardItem(item: any): BoardItem {
 
 	return {
 		rid: item.rid,
-		uid: item.uid,
-		sdd: item.sdd,
-		destination: item.destination.map((d: any) => ({
-			crs: d.crs,
-			name: d.locationName,
-			via: d.via
-		})),
-		origin: item.origin.map((o: any) => ({
-			crs: o.crs,
-			name: o.locationName,
-			via: o.via
-		})),
+		uid: item.uid!,
+		sdd: item.sdd!,
+		destination:
+			item.destination?.map((d) => ({
+				crs: d.crs,
+				name: d.locationName,
+				via: d.via
+			})) ?? [],
+		origin:
+			item.origin?.map((o) => ({
+				crs: o.crs,
+				name: o.locationName,
+				via: o.via
+			})) ?? [],
 		times,
-		rawTime: item.std,
-		departed: item.atd && item.atd !== NULL_TIME,
+		rawTime: item.std!,
+		departed: (item.atdSpecified && item.atd !== NULL_TIME) ?? false,
 		delay,
 		platform: item.platform ?? null,
 		operator: {
 			id: item.operatorCode ?? null,
-			name: operatorList[item.operatorCode]?.name ?? item.operator ?? 'Unknown',
-			color: operatorList[item.operatorCode]?.bg ?? '#000000'
+			name: operatorList[item.operatorCode!]?.name ?? item.operator ?? 'Unknown',
+			color: operatorList[item.operatorCode!]?.bg ?? '#000000'
 		},
 		isCancelled: item.isCancelled ?? false,
 		isFilterCancelled: item.filterLocationCancelled ?? false,

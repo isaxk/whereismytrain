@@ -1,5 +1,6 @@
 <script lang="ts">
 	import * as Item from '$lib/components/ui/item';
+
 	import BoardItem from '../board/board-item.svelte';
 	import Button from '../ui/button/button.svelte';
 	import Spinner from '../ui/spinner/spinner.svelte';
@@ -49,9 +50,7 @@
 			<div>
 				<BoardItem
 					class="h-18 pt-2"
-					id={service.rid}
 					href="#"
-					crs={from}
 					rtDep={service.times.rt.dep}
 					planDep={service.times.plan.dep}
 					destination={service.destination}

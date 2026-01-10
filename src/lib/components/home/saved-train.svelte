@@ -1,47 +1,37 @@
 <script lang="ts">
-	import { saved } from '$lib/state/saved.svelte';
-	import type { SavedTrain } from '$lib/types';
+	import dayjs from 'dayjs';
 	import {
-		AlertTriangle,
-		ArrowUpRight,
-		BellOff,
 		Bus,
-		Check,
-		ClockAlert,
 		EllipsisVertical,
 		GitCompareArrowsIcon,
 		Trash,
 		TriangleAlertIcon,
 		X
 	} from 'lucide-svelte';
-	import { onMount } from 'svelte';
-	import BoardItem from '$lib/components/board/board-item.svelte';
-	import { refreshing, servicesSub } from '$lib/state/services-subscriber.svelte';
-	import { unsubscribeToTrain } from '$lib/notifications';
-	import { derived } from 'svelte/store';
-	import dayjs from 'dayjs';
-	import { dayjsFromHHmm } from '$lib/utils';
-	import AlertCard from '../ui/alert-card.svelte';
-	import { londonTerminals } from '$lib/data/favourites';
-	import Button, { buttonVariants } from '../ui/button/button.svelte';
-	import AlternativeConnection from './alternative-provider.svelte';
-	import { explicitEffect } from '$lib/state/utils.svelte';
-	import Spinner from '../ui/spinner/spinner.svelte';
-	import ChangeNotifier from '../board/change-notifier.svelte';
-	import * as DropdownMenu from '../ui/dropdown-menu';
-	import * as Dialog from '../ui/dialog';
-	import * as Item from '../ui/item';
-	import * as Card from '../ui/card';
-	import * as Popover from '$lib/components/ui/popover/index.js';
-	import { operatorList } from '$lib/data/operators';
-	import Input from '../ui/input/input.svelte';
 	import { fly } from 'svelte/transition';
+
+	import * as Popover from '$lib/components/ui/popover/index.js';
+	import { londonTerminals } from '$lib/data/favourites';
+	import { unsubscribeToTrain } from '$lib/notifications';
+	import { saved } from '$lib/state/saved.svelte';
+	import { refreshing, servicesSub } from '$lib/state/services-subscriber.svelte';
+	import { explicitEffect } from '$lib/state/utils.svelte';
+	import type { SavedTrain } from '$lib/types';
+	import { dayjsFromHHmm } from '$lib/utils';
+
+	import ChangeNotifier from '../board/change-notifier.svelte';
+	import AlertCard from '../ui/alert-card.svelte';
+	import Button, { buttonVariants } from '../ui/button/button.svelte';
+	import * as Dialog from '../ui/dialog';
+	import * as DropdownMenu from '../ui/dropdown-menu';
+	import Spinner from '../ui/spinner/spinner.svelte';
+
 	import AlternativeDisplay from './alternative-display.svelte';
+	import AlternativeConnection from './alternative-provider.svelte';
 
 	let { data, index }: { data: SavedTrain; index: number } = $props();
 
 	let service = $derived(data.service);
-	let lastRefreshed = $state(null);
 
 	let showMissedDialog = $state(false);
 
@@ -121,7 +111,7 @@
 
 	let now = $state(dayjs());
 
-	const timeUntilDeparture = $derived(focus ? dayjs(focus.rtDepDate).diff(now, 'minute') : 0);
+	// const timeUntilDeparture = $derived(focus ? dayjs(focus.rtDepDate).diff(now, 'minute') : 0);
 
 	const connection = $derived.by(() => {
 		if (!filter || focus?.isCancelled || filter?.isCancelled) return null;
@@ -304,83 +294,16 @@
 
 		return null;
 	});
-
-	$inspect('service', data);
 </script>
-
-{#snippet connectionAlternative(title, train, acrossLondon, switchTo, switching)}
-	<div class="flex items-center">
-		<div>
-			<div class="font-semibold">
-				{title}
-			</div>
-			<div class="py-0.5 font-normal underline">
-				{train}
-			</div>
-			<div class="flex flex-col gap-0.5 py-0.5 text-[10px] text-muted-foreground">
-				<div>Please check your ticket is valid on this service.</div>
-
-				<a href="https://www.nationalrail.co.uk/journey-planner/">
-					The <span class="underline">National Rail journey planner</span> may give more accurate information
-					about connections across London, or provide faster alternative routes.
-				</a>
-			</div>
-		</div>
-		<div class="flex min-w-24 justify-end">
-			<Button onclick={switchTo}
-				>{#if switching}
-					<Spinner />
-				{:else}
-					Switch
-				{/if}</Button
-			>
-		</div>
-	</div>
-{/snippet}
 
 <div
 	class={[
-		'relative min-h-[176px] py-3 transition-all duration-300',
+		'relative min-h-44 py-3 transition-all duration-300',
 		!refreshed && !refreshing.current ? 'opacity-40' : 'opacity-100',
 		!refreshed && refreshing.current ? 'animate-pulse' : ''
 	]}
 >
-	<!-- {#if !focus?.departed}
-		<div class="flex items-center gap-1">
-			{#if timeUntilDeparture < 1}
-				<ArrowUpRight size={20} /> Departing soon
-			{:else}
-				<ArrowUpRight size={20} />Departing in {timeUntilDeparture}m
-			{/if}
-		</div>
-	{/if} -->
 	{#key data.service_id}
-		<!-- <BoardItem
-				href={`/board/${data.focusCrs}/t/${data.service_id}?to=${data.filterCrs}&backTo=/`}
-				id={data.service_id}
-				planDep={focus?.times.plan.dep ?? 'N/A'}
-				rtDep={focus?.times.rt.dep ?? null}
-				departed={focus.departed}
-				isCancelled={focus?.isCancelled}
-				focus={focus.name}
-				destination={service.destination}
-				platform={focus.platform}
-				crs={focus.crs ?? ''}
-				operator={data.service.operator}
-				isToday={data.service.isToday ?? false}
-				date={data.service.date}
-				{connection}
-				filter={filter
-					? {
-							name: filter.name,
-							planArr: filter.times.plan.arr ?? 'N/A',
-							rtArr: filter.times.rt.arr ?? null,
-							isCancelled: filter.isCancelled,
-							arrived: filter.arrived
-						}
-					: null}
-			/> -->
-
 		<a
 			out:fly={{ duration: 200, y: 150 }}
 			in:fly={{ duration: 200, y: -150, delay: 201 }}
@@ -570,7 +493,7 @@
 								<AlternativeConnection
 									from={connection.from}
 									to={connection.to}
-									time={filter?.times.rt.arr}
+									time={filter?.times.rt.arr ?? null}
 									allowance={Math.max(
 										connection.acrossLondon ? 15 : 3, // The minimum allowance
 										Math.min(
@@ -591,101 +514,10 @@
 											{failed}
 											from={connection.from}
 											to={connection.to}
-											offset={dayjsFromHHmm(filter?.times.rt.arr ?? filter?.times.plan.arr).diff(
-												dayjs(),
-												'minute'
-											)}
+											offset={dayjsFromHHmm(
+												filter?.times.rt.arr ?? filter?.times.plan.arr ?? dayjs().format('HH:mm')
+											).diff(dayjs(), 'minute')}
 										/>
-										<!-- <Item.Root>
-											{#if failed}
-												<div>
-													<Item.Title>Could not find an alternative in the next 2 hours</Item.Title>
-													<Item.Description
-														><a
-															class="block"
-															href="/board/{data.focusCrs}?to={data.filterCrs}&offset={dayjs(
-																data.service.date
-															).diff(dayjs(), 'minute')}">Make a search</a
-														>
-														<a href="https://www.nationalrail.co.uk"
-															>or use the national rail journey planner</a
-														></Item.Description
-													>
-												</div>
-												<Item.Actions class="flex w-full max-w-full  gap-2">
-													<Button
-														href="/board/{connection.from}?to={connection.to}&offset={dayjsFromHHmm(
-															filter?.times.rt.arr ?? filter?.times.plan.arr
-														).diff(dayjs(), 'minute')}"
-														variant="secondary"
-														class="w-1/2 grow"
-													>
-														Make a search
-													</Button>
-													<Button
-														href="https://nationalrail.co.uk"
-														variant="secondary"
-														class="w-1/2 grow"
-													>
-														NR Journey Planner
-													</Button>
-												</Item.Actions>
-											{:else if service}
-												<div class="w-full">
-													<Item.Title>An alternative was found</Item.Title>
-													<Item.Description class="grow text-foreground">
-														<div>
-															<BoardItem
-																class="h-18 pt-2"
-																id={service.rid}
-																href="#"
-																crs={data.focusCrs}
-																rtDep={service.times.rt.dep}
-																planDep={service.times.plan.dep}
-																destination={service.destination}
-																isCancelled={service.isCancelled}
-																departed={service.departed}
-																platform={service.platform}
-																operator={service.operator}
-															></BoardItem>
-														</div>
-													</Item.Description>
-												</div>
-												<Item.Actions class="flex w-full max-w-full flex-col gap-2">
-													<Button
-														variant="default"
-														class="w-full grow"
-														onclick={() => switchTo().then(() => (showMissedDialog = false))}
-													>
-														{#if switching}
-															<Spinner />
-														{:else}
-															Switch
-														{/if}
-													</Button>
-													<div class="flex w-full gap-2">
-														<Button
-															href="/board/{connection.from}?to={connection.to}&offset={dayjsFromHHmm(
-																filter?.times.rt.arr ?? filter?.times.plan.arr
-															).diff(dayjs(), 'minute')}"
-															variant="secondary"
-															class="w-1/2 grow"
-														>
-															More alternatives
-														</Button>
-														<Button
-															href="https://nationalrail.co.uk"
-															variant="secondary"
-															class="w-1/2 grow"
-														>
-															NR Journey Planner
-														</Button>
-													</div>
-												</Item.Actions>
-											{:else}
-												<Item.Title><Spinner /> Searching for an alternative</Item.Title>
-											{/if}
-										</Item.Root> -->
 									{/snippet}
 								</AlternativeConnection>
 							</Popover.Content>
@@ -701,9 +533,10 @@
 		<AlternativeConnection
 			from={data.focusCrs}
 			to={data.filterCrs}
-			time={focus?.times.plan.dep}
+			time={focus?.times.plan.dep ?? null}
 			{index}
 			existingRid={data.service_id}
+			allowance={0}
 		>
 			{#snippet children(service, switchTo, switching)}
 				{#if service}
@@ -734,111 +567,6 @@
 			{/snippet}
 		</AlternativeConnection>
 	{/if}
-	<!--
-	{#if connection && connection.schTime}
-		{#if !connection?.rtTime}
-			<AlternativeConnection
-				from={connection.from}
-				to={connection.to}
-				time={filter?.times.rt.arr}
-				index={connection.connectionIndex}
-				existingRid={connection.rid}
-				allowance={connection.schTime}
-			>
-				{#snippet children(service, switchTo, switching)}
-					<AlertCard status="minor" class="mt-2 font-normal" Icon={GitCompareArrowsIcon}>
-						{#if service}
-							{@render connectionAlternative(
-								`Connection to the ${connection.name} may no longer be possible.`,
-								`${service.times.plan.dep} to ${service.destination?.map((d) => d.name).join(', ')} (Exp. ${service.times.rt.dep === service.times.plan.dep ? 'On time' : service.times.rt.dep})`,
-								connection.acrossLondon,
-								switchTo,
-								switching
-							)}
-						{:else}
-							<div class="font-semibold">
-								Connection {#if connection.acrossLondon}(via Tube){/if} to the {connection.name} may
-								no longer be possible.
-							</div>
-						{/if}
-					</AlertCard>
-				{/snippet}
-			</AlternativeConnection>
-		{:else if connection.status === 'impossible'}
-			<AlternativeConnection
-				from={connection.from}
-				to={connection.to}
-				time={filter?.times.rt.arr}
-				index={connection.connectionIndex}
-				existingRid={connection.rid}
-				allowance={connection.schTime}
-			>
-				{#snippet children(service, switchTo, switching)}
-					<AlertCard status="major" class="mt-2 font-normal" Icon={GitCompareArrowsIcon}>
-						{#if service}
-							{#if connection.rtTime < 1}
-								{@render connectionAlternative(
-									`Connection to the ${connection.name} no longer possible, but an alternative was found.`,
-									`${service.times.plan.dep} to ${service.destination?.map((d) => d.name).join(', ')} (Exp. ${service.times.rt.dep === service.times.plan.dep ? 'On time' : service.times.rt.dep})`,
-									connection.acrossLondon,
-									switchTo,
-									switching
-								)}
-							{:else}
-								{@render connectionAlternative(
-									`Only ${connection.rtTime}m to change to the ${connection.name}, but an alternative was found.`,
-									`${service.times.plan.dep} to ${service.destination?.map((d) => d.name).join(', ')} (Exp. ${service.times.rt.dep === service.times.plan.dep ? 'On time' : service.times.rt.dep})`,
-									connection.acrossLondon,
-									switchTo,
-									switching
-								)}
-							{/if}
-						{:else}
-							<div class="font-semibold">
-								{#if connection.rtTime < 1}
-									Connection to the {connection.name} no longer possible.
-								{:else}
-									Only {connection.rtTime}m to change to the
-									{connection.name}.
-								{/if}
-							</div>
-						{/if}
-					</AlertCard>
-				{/snippet}
-			</AlternativeConnection>
-		{:else if connection.status === 'warning'}
-			<AlertCard status="minor" class="mt-2" Icon={GitCompareArrowsIcon}>
-				{connection.rtTime}m to change to the {connection.name}
-			</AlertCard>
-		{:else if connection.status === 'alternative'}
-			<AlternativeConnection
-				from={connection.from}
-				to={connection.to}
-				time={filter?.times.rt.arr}
-				index={connection.connectionIndex}
-				existingRid={connection.rid}
-				allowance={connection.schTime}
-			>
-				{#snippet children(service, switchTo, switching)}
-					<AlertCard status="minor" class="mt-2 font-normal" Icon={GitCompareArrowsIcon}>
-						{#if service}
-							{@render connectionAlternative(
-								`${connection.rtTime}m to change to the ${connection.name}, you may want to switch to this alternative.`,
-								`${service.times.plan.dep} to ${service.destination?.map((d) => d.name).join(', ')} (Exp. ${service.times.rt.dep === service.times.plan.dep ? 'On time' : service.times.rt.dep})`,
-								connection.acrossLondon,
-								switchTo,
-								switching
-							)}
-						{:else}
-							<div class="font-semibold">
-								{connection.rtTime}m to change to the {connection.name}
-							</div>
-						{/if}
-					</AlertCard>
-				{/snippet}
-			</AlternativeConnection>
-		{/if}
-	{/if} -->
 	<DropdownMenu.Root>
 		<DropdownMenu.Trigger
 			class={['absolute top-26 right-0', buttonVariants({ variant: 'outline', size: 'icon' })]}
@@ -884,62 +612,6 @@
 							to={data.filterCrs}
 							offset={dayjs(data.service.date).add(15, 'minutes').diff(dayjs(), 'minute')}
 						/>
-						<!-- <Item.Root variant="outline">
-							{#if failed}
-								<div>
-									<Item.Title>Could not find an alternative</Item.Title>
-									<Item.Description
-										><a
-											class="block"
-											href="/board/{data.focusCrs}?to={data.filterCrs}&offset={dayjs(
-												data.service.date
-											)
-												.add(15, 'minutes')
-												.diff(dayjs(), 'minute')}">Make a search</a
-										>
-										<a href="https://www.nationalrail.co.uk"
-											>or use the national rail journey planner</a
-										></Item.Description
-									>
-								</div>
-							{:else if service}
-								<div class="w-full">
-									<Item.Title>An alternative was found</Item.Title>
-									<Item.Description class="grow text-foreground">
-										<div>
-											<BoardItem
-												class="h-18 pt-2"
-												id={service.rid}
-												href="#"
-												crs={data.focusCrs}
-												rtDep={service.times.rt.dep}
-												planDep={service.times.plan.dep}
-												destination={service.destination}
-												isCancelled={service.isCancelled}
-												departed={service.departed}
-												platform={service.platform}
-												operator={service.operator}
-											></BoardItem>
-										</div>
-									</Item.Description>
-								</div>
-								<Item.Actions class="w-full">
-									<Button
-										variant="default"
-										class="w-full"
-										onclick={() => switchTo().then(() => (showMissedDialog = false))}
-									>
-										{#if switching}
-											<Spinner />
-										{:else}
-											Switch
-										{/if}
-									</Button>
-								</Item.Actions>
-							{:else}
-								<Item.Title><Spinner /> Searching for an alternative</Item.Title>
-							{/if}
-						</Item.Root> -->
 					{/snippet}
 				</AlternativeConnection>
 			</div>

@@ -1,4 +1,5 @@
 import { browser } from '$app/environment';
+
 import type { PinnedBoard, SavedTrain } from '$lib/types';
 
 export class LocalStore<T> {

@@ -1,7 +1,9 @@
 <script lang="ts">
-	let { crs, children } = $props();
+	import type { Snippet } from 'svelte';
 
-	let list = $state([]);
+	let { crs, children }: { crs: string; children: Snippet<[string, string, number]> } = $props();
+
+	let list: { crs: string; name: string }[] = $state([]);
 
 	async function getPopular(crs: string) {
 		if (localStorage.getItem('popular-' + crs)) {
@@ -21,6 +23,6 @@
 	});
 </script>
 
-{#each list as item, i}
+{#each list as item, i (item.crs)}
 	{@render children(item.name, item.crs, i)}
 {/each}

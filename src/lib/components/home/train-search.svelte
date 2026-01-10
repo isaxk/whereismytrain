@@ -1,26 +1,31 @@
 <script lang="ts">
-	import * as InputGroup from '$lib/components/ui/input-group/index.js';
-	import SearchIcon from '@lucide/svelte/icons/search';
-	import Fuse from 'fuse.js';
-	import format from 'format-fuse.js';
-	import AllStations from '$lib/data/stations.json';
 	import { browser } from '$app/environment';
-	import Highlight from '../search/highlight.svelte';
-	import { onMount, tick } from 'svelte';
-	import { ChevronRight, Clock, X } from 'lucide-svelte';
 	import { goto, preloadCode } from '$app/navigation';
+
+	import SearchIcon from '@lucide/svelte/icons/search';
 	import dayjs from 'dayjs';
-	import Button from '../ui/button/button.svelte';
-	import { dayjsFromHHmm, t } from '$lib/utils';
-	import Switch from '../ui/switch/switch.svelte';
-	import Label from '../ui/label/label.svelte';
-	import { paneHeight } from '$lib/state/map.svelte';
-	import Search from '../search/search.svelte';
-	import { pinned } from '$lib/state/saved.svelte';
-	import PinnedBoardItem from './pinned-board-item.svelte';
-	import { fade, fly, scale } from 'svelte/transition';
+	import format from 'format-fuse.js';
+	import Fuse from 'fuse.js';
+	import { ChevronRight, Clock, X } from 'lucide-svelte';
+	import { onMount, tick } from 'svelte';
 	import { flip } from 'svelte/animate';
+	import { fly, scale } from 'svelte/transition';
+
+	import * as InputGroup from '$lib/components/ui/input-group/index.js';
+	import AllStations from '$lib/data/stations.json';
+	import { paneHeight } from '$lib/state/map.svelte';
+	import { pinned } from '$lib/state/saved.svelte';
+	import { dayjsFromHHmm, t } from '$lib/utils';
+
+	import Highlight from '../search/highlight.svelte';
+	import Button from '../ui/button/button.svelte';
+	import Label from '../ui/label/label.svelte';
+	import Switch from '../ui/switch/switch.svelte';
+
+	import PinnedBoardItem from './pinned-board-item.svelte';
 	import Popular from './popular.svelte';
+
+	const { send, receive } = t;
 
 	let from: string | null = $state(null);
 	let to: string | null | undefined = $state(undefined);
@@ -31,13 +36,13 @@
 	let fromQ = $state('');
 	let toQ = $state('');
 
-	let fromInput: HTMLInputElement | null = null;
-	let toInput: HTMLInputElement | null = null;
-	let hourInput: HTMLInputElement | null = null;
-	let minuteInput: HTMLInputElement | null = null;
-	let form: HTMLFormElement | null = null;
+	let fromInput: HTMLInputElement | null = $state(null);
+	let toInput: HTMLInputElement | null = $state(null);
+	let hourInput: HTMLInputElement | null = $state(null);
+	let minuteInput: HTMLInputElement | null = $state(null);
+	let form: HTMLFormElement | null = $state(null);
 
-	let fromFocused = $state(false);
+	// let fromFocused = $state(false);
 	let toFocused = $state(false);
 	let minuteFocused = $state(false);
 	let opened = $state(false);
@@ -124,7 +129,7 @@
 				goto(href);
 			}
 		}}
-		class={[opened ? 'fixed inset-0 z-[1000] rounded-t-2xl bg-background p-4' : '']}
+		class={[opened ? 'fixed inset-0 z-1000 rounded-t-2xl bg-background p-4' : '']}
 	>
 		<div class="-mb-2 flex items-center gap-2">
 			<Button variant="outline" size="icon" onclick={() => (opened = false)}><X /></Button>
@@ -139,7 +144,7 @@
 		</div>
 
 		<div class="flex items-center gap-2">
-			<div class="w-full" in:t.receive={{ key: 'find-trains' }} out:t.send={{ key: 'find-trains' }}>
+			<div class="w-full" in:receive={{ key: 'find-trains' }} out:send={{ key: 'find-trains' }}>
 				<InputGroup.Root class="h-10 gap-0">
 					<InputGroup.Input
 						bind:ref={fromInput}
@@ -148,17 +153,17 @@
 							await tick();
 							paneHeight.break = 'top';
 							opened = true;
-							fromFocused = true;
+							// fromFocused = true;
 							fromQ = '';
 							from = null;
 							window.scrollTo({ top: 0 });
 						}}
-						onkeydown={(e) => {
+						onkeydown={() => {
 							from = null;
 						}}
 						onblur={async () => {
 							await tick();
-							fromFocused = false;
+							// fromFocused = false;
 						}}
 						autocorrect="off"
 						placeholder={[opened ? 'Search for a station...' : 'Find trains...']}
@@ -183,7 +188,7 @@
 							to = null;
 							window.scrollTo({ top: 0 });
 						}}
-						onkeydown={(e) => {
+						onkeydown={(e: KeyboardEvent) => {
 							console.log(e.keyCode);
 							if (e.keyCode === 8 && toQ.length === 0) {
 								e.preventDefault();
@@ -220,7 +225,7 @@
 								}
 							}
 						}
-						onkeydown={(e) => {
+						onkeydown={(e: KeyboardEvent) => {
 							console.log(e.keyCode);
 							if (e.keyCode === 8 && hour.length === 0) {
 								e.preventDefault();
@@ -249,7 +254,7 @@
 								minute = maxed.toString();
 							}
 						}
-						onkeydown={(e) => {
+						onkeydown={(e: KeyboardEvent) => {
 							console.log(e.keyCode);
 							if (e.keyCode === 8 && minute.length === 0) {
 								e.preventDefault();
@@ -278,7 +283,7 @@
 			<div class="py-4">
 				{#if !to && from !== null}
 					{#if toFormatted.length > 0}
-						{#each toFormatted as result, i}
+						{#each toFormatted as result, i (i)}
 							<button
 								type="button"
 								onclick={() => {
@@ -289,10 +294,10 @@
 								class="flex h-10 w-full items-center border-b border-border px-2 text-left last:border-none"
 							>
 								<div class="w-12 text-lg font-semibold">
-									<Highlight value={(result as any).crsCode} />
+									<Highlight value={(result as { crsCode: string }).crsCode} />
 								</div>
 								<div class="text-sm">
-									<Highlight value={(result as any).stationName} />
+									<Highlight value={(result as { stationName: string }).stationName} />
 								</div>
 							</button>
 						{/each}
@@ -319,7 +324,7 @@
 						</Popular>
 					{/if}
 				{:else if fromFormatted.length > 0 && !from}
-					{#each fromFormatted as result, i}
+					{#each fromFormatted as result, i (i)}
 						<button
 							type="button"
 							onclick={() => {
@@ -330,10 +335,10 @@
 							class="flex h-10 w-full items-center border-b border-border px-2 text-left last:border-none"
 						>
 							<div class="w-12 text-lg font-semibold">
-								<Highlight value={(result as any).crsCode} />
+								<Highlight value={(result as { crsCode: string }).crsCode} />
 							</div>
 							<div class="text-sm">
-								<Highlight value={(result as any).stationName} />
+								<Highlight value={(result as { stationName: string }).stationName} />
 							</div>
 						</button>
 					{/each}
@@ -367,7 +372,7 @@
 		{/if}
 	</form>
 {:else}
-	<div in:t.receive={{ key: 'find-trains' }} out:t.send={{ key: 'find-trains' }}>
+	<div in:receive={{ key: 'find-trains' }} out:send={{ key: 'find-trains' }}>
 		<Button
 			variant="outline"
 			onclick={() => {

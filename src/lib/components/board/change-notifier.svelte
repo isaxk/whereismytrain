@@ -1,8 +1,10 @@
 <script lang="ts">
-	import { cn } from '$lib/utils';
 	import clsx, { type ClassValue } from 'clsx';
+	import { scale } from 'svelte/transition';
+
+	import { cn } from '$lib/utils';
+
 	import type { Snippet } from 'svelte';
-	import { fade, scale } from 'svelte/transition';
 
 	let {
 		children,

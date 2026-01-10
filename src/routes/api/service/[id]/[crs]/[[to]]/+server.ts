@@ -1,6 +1,7 @@
-import { ACCESS_TOKEN } from '$env/static/private';
+import { error as kitError, json } from '@sveltejs/kit';
+import dayjs from 'dayjs';
+
 import { operatorList } from '$lib/data/operators';
-import { findOvergroundLine } from '$lib/data/overground';
 import type {
 	CallingPoint,
 	CallingPointOrder,
@@ -9,14 +10,26 @@ import type {
 	TimeObject,
 	TrainService
 } from '$lib/types';
+import type {
+	ServiceDetails,
+	ServiceLocation as APIServiceLocation,
+	Association
+} from '$lib/types/Api.js';
 import { parseServiceId } from '$lib/utils.js';
-import { error as kitError, json } from '@sveltejs/kit';
-import dayjs from 'dayjs';
-import { TreesIcon } from 'lucide-svelte';
+
+import { ACCESS_TOKEN } from '$env/static/private';
+
+type WorkingCallingPoint = APIServiceLocation & {
+	startDivide?: boolean;
+	endDivide?: boolean;
+	inDivision?: boolean;
+	startJoin?: boolean;
+	endJoin?: boolean;
+};
 
 const nullTime = '0001-01-01T00:00:00';
 
-function parseLocation(l: any): ServiceLocation {
+function parseLocation(l: APIServiceLocation): ServiceLocation {
 	if (l.sta === nullTime) l.sta = null;
 	if (l.std === nullTime) l.std = null;
 
@@ -28,11 +41,11 @@ function parseLocation(l: any): ServiceLocation {
 
 	return {
 		crs: l.crs ?? null,
-		name: l.locationName ?? null,
+		name: l.locationName ?? 'null',
 		platform: l.platform ?? null,
 		isCancelled: l.isCancelled ?? false,
 		tiploc: l.tiploc!,
-		isCallingPoint: l.crs && !l.isPass,
+		isCallingPoint: l.crs !== undefined && !l.isPass,
 		eta: l.eta ?? null,
 		etd: l.etd ?? null,
 		ata: l.ata ?? null,
@@ -43,7 +56,7 @@ function parseLocation(l: any): ServiceLocation {
 }
 
 function parseCallingPoint(
-	item: any,
+	item: WorkingCallingPoint,
 	index: number,
 	length: number,
 	focusIndex: number,
@@ -53,7 +66,7 @@ function parseCallingPoint(
 		name: string;
 		indexInCPs: number;
 	}[],
-	all: any[]
+	all: WorkingCallingPoint[]
 ): CallingPoint {
 	if (item.ata === nullTime) item.ata = null;
 	if (item.atd === nullTime) item.atd = null;
@@ -82,14 +95,7 @@ function parseCallingPoint(
 	const times: TimeObject = {
 		rt: {
 			arr: item.ata || item.eta ? dayjs(item.ata ?? item.eta).format('HH:mm') : null,
-			arrSource: item.arrivalSource === 'Trust' || item.arrivalSource === 'TD' ? 'trust' : 'none',
-			dep: item.atd || item.etd ? dayjs(item.atd ?? item.etd).format('HH:mm') : null,
-			depSource:
-				item.departureSource === 'Trust' ||
-				item.departureSource === 'TD' ||
-				item.departureSource === null
-					? 'trust'
-					: 'none'
+			dep: item.atd || item.etd ? dayjs(item.atd ?? item.etd).format('HH:mm') : null
 		},
 		plan: {
 			arr: item.sta ? dayjs(item.sta).format('HH:mm') : null,
@@ -205,7 +211,7 @@ function parseCallingPoint(
 
 	if (item.inDivision && cpsOnSplit.some((cp) => cp.startJoin)) {
 		const firstAfterDivision = all.find((_, j) => j > cpsOnSplit[cpsOnSplit.length - 1].indexInCPs);
-		if (firstAfterDivision.atdSpecified) {
+		if (firstAfterDivision?.atdSpecified) {
 			showTrain = false;
 		}
 	}
@@ -213,16 +219,16 @@ function parseCallingPoint(
 	// console.log('no departs after join', showTrain);
 
 	return {
-		crs: item.crs,
-		tiploc: item.tiploc,
-		name: item.locationName,
+		crs: item.crs!,
+		tiploc: item.tiploc!,
+		name: item.locationName ?? '',
 		times,
 		delay,
 		arrivalDelay,
-		rtDepDate: item.atd ?? item.etd,
-		departed: item.atd && item.atd !== nullTime,
-		arrived: item.ata && item.ata !== nullTime,
-		isCancelled: item.isCancelled,
+		rtDepDate: item.atd ?? item.etd ?? null,
+		departed: item.atdSpecified === true && item.atd !== nullTime,
+		arrived: item.ataSpecified === true && item.ata !== nullTime,
+		isCancelled: item.isCancelled ?? false,
 		departureCancelled,
 		arrivalCancelled,
 		inDivision: item.inDivision ?? false,
@@ -267,31 +273,32 @@ export const GET = async ({ params }) => {
 			);
 		}
 
-		const data = await response.json();
+		const data: ServiceDetails = await response.json();
 		// console.log(data);
-		const locations: ServiceLocation[][] = [data.locations.map(parseLocation)];
-		const rawCallingPoints = data.locations.filter((l: any) => !l.isPass && l.crs);
+		const locations: ServiceLocation[][] = [(data.locations ?? []).map(parseLocation)];
+		const rawCallingPoints: APIServiceLocation[] = (data.locations ?? []).filter(
+			(l) => !l.isPass && l.crs
+		);
 
-		let callingPoints: any[] = [];
-		let destination = [rawCallingPoints[rawCallingPoints.length - 1]];
+		let callingPoints: WorkingCallingPoint[] = [];
 
 		let formedFrom: string | null = null;
 
-		const hasNextAssoc = rawCallingPoints.find((l: any) =>
-			l.associations?.some((a: any) => a.category === 4 || a.category === 'next')
+		const hasNextAssoc = rawCallingPoints.find((l) =>
+			l.associations?.some((a) => a.category === 4 || a.category === 'next')
 		);
 		if (hasNextAssoc) {
-			const nextAssoc = hasNextAssoc.associations.find(
-				(l: any) => l.category === 4 || l.category === 'next'
+			const nextAssoc = hasNextAssoc.associations?.find(
+				(l: Association) => l.category === 4 || l.category === 'next'
 			);
-			formedFrom = `${nextAssoc?.rid}d${nextAssoc.destCRS || rawCallingPoints[0].crs}`;
+			formedFrom = `${nextAssoc?.rid}d${nextAssoc?.destCRS || rawCallingPoints[0].crs}`;
 		}
 
 		// Division logic
 
 		// If the current service *is* the division
 		// category 1 == 'divide'
-		if (rawCallingPoints[0].associations?.some((l: any) => l.category === 1)) {
+		if (rawCallingPoints[0].associations?.some((l) => l.category === 1)) {
 			// const assocService = await fetchAssocService(
 			// 	rawCallingPoints[0].associations.find((l: any) => l.category === 1).rid
 			// );
@@ -320,39 +327,39 @@ export const GET = async ({ params }) => {
 			// 	});
 			// }
 			callingPoints = rawCallingPoints;
-			const assoc = rawCallingPoints[0].associations?.find((l: any) => l.category === 1);
+			const assoc = rawCallingPoints[0].associations?.find((l) => l.category === 1);
 			console.log(assoc);
 			formedFrom = assoc ? `${assoc.rid}d${assoc.destCRS || rawCallingPoints[0].crs}` : null;
 		}
 		// the current service joins onto the 'main' service
 		else if (
-			rawCallingPoints[rawCallingPoints.length - 1].associations?.some((l: any) => l.category === 0)
+			rawCallingPoints[rawCallingPoints.length - 1].associations?.some((l) => l.category === 0)
 		) {
-			const assocService = await fetchAssocService(
-				rawCallingPoints[rawCallingPoints.length - 1].associations.find(
-					(l: any) => l.category === 0
-				).rid
-			);
+			const rid = rawCallingPoints?.[rawCallingPoints.length - 1].associations?.find(
+				(l) => l.category === 0
+			)?.rid;
+
+			const assocService: ServiceDetails | null = rid ? await fetchAssocService(rid) : null;
 
 			if (assocService) {
 				// add the location as a line to the map object
 				// locations.push(assocParsedLocations);
 
-				const assocRawCallingPoints: any[] = assocService.locations.filter(
-					(l: any) => !l.isPass && l.crs
+				const assocRawCallingPoints: WorkingCallingPoint[] = (assocService.locations ?? []).filter(
+					(l) => !l.isPass && l.crs
 				);
-				destination.push(assocRawCallingPoints[assocRawCallingPoints.length - 1]);
+				// destination.push(assocRawCallingPoints[assocRawCallingPoints.length - 1]);
 
-				const joinIndexOnAssoc = assocRawCallingPoints.findIndex((cp: any) =>
-					cp.associations?.some((l: any) => l.rid === id)
+				const joinIndexOnAssoc = assocRawCallingPoints.findIndex((cp) =>
+					cp.associations?.some((l) => l.rid === id)
 				);
-				const joinIndexOnAssocLocations = assocService.locations.findIndex((cp: any) =>
-					cp.associations?.some((l: any) => l.rid === id)
+				const joinIndexOnAssocLocations = (assocService.locations ?? []).findIndex((cp) =>
+					cp.associations?.some((l) => l.rid === id)
 				);
 
 				const joinOnAssoc = assocRawCallingPoints[joinIndexOnAssoc];
 
-				const joinOnAssocLocations = assocService.locations[joinIndexOnAssocLocations];
+				const joinOnAssocLocations = (assocService.locations ?? [])[joinIndexOnAssocLocations];
 
 				const lastOfMain = rawCallingPoints[rawCallingPoints.length - 1];
 				const lastOfAssoc = locations[0][locations[0].length - 1];
@@ -366,15 +373,14 @@ export const GET = async ({ params }) => {
 
 				locations[0][locations[0].length - 1] = {
 					...lastOfAssoc,
-					std: joinIndexOnAssocLocations.std,
-					etd: joinOnAssocLocations.etd,
-					atd: joinOnAssocLocations.atd
+					std: joinOnAssocLocations.std ?? null,
+					etd: joinOnAssocLocations.etd ?? null,
+					atd: joinOnAssocLocations.atd ?? null
 				};
 
 				callingPoints = rawCallingPoints.concat(assocRawCallingPoints.slice(joinIndexOnAssoc + 1));
-				locations[0] = locations[0].concat(
-					assocService.locations.slice(joinIndexOnAssocLocations + 1)
-				);
+				const sliced = assocService.locations!.slice(joinIndexOnAssocLocations + 1);
+				locations[0] = locations[0].concat(sliced.map(parseLocation));
 
 				// assocRawCallingPoints.forEach((cp: any) => {
 				// 	// Insert the join calling point to the list
@@ -400,27 +406,25 @@ export const GET = async ({ params }) => {
 		else {
 			for (const cp of rawCallingPoints) {
 				if (
-					cp.associations?.some((l: any) => l.category === 1 || l.category === 0) &&
+					cp.associations?.some((l) => l.category === 1 || l.category === 0) &&
 					destCrsList.length > 1
 				) {
 					// get associations
-					const associations = cp.associations.filter(
-						(l: any) => l.category === 1 || l.category === 0
-					);
+					const associations = cp.associations.filter((l) => l.category === 1 || l.category === 0);
 
 					// add the location before the division, with arr. info only
 					callingPoints.push({ ...cp, std: null, etd: null, atd: null });
 
 					// fetch assoc services
 					const assocServices = await Promise.all(
-						associations.map(async (assoc: any) => ({
-							...(await fetchAssocService(assoc.rid)),
+						associations.map(async (assoc) => ({
+							...(await fetchAssocService(assoc.rid!)),
 							category: assoc.category
 						}))
 					);
 
 					// sort assoc services by dep
-					assocServices.sort((a: any, b: any) => {
+					assocServices.sort((a, b) => {
 						const aOrigin = a.locations?.[0];
 						const bOrigin = b.locations?.[0];
 						if (dayjs(aOrigin.std).isBefore(dayjs(bOrigin.std))) {
@@ -436,13 +440,15 @@ export const GET = async ({ params }) => {
 						locations.push(parsedAssoc);
 
 						// filter for calling points
-						const assocRawCallingPoints = assocLocations.filter((l: any) => !l.isPass && l.crs);
+						const assocRawCallingPoints = assocLocations.filter(
+							(l: APIServiceLocation) => !l.isPass && l.crs
+						);
 
 						// add to destination array
-						destination.push(assocRawCallingPoints[assocRawCallingPoints.length - 1]);
+						// destination.push(assocRawCallingPoints[assocRawCallingPoints.length - 1]);
 
 						// add to calling points array
-						assocRawCallingPoints.forEach((cp: any, i: number) => {
+						assocRawCallingPoints.forEach((cp: WorkingCallingPoint, i: number) => {
 							callingPoints.push({
 								...cp,
 								inDivision: true,
@@ -480,26 +486,32 @@ export const GET = async ({ params }) => {
 		// console.log(destCrsList);
 		// console.log(callingPoints.map((cp) => cp.crs));
 
-		destination = destCrsList.map((item) => {
-			const cp = callingPoints.find((loc: any, i) => loc.crs === item && i > 0);
-			if (cp) {
-				return {
-					crs: cp.crs,
-					name: cp.locationName,
-					indexInCPs: callingPoints.findIndex((l, i) => l.crs === item && i > 0)
-				};
-			} else {
-				return null;
-			}
-		});
-		destination = destination.filter((item) => item !== null);
-
-		if (!destination.length) {
+		const destination: {
+			crs: string;
+			indexInCPs: number;
+			name: string;
+			via: string | null;
+		}[] = destCrsList
+			.map((item) => {
+				const cp = callingPoints.find((loc, i) => loc.crs === item && i > 0);
+				if (cp) {
+					return {
+						crs: cp.crs ?? '',
+						name: cp.locationName ?? '',
+						indexInCPs: callingPoints.findIndex((l, i) => l.crs === item && i > 0),
+						via: null
+					};
+				} else {
+					return null;
+				}
+			})
+			.filter((item) => item !== null);
+		if (!destination.length || !destination) {
 			throw new Error(`Could not find destination station(s) on route: ${destCrsList.join(', ')}`);
 		}
 
 		let focusIndex = callingPoints.findLastIndex(
-			(l, i) => l.crs === crs && i < destination[0].indexInCPs
+			(l, i) => l.crs === crs && i < (destination[0]?.indexInCPs ?? Number.POSITIVE_INFINITY)
 		);
 
 		const allThatMatchFilter = callingPoints
@@ -507,7 +519,7 @@ export const GET = async ({ params }) => {
 				...loc,
 				indexInCPs: i
 			}))
-			.filter((l, i) => l.crs === to)
+			.filter((l) => l.crs === to)
 			.toSorted((a, b) => dayjs(a.sta).diff(dayjs(b.sta)));
 
 		// console.log(
@@ -519,7 +531,7 @@ export const GET = async ({ params }) => {
 
 		let filterIndex = to
 			? allThatMatchFilter.find((l) => l.indexInCPs > focusIndex)?.indexInCPs
-			: callingPoints.findIndex((l, i) => destCrsList.includes(l.crs));
+			: callingPoints.findIndex((l) => destCrsList.includes(l.crs ?? ''));
 
 		// console.log('focusIndex', focusIndex);
 		// console.log('filterIndex', filterIndex);
@@ -527,10 +539,10 @@ export const GET = async ({ params }) => {
 		if ((!filterIndex || filterIndex === -1) && to) {
 			console.log('Could not find filter, retrying');
 			filterIndex = callingPoints.findLastIndex(
-				(l, i) => l.crs === to && i <= destination[0].indexInCPs
+				(l, i) => l.crs === to && i <= destination[0]!.indexInCPs
 			);
 			focusIndex = callingPoints.findLastIndex(
-				(l, i) => l.crs === crs && i < destination[0].indexInCPs && i < (filterIndex ?? 10000)
+				(l, i) => l.crs === crs && i < destination[0]!.indexInCPs && i < (filterIndex ?? 10000)
 			);
 			console.log('focusIndex', focusIndex);
 			console.log('filterIndex', filterIndex);
@@ -539,38 +551,40 @@ export const GET = async ({ params }) => {
 		if (filterIndex && focusIndex > filterIndex) {
 			console.log('Focus index is after filter index, retrying');
 			focusIndex = callingPoints.findLastIndex(
-				(l, i) => l.crs === crs && i < destination[0].indexInCPs && i < filterIndex
+				(l, i) => l.crs === crs && i < destination[0]!.indexInCPs && i < (filterIndex ?? 10000)
 			);
 			console.log('focusIndex', focusIndex);
 			console.log('filterIndex', filterIndex);
 		}
 
-		if (focusIndex === -1 || filterIndex === -1) {
+		if (focusIndex === -1 || filterIndex === -1 || !filterIndex) {
 			filterIndex = callingPoints.findLastIndex(
-				(l, i) => l.crs === to || destCrsList.includes(l.crs)
+				(l) => l.crs === to || destCrsList.includes(l.crs ?? '')
 			);
-			focusIndex = callingPoints.findLastIndex((l, i) => l.crs === crs && i < filterIndex);
+			focusIndex = callingPoints.findLastIndex(
+				(l, i) => l.crs === crs && i < (filterIndex ?? 10000)
+			);
 		}
 
-		if (focusIndex === -1 || filterIndex === -1) {
-			focusIndex = callingPoints.findIndex((l, i) => l.crs === crs);
+		if (focusIndex === -1 || filterIndex === -1 || !filterIndex) {
+			focusIndex = callingPoints.findIndex((l) => l.crs === crs);
 			filterIndex = callingPoints.findIndex(
-				(l, i) => (l.crs === to || destCrsList.includes(l.crs)) && i > focusIndex
+				(l, i) => (l.crs === to || destCrsList.includes(l.crs ?? '')) && i > focusIndex
 			);
 		}
 
-		if (focusIndex === -1 || filterIndex === -1) {
+		if (focusIndex === -1 || filterIndex === -1 || !filterIndex) {
 			throw new Error(`Could not query journey: ${crs}->${to ?? destCrsList[0]}, on this service`);
 		}
 
-		const date = callingPoints[focusIndex].std;
+		const date = callingPoints[focusIndex].std ?? dayjs().toString();
 
 		const title = `${dayjs(date).format('HH:mm')} to ${destination.map((l) => l.name).join(', ')}`;
 
-		let formationLengthOnly: boolean = data.locations[focusIndex]?.length ? true : false;
+		let formationLengthOnly: boolean = (data.locations ?? [])[focusIndex]?.length ? true : false;
 
-		let formation: Carriage[] | null = data.locations[focusIndex]?.length
-			? [...Array(data.locations[focusIndex]?.length).keys()].map((_, i) => {
+		let formation: Carriage[] | null = (data.locations ?? [])[focusIndex]?.length
+			? [...Array((data.locations ?? [])[focusIndex]?.length).keys()].map((_, i) => {
 					return {
 						coachNumber: (i + 1).toString(),
 						serviceClass: 'standard',
@@ -583,21 +597,21 @@ export const GET = async ({ params }) => {
 
 		if (data.formation) {
 			const focus = data.formation.find(
-				(f: any) => f.tiploc === data.locations[focusIndex]?.tiploc
+				(f) => f.tiploc === (data.locations ?? [])[focusIndex]?.tiploc
 			);
 			const lastWithLoading =
-				data.formation.find((f: any) =>
-					f ? f?.coaches?.some((c: any) => c.loading?.value !== null) : false
+				data.formation.find((f) =>
+					f ? f?.coaches?.some((c) => c.loading?.value !== null) : false
 				) ?? null;
 
 			if (focus?.coaches || lastWithLoading?.coaches) {
 				formationLengthOnly = false;
-				formation = ((focus?.coaches || lastWithLoading?.coaches) ?? []).map((c: any, i) => ({
-					coachNumber: c.number,
-					serviceClass: c.coachClass === 'First' ? 'first' : 'standard',
-					toilet: c.toilet && c.toilet?.value !== 'None',
+				formation = ((focus?.coaches || lastWithLoading?.coaches) ?? []).map((c, i) => ({
+					coachNumber: c.number ?? '',
+					serviceClass: (c.coachClass === 'First' ? 'first' : 'standard') as 'first' | 'standard',
+					toilet: (c.toilet && c.toilet?.value !== 'None') ?? false,
 					toiletIsAccessible: c.toilet?.value === 'Accessible',
-					loading: lastWithLoading.coaches[i].loading?.value ?? null
+					loading: (lastWithLoading?.coaches ?? [])[i].loading?.value ?? null
 				}));
 			}
 		}
@@ -606,11 +620,11 @@ export const GET = async ({ params }) => {
 			callingPoints[focusIndex].isCancelled = false;
 		}
 
-		if (data.operatorCode == 'LO') {
-			data.operatorCode = findOvergroundLine(data.uid);
-		}
+		// if (data.operatorCode == 'LO') {
+		// 	data.operatorCode = findOvergroundLine(data.uid);
+		// }
 
-		let category = 'standard';
+		let category: 'standard' | 'express' | 'sleeper' | 'bus' | 'metro' = 'standard';
 		if (data.category === 'XX' || data.category === 'XC') {
 			category = 'express';
 		} else if (data.category === 'XZ') {
@@ -638,25 +652,25 @@ export const GET = async ({ params }) => {
 			category,
 			isBus: data.serviceType === 'bus' || data.serviceType === 1,
 			operator: {
-				id: data.operatorCode,
-				name: operatorList[data.operatorCode].name ?? data.operator ?? 'Unknown',
-				color: operatorList[data.operatorCode].bg ?? '#000000'
+				id: data.operatorCode!,
+				name: operatorList[data.operatorCode!].name ?? data.operator ?? 'Unknown',
+				color: operatorList[data.operatorCode!].bg ?? '#000000'
 			},
 			title,
 			formedFrom,
 			destination,
 			formation,
 			formationLengthOnly,
-			uid: data.uid,
-			sdd: data.sdd,
+			uid: data.uid!,
+			sdd: data.sdd!,
 			date,
 			isToday: dayjs().isSame(date, 'day'),
-			reasonCode: data.delayReason?.value ?? data.cancelReason?.value ?? null
+			reasonCode: (data.delayReason?.value ?? data.cancelReason?.value ?? null)?.toString() ?? ''
 		};
 
 		return json(final);
-	} catch (error: any) {
-		console.error('error.message', error.message);
-		return kitError(500, error.message);
+	} catch (error: unknown) {
+		console.error('error.message', (error as Error).message);
+		return kitError(500, (error as Error).message);
 	}
 };

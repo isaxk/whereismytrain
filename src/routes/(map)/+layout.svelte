@@ -1,16 +1,17 @@
 <script lang="ts">
 	import '../../app.css';
-	import { MediaQuery } from 'svelte/reactivity';
-	import Map from '$lib/components/map/map.svelte';
-	import { Toaster } from '$lib/components/ui/sonner/index.js';
-	import { toast } from 'svelte-sonner';
-	import { ModeWatcher } from 'mode-watcher';
-	import Pane from '$lib/components/pane/pane.svelte';
-	import { onMount } from 'svelte';
-	import { updated } from '$app/state';
-	import { initializeNotifications, setupForegroundMessageHandler } from '$lib/notifications';
-	import { localStore, pwa } from '$lib/state/saved.svelte';
 	import { browser } from '$app/environment';
+
+	import { ModeWatcher } from 'mode-watcher';
+	import { onMount } from 'svelte';
+	import { MediaQuery } from 'svelte/reactivity';
+	import { toast } from 'svelte-sonner';
+
+	import Map from '$lib/components/map/map.svelte';
+	import Pane from '$lib/components/pane/pane.svelte';
+	import { Toaster } from '$lib/components/ui/sonner/index.js';
+	import { initializeNotifications, setupForegroundMessageHandler } from '$lib/notifications';
+	import { pwa } from '$lib/state/saved.svelte';
 
 	let { children, data } = $props();
 

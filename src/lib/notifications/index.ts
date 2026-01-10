@@ -1,14 +1,19 @@
-import { messaging } from './firebase';
-import { getToken, onMessage } from 'firebase/messaging';
 import { browser } from '$app/environment';
-import { env } from '$env/dynamic/public';
-import { parseServiceId } from '$lib/utils';
-import { toast } from 'svelte-sonner';
-import NotificationComponent from '$lib/components/home/notification.svelte';
 import { page } from '$app/state';
+
+import { getToken, onMessage } from 'firebase/messaging';
+import { toast } from 'svelte-sonner';
+
+import NotificationComponent from '$lib/components/home/notification.svelte';
+import { parseServiceId } from '$lib/utils';
+
+import { messaging } from './firebase';
+
+import { env } from '$env/dynamic/public';
 
 let token: string | null = null;
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function fnTimeout(fn: () => Promise<any>, delay: number) {
 	return new Promise<string | null>((resolve, reject) => {
 		setTimeout(() => {
@@ -101,7 +106,7 @@ export async function initializeNotifications() {
 
 		if (
 			sws.some((sw) => {
-				sw.active.scriptURL.includes('firebase-messaging-sw.js');
+				sw.active?.scriptURL.includes('firebase-messaging-sw.js');
 			})
 		) {
 			return null;
@@ -131,7 +136,7 @@ export async function initializeNotifications() {
 			setupForegroundMessageHandler();
 			return token;
 		} catch (error) {
-			console.error('Error stack:', error.stack);
+			console.error('Error stack:', error);
 		}
 	} catch (error) {
 		console.error('Error in initializeNotifications:', error);
@@ -162,7 +167,16 @@ export function setupForegroundMessageHandler() {
 				componentProps: {
 					title: payload.notification?.title ?? '',
 					service: payload.data?.service ?? '{}',
-					alertType: payload.data?.alertType ?? ''
+					alertType:
+						(payload.data?.alertType as
+							| 'delay'
+							| 'cancelled'
+							| 'platform'
+							| 'departed'
+							| 'filter-cancelled'
+							| 'filter-delay'
+							| 'reminder'
+							| '') ?? ''
 				},
 				duration: 5000
 			});

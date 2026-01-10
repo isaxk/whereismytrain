@@ -1,5 +1,6 @@
-import type { ServiceLocation, ServiceMapData, TrainService } from '$lib/types/index.js';
 import { error } from '@sveltejs/kit';
+
+import type { ServiceMapData } from '$lib/types/index.js';
 
 export const load = async ({ params, fetch, url }) => {
 	const { id, crs } = params;
@@ -13,14 +14,14 @@ export const load = async ({ params, fetch, url }) => {
 
 			if (!response.ok) {
 				// ❌ DO NOT throw SvelteKit errors here
-				return { error: data.message ?? 'Failed to load service' };
+				throw new Error(data.message ?? 'Failed to load service');
 			}
 
 			return data;
 		})
-		.catch(() => ({
-			error: 'Network error'
-		}));
+		.catch((e) => {
+			throw new Error(e.message ?? 'Failed to load service');
+		});
 
 	async function mapData(): Promise<ServiceMapData> {
 		const { locations, formedFrom } = await service;
