@@ -13,9 +13,13 @@ async function refresh() {
 		});
 		if (response.ok) {
 			const data = await response.json();
+			console.log(data);
 			if (data) {
 				service.subscriptions.forEach((subscription) => subscription.callback(data));
 			}
+		} else {
+			const data = await response.json();
+			console.error(`Failed to fetch service ${service.url} ${data.error}`);
 		}
 	}
 	setTimeout(

@@ -37,7 +37,8 @@
 
 	const refreshed = $derived.by(() => {
 		// console.log(Date.now() - data.lastRefreshed);
-		if (data.lastRefreshed && now.diff(dayjs(data.lastRefreshed)) > 25000) {
+		console.log('diff', Date.now() - data.lastRefreshed);
+		if (data.lastRefreshed && now.diff(dayjs(data.lastRefreshed), 's') > 25) {
 			return false;
 		}
 		return true;
