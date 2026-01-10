@@ -86,7 +86,7 @@ export const GET: RequestHandler = async ({ params }) => {
 				filterName: data.filterLocationName ?? null,
 				filterCrs: to && to != 'null' ? to : null,
 				offset: parseInt(offset ?? '0'),
-				time: dayjs.toString(),
+				time: time.toString(),
 				notices: nrccMessages
 			}
 		};
