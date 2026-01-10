@@ -2,7 +2,7 @@ import { error } from '@sveltejs/kit';
 
 import type { ServiceMapData } from '$lib/types/index.js';
 
-import { API_COMPATIBLE_VERSION } from '../../../../shared';
+import { API_COMPATIBLE_VERSION } from '../../../../../api/_shared/index.js';
 
 export const load = async ({ params, fetch, url }) => {
 	const { id, crs } = params;

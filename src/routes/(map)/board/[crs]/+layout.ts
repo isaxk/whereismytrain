@@ -3,7 +3,7 @@ import { error } from '@sveltejs/kit';
 import AllStationsJSON from '$lib/data/stations.json';
 import type { Board } from '$lib/types';
 
-import { API_COMPATIBLE_VERSION } from '../../shared.js';
+import { API_COMPATIBLE_VERSION } from '../../../api/_shared/index.js';
 
 export const load = async ({ params, fetch, url }) => {
 	const { crs } = params;

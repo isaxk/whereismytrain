@@ -7,7 +7,7 @@ import { Category, Severity, type Board, type Notice } from '$lib/types';
 import type { StationBoard } from '$lib/types/api';
 import { dayjsFromHHmm } from '$lib/utils';
 
-import { API_VERSION, parseBoardItem } from '../../../../../_shared';
+import { API_COMPATIBLE_VERSION, parseBoardItem } from '../../../../../_shared';
 
 import { ACCESS_TOKEN } from '$env/static/private';
 
@@ -21,7 +21,7 @@ export const GET: RequestHandler = async ({ params, request }) => {
 		return new Response('CRS is required', { status: 400 });
 	}
 
-	if (request.headers.get('api-version') !== API_VERSION) {
+	if (request.headers.get('api-version') !== API_COMPATIBLE_VERSION) {
 		return kitError(500, 'Your app version is not compatible. Please refresh your app.');
 	}
 
