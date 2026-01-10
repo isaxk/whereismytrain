@@ -1,5 +1,3 @@
-import { error } from '@sveltejs/kit';
-
 import AllStationsJSON from '$lib/data/stations.json';
 import type { Board } from '$lib/types';
 
