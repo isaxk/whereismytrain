@@ -77,7 +77,7 @@
 				details &&
 				(page.data.crs !== details.crs ||
 					page.data.to !== details.filterCrs ||
-					page.data.offset !== details.offset)
+					page.data.time != details.requestedTime)
 			) {
 				services = null;
 			}
@@ -95,7 +95,8 @@
 
 	function offsetUrl(offset: number) {
 		const url = new URL(page.url);
-		url.searchParams.set('offset', offset.toString());
+		const date = dayjs().add(offset, 'minute');
+		url.searchParams.set('time', date.format('HHmm'));
 		return url.toString();
 	}
 
@@ -130,7 +131,7 @@
 	function serviceUrl(rid: string) {
 		const search = new SvelteURLSearchParams();
 		if (data.to) search.set('to', data.to);
-		if (data.offset) search.set('offset', data.offset.toString());
+		if (data.time) search.set('time', data.time);
 		return `/board/${data.crs}/t/${rid}?${search.toString()}`;
 	}
 </script>

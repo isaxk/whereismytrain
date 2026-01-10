@@ -64,19 +64,19 @@
 	const fromFormatted = $derived(browser ? format(fromResults) : []);
 	const toFormatted = $derived(browser ? format(toResults) : []);
 
+	const initialTime = dayjs().format('HHmm');
+
 	const href = $derived.by(() => {
 		if (from) {
-			const offset = dayjsFromHHmm(`${hour}:${minute}`)
-				.add(tomorrow ? 1 : 0, 'day')
-				.diff(dayjs(), 'minute');
-			if (to && hour == dayjs().format('HH') && minute == dayjs().format('mm') && !tomorrow) {
+			const time = dayjs().hour(parseInt(hour)).minute(parseInt(minute)).format('HHmm');
+			if (to && time === initialTime && !tomorrow) {
 				return `/board/${from}?to=${to}`;
 			} else if (to) {
-				return `/board/${from}?offset=${offset}&to=${to}`;
-			} else if (hour == dayjs().format('HH') && minute == dayjs().format('mm') && !tomorrow) {
+				return `/board/${from}?time=${time}&to=${to}`;
+			} else if (time === initialTime && !tomorrow) {
 				return `/board/${from}`;
 			} else {
-				return `/board/${from}?offset=${offset}`;
+				return `/board/${from}?time=${time}`;
 			}
 		} else {
 			return `#`;
