@@ -90,7 +90,7 @@
 		{/key}
 		{#if page.data.id === rid}
 			{#each serviceData.callingPoints as cp, i (cp.tiploc + i)}
-				{@const tiploc = mapData?.tiplocData?.find((t) => t.crs === cp.crs)}
+				{@const tiploc = mapData?.tiplocData?.find((t) => t.tiploc === cp.tiploc)}
 				{#if tiploc?.coords}
 					{@const isTrainAtStation = mapData.locations.some(
 						(l) =>

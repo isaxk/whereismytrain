@@ -162,8 +162,9 @@ export const POST: RequestHandler = async ({ request }) => {
 			if (item.std === nullTime) item.std = null;
 			return {
 				...item,
-				coords: tiplocsData.find((tiploc) => item.crs && tiploc.crs === item.crs)?.coords ??
-					tiplocsData.find((tiploc) => tiploc.tiploc === item.tiploc)?.coords ?? [0, 0]
+				coords: tiplocsData.find((tiploc) => item.tiploc && tiploc.tiploc === item.tiploc)
+					?.coords ??
+					tiplocsData.find((tiploc) => tiploc.crs === item.crs)?.coords ?? [0, 0]
 			};
 		});
 
