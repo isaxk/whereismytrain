@@ -17,6 +17,8 @@ import type {
 } from '$lib/types/Api.js';
 import { parseServiceId } from '$lib/utils.js';
 
+import { API_VERSION } from '../../../../_shared';
+
 import { ACCESS_TOKEN } from '$env/static/private';
 
 type WorkingCallingPoint = APIServiceLocation & {
@@ -257,8 +259,12 @@ async function fetchAssocService(rid: string) {
 	}
 }
 
-export const GET = async ({ params }) => {
+export const GET = async ({ params, request }) => {
 	const { id: rawid, crs, to } = params;
+
+	if (request.headers.get('api-version') !== API_VERSION) {
+		return kitError(400, 'Your app version is not compatible. Please refresh your app.');
+	}
 
 	try {
 		const { id, destCrsList } = parseServiceId(rawid);

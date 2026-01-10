@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { page } from '$app/state';
 
 	import dayjs from 'dayjs';
 	import { ArrowLeft, ChevronRight, Clock, Pin, Plus } from 'lucide-svelte';
@@ -72,23 +73,28 @@
 				</div>
 			{/if}
 		</div>
-		{#if details?.time && Math.abs(details.offset) > 0}
-			<div class="flex items-center justify-center gap-1 px-4 text-xs text-nowrap">
-				<div class="min-w-3">
-					<Clock size={12} />
+		<div class="flex flex-col items-center">
+			{#if page.data.tomorrow == true}
+				<div class="px-4 text-[10px]/2 text-muted-foreground">Tomorrow</div>
+			{/if}
+			{#if details && Math.abs(details?.offset) > 0}
+				<div class="flex items-center justify-center gap-1 px-4 text-xs text-nowrap">
+					<div class="min-w-3">
+						<Clock size={12} />
+					</div>
+					{dayjs(details?.time).format('HH:mm')}
 				</div>
-				{dayjs(details?.time).format('HH:mm')}
-			</div>
-		{:else}
-			<div
-				class="flex items-center justify-center gap-1 px-2 text-xs text-nowrap text-muted-foreground"
-			>
-				<div class="min-w-3">
-					<Clock size={12} />
+			{:else}
+				<div
+					class="flex items-center justify-center gap-1 px-2 text-xs text-nowrap text-muted-foreground"
+				>
+					<div class="min-w-3">
+						<Clock size={12} />
+					</div>
+					now
 				</div>
-				now
-			</div>
-		{/if}
+			{/if}
+		</div>
 	</div>
 	<div class={['flex w-full min-w-0 grow flex-col items-end', to && 'pr-2']}>
 		{#if to}

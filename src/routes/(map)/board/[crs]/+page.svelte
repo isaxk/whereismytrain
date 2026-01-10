@@ -73,6 +73,12 @@
 
 	$effect(() => {
 		untrack(() => {
+			console.log(
+				'page.data.time',
+				page.data.time,
+				'details.requestedTime',
+				details?.requestedTime
+			);
 			if (
 				details &&
 				(page.data.crs !== details.crs ||
@@ -95,9 +101,30 @@
 
 	function offsetUrl(offset: number) {
 		const url = new URL(page.url);
+
 		const date = dayjs().add(offset, 'minute');
-		url.searchParams.set('time', date.format('HHmm'));
-		return url.toString();
+
+		console.log(
+			'offset',
+			offset,
+			'date',
+			date.format('YYYY-MM-DD HH:mm'),
+			'dayjs()',
+			dayjs().format('YYYY-MM-DD HH:mm')
+		);
+
+		if (offset === 0) {
+			url.searchParams.delete('time');
+			url.searchParams.delete('tomorrow');
+			return url.toString();
+		} else {
+			url.searchParams.delete('tomorrow');
+			if (!date.isSame(dayjs(), 'day')) {
+				url.searchParams.set('tomorrow', 'true');
+			}
+			url.searchParams.set('time', date.format('HHmm'));
+			return url.toString();
+		}
 	}
 
 	const laterUrl = $derived.by(() => {
@@ -107,7 +134,7 @@
 			const last = services[services.length - 1];
 			if (!last.rawTime || !first.rawTime) return offsetUrl(details.offset + 60);
 			const diff = dayjs(last.rawTime).diff(dayjs(first.rawTime), 'minute');
-			console.log(diff);
+			console.log('later', 'diff+details.offset', diff + details.offset);
 			return offsetUrl(details.offset + diff);
 		} else {
 			return '#';
@@ -121,7 +148,7 @@
 			const last = services[services.length - 1];
 			if (!last.rawTime || !first.rawTime) return offsetUrl(details.offset - 20);
 			const diff = dayjs(last.rawTime).diff(dayjs(first.rawTime), 'minute');
-			// console.log(diff);
+			console.log('earlier', 'details.offset-diff', details.offset - diff);
 			return offsetUrl(details.offset - diff);
 		} else {
 			return '#';

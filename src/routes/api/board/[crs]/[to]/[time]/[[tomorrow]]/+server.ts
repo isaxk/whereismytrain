@@ -7,23 +7,30 @@ import { Category, Severity, type Board, type Notice } from '$lib/types';
 import type { StationBoard } from '$lib/types/api';
 import { dayjsFromHHmm } from '$lib/utils';
 
-import { parseBoardItem } from '../../../../_shared';
+import { API_VERSION, parseBoardItem } from '../../../../../_shared';
 
 import { ACCESS_TOKEN } from '$env/static/private';
 
 dayjs.extend(utc);
 dayjs.extend(tz);
 
-export const GET: RequestHandler = async ({ params }) => {
-	const { crs, to, time } = params;
+export const GET: RequestHandler = async ({ params, request }) => {
+	const { crs, to, time, tomorrow: tomorrowParam } = params;
 
 	if (!crs) {
 		return new Response('CRS is required', { status: 400 });
 	}
 
-	console.log(time);
+	if (request.headers.get('api-version') !== API_VERSION) {
+		return kitError(500, 'Your app version is not compatible. Please refresh your app.');
+	}
 
-	const date = time && time != 'null' ? dayjsFromHHmm(time, false) : dayjs();
+	const tomorrow = tomorrowParam == 'true';
+
+	console.log('tomorrow', tomorrow);
+
+	const date =
+		time && time != 'null' ? dayjsFromHHmm(time, false).add(tomorrow ? 24 : 0, 'hour') : dayjs();
 	console.log(date.toString());
 
 	const offset = time && time != 'null' ? date.diff(dayjs(), 'minute') : 0;
@@ -91,7 +98,7 @@ export const GET: RequestHandler = async ({ params }) => {
 				filterCrs: to && to != 'null' ? to : null,
 				offset: offset,
 				time: date.toString(),
-				requestedTime: time,
+				requestedTime: time ?? null,
 				notices: nrccMessages
 			}
 		};
