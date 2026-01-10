@@ -1,9 +1,10 @@
-import csv from 'csv-parser';
-import { createClient } from '@supabase/supabase-js';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
+
+import { createClient } from '@supabase/supabase-js';
+import csv from 'csv-parser';
+import * as dotenv from 'dotenv';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

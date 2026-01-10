@@ -1,11 +1,12 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { TrainFront, TramFront } from 'lucide-svelte';
-	import { Marker } from 'svelte-maplibre';
+
 	import { Tween } from 'svelte/motion';
 	import { fade } from 'svelte/transition';
-	import Spinner from '../ui/spinner/spinner.svelte';
+	import { Marker } from 'svelte-maplibre';
+
 	import TrainIconByCategory from '../train/train-icon-by-category.svelte';
+	import Spinner from '../ui/spinner/spinner.svelte';
 
 	let {
 		trainPosition,

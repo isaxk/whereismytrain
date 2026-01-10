@@ -1,17 +1,20 @@
-import { ACCESS_TOKEN, SUPABASE_ANON_KEY, SUPABASE_URL } from '$env/static/private';
+import { createClient } from '@supabase/supabase-js';
+import { json } from '@sveltejs/kit';
+import dayjs from 'dayjs';
+import timezone from 'dayjs/plugin/timezone';
+import utc from 'dayjs/plugin/utc';
+
+import { type ServiceLocation as APIServiceLocation } from '$lib/types/api';
 import type {
 	MapDataLocationGroup,
 	ServiceLocation,
 	ServiceLocationWithCoords
 } from '$lib/types/index.js';
-import dayjs from 'dayjs';
-import utc from 'dayjs/plugin/utc';
-import timezone from 'dayjs/plugin/timezone';
-import type { RequestHandler } from './$types';
-import { createClient } from '@supabase/supabase-js';
-import { json } from '@sveltejs/kit';
 import { calculateBearing, parseServiceId } from '$lib/utils';
-import { parse } from 'zod/v4-mini';
+
+import type { RequestHandler } from './$types';
+
+import { ACCESS_TOKEN, SUPABASE_ANON_KEY, SUPABASE_URL } from '$env/static/private';
 
 const nullTime = '0001-01-01T00:00:00';
 
@@ -20,10 +23,10 @@ dayjs.extend(timezone);
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-type TiplocDataItem = {
-	tiploc: string;
-	coords: [number, number];
-};
+// type TiplocDataItem = {
+// 	tiploc: string;
+// 	coords: [number, number];
+// };
 
 async function fetchAssocService(rid: string) {
 	const response = await fetch(
@@ -110,18 +113,20 @@ function calculateTrainPosition(
 	return { coords, bearing };
 }
 
-function parseLocation(l: any): ServiceLocation {
+function parseLocation(l: APIServiceLocation): ServiceLocation {
 	return {
 		crs: l.crs ?? null,
 		isCancelled: l.isCancelled ?? false,
 		tiploc: l.tiploc!,
-		isCallingPoint: l.crs && !l.isPass,
-		eta: (l.eta ?? null) === nullTime ? null : l.eta,
-		etd: (l.etd ?? null) === nullTime ? null : l.etd,
-		ata: (l.ata ?? null) === nullTime ? null : l.ata,
-		atd: (l.atd ?? null) === nullTime ? null : l.atd,
-		sta: (l.sta ?? null) === nullTime ? null : l.sta,
-		std: (l.std ?? null) === nullTime ? null : l.std
+		name: l.locationName ?? '',
+		platform: l.platform ?? null,
+		isCallingPoint: l.crs !== undefined && !l.isPass,
+		eta: (l.eta ?? null) === nullTime ? null : (l.eta ?? null),
+		etd: (l.etd ?? null) === nullTime ? null : (l.etd ?? null),
+		ata: (l.ata ?? null) === nullTime ? null : (l.ata ?? null),
+		atd: (l.atd ?? null) === nullTime ? null : (l.atd ?? null),
+		sta: (l.sta ?? null) === nullTime ? null : (l.sta ?? null),
+		std: (l.std ?? null) === nullTime ? null : (l.std ?? null)
 	};
 }
 
@@ -134,9 +139,7 @@ export const POST: RequestHandler = async ({ request }) => {
 	const tiplocs: string[] = [];
 	const crs: string[] = [];
 
-	const { id: formedFromId, destCrsList: formedFromDest } = formedFrom
-		? parseServiceId(formedFrom)
-		: { id: null, destCrsList: [] };
+	const { id: formedFromId } = formedFrom ? parseServiceId(formedFrom) : { id: null };
 
 	locations.forEach((group) => {
 		group.forEach((location) => {
@@ -159,8 +162,9 @@ export const POST: RequestHandler = async ({ request }) => {
 			if (item.std === nullTime) item.std = null;
 			return {
 				...item,
-				coords: tiplocsData.find((tiploc) => item.crs && tiploc.crs === item.crs)?.coords ??
-					tiplocsData.find((tiploc) => tiploc.tiploc === item.tiploc)?.coords ?? [0, 0]
+				coords: tiplocsData.find((tiploc) => item.tiploc && tiploc.tiploc === item.tiploc)
+					?.coords ??
+					tiplocsData.find((tiploc) => tiploc.crs === item.crs)?.coords ?? [0, 0]
 			};
 		});
 

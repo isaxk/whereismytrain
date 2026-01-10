@@ -1,4 +1,5 @@
 import bbox from '@turf/bbox';
+
 import type { Feature } from 'geojson';
 import type { LngLatBoundsLike, LngLatLike } from 'maplibre-gl';
 
@@ -26,10 +27,10 @@ export function cameraForBoundsCustom(
 	bounds: number[],
 	padding: { top: number; bottom: number; left: number; right: number }
 ) {
-	let west = bounds[0];
-	let south = bounds[1];
-	let east = bounds[2] ?? bounds[3];
-	let north = bounds[3] ?? bounds[4];
+	const west = bounds[0];
+	const south = bounds[1];
+	const east = bounds[2] ?? bounds[3];
+	const north = bounds[3] ?? bounds[4];
 	if (west == null || south == null || east == null || north == null) {
 		return null;
 	}

@@ -1,6 +1,7 @@
-import type { Board } from '$lib/types/index.js';
 import { error } from '@sveltejs/kit';
+
 import AllStationsJSON from '$lib/data/stations.json';
+import type { Board } from '$lib/types/index.js';
 
 export const load = async ({ params, fetch, url }) => {
 	const { crs } = params;

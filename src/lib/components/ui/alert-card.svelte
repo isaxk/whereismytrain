@@ -1,7 +1,9 @@
 <script lang="ts">
-	import { cn } from '$lib/utils';
 	import clsx from 'clsx';
-	import { CircleAlert, Info } from 'lucide-svelte';
+	import { CircleAlert } from 'lucide-svelte';
+
+	import { cn } from '$lib/utils';
+
 	import type { Snippet } from 'svelte';
 
 	let {

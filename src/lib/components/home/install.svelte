@@ -1,8 +1,9 @@
 <script lang="ts">
-	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import * as Carousel from '$lib/components/ui/carousel/index.js';
+	import * as Dialog from '$lib/components/ui/dialog/index.js';
+
 	import { buttonVariants } from '../ui/button';
-	import { Download } from 'lucide-svelte';
+
 	import type { Snippet } from 'svelte';
 
 	let {

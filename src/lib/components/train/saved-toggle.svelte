@@ -1,14 +1,16 @@
 <script lang="ts">
-	import { localStore, pwa, saved } from '$lib/state/saved.svelte';
-	import type { TrainService, SavedTrain as SavedTrainType } from '$lib/types';
+	import dayjs from 'dayjs';
 	import { Bell, BellOff, BellRing, BookmarkIcon, X } from 'lucide-svelte';
+
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 	import { subscribeToTrain, unsubscribeToTrain } from '$lib/notifications';
-	import { Spinner } from '../ui/spinner/index';
-	import dayjs from 'dayjs';
-	import { dayjsFromHHmm, iOS } from '$lib/utils';
-	import Button from '../ui/button/button.svelte';
+	import { localStore, pwa, saved } from '$lib/state/saved.svelte';
+	import type { TrainService, SavedTrain as SavedTrainType } from '$lib/types';
+	import { iOS } from '$lib/utils';
+
 	import Install from '../home/install.svelte';
+	import Button from '../ui/button/button.svelte';
+	import { Spinner } from '../ui/spinner/index';
 
 	let {
 		service,
@@ -81,7 +83,6 @@
 	const firstAfterCallingPointCrs = $derived.by(() => afterCallingPoints[0]?.crs);
 
 	const promptDismissed = localStore<boolean>('saved-prompt-dismissed', false);
-	$inspect('promptDismissed', promptDismissed.value);
 </script>
 
 {#if !pwa.value && iOS()}
@@ -115,7 +116,7 @@
 	</Button>
 	{#if failedToSubscribe}
 		<div
-			class="absolute top-14 right-4 z-[20] flex items-center gap-1 rounded border border-border bg-background px-1.5 py-0.5 text-xs text-foreground drop-shadow"
+			class="absolute top-14 right-4 z-20 flex items-center gap-1 rounded border border-border bg-background px-1.5 py-0.5 text-xs text-foreground drop-shadow"
 		>
 			Failed to setup notifications
 			<button onclick={() => (failedToSubscribe = false)}><X size={14} /></button>
@@ -136,7 +137,7 @@
 	</Button>
 	{#if !promptDismissed.value}
 		<div
-			class="absolute top-14 right-4 z-[20] flex items-center gap-1 rounded border border-border bg-background px-1.5 py-0.5 text-xs text-foreground drop-shadow"
+			class="absolute top-14 right-4 z-20 flex items-center gap-1 rounded border border-border bg-background px-1.5 py-0.5 text-xs text-foreground drop-shadow"
 		>
 			Receive notifications for this train?
 			<button onclick={() => (promptDismissed.value = true)}><X size={14} /></button>
@@ -167,7 +168,7 @@
 	</DropdownMenu.Root>
 	{#if !promptDismissed.value}
 		<div
-			class="absolute top-14 right-4 z-[20] flex items-center gap-1 rounded border border-border bg-background px-1.5 py-0.5 text-xs text-foreground drop-shadow"
+			class="absolute top-14 right-4 z-20 flex items-center gap-1 rounded border border-border bg-background px-1.5 py-0.5 text-xs text-foreground drop-shadow"
 		>
 			Receive notifications for this train?
 			<button onclick={() => (promptDismissed.value = true)}><X size={14} /></button>

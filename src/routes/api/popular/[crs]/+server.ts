@@ -1,7 +1,9 @@
-import { REFERENCE_DATA_KEY, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_URL } from '$env/static/private';
 import { createClient } from '@supabase/supabase-js';
 import { type RequestHandler, json } from '@sveltejs/kit';
+
 import AllStationsJSON from '$lib/data/stations.json';
+
+import { SUPABASE_SERVICE_ROLE_KEY, SUPABASE_URL } from '$env/static/private';
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 

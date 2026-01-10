@@ -1,7 +1,9 @@
-import { ACCESS_TOKEN, FASTEST_KEY, REFERENCE_DATA_KEY } from '$env/static/private';
-import { type RequestHandler, error, json } from '@sveltejs/kit';
+import { type RequestHandler, json } from '@sveltejs/kit';
 import dayjs from 'dayjs';
+
 import { parseBoardItem } from '../../../../_shared';
+
+import { ACCESS_TOKEN, FASTEST_KEY } from '$env/static/private';
 
 export const GET: RequestHandler = async ({ params }) => {
 	const { crs, to, offset } = params;
@@ -36,7 +38,6 @@ export const GET: RequestHandler = async ({ params }) => {
 
 	if (!response.ok) {
 		throw new Error('Failed to fetch station board');
-		return;
 	}
 
 	const data = await response.json();
@@ -45,6 +46,7 @@ export const GET: RequestHandler = async ({ params }) => {
 		const parsed = parseBoardItem(data.departures[0].service);
 		return json(parsed);
 	} else {
-		return error(404, 'No service found');
+		throw new Error('No service found');
 	}
+	return json({});
 };

@@ -63,7 +63,7 @@ export enum Severity {
 export enum Category {
 	Trainservice = 0,
 	Station = 1,
-	Connectingservices = 2
+	Connectingservice = 2
 }
 
 export type Notice = {
@@ -82,13 +82,15 @@ export type ServiceLocation = {
 	tiploc: string;
 	isCancelled: boolean;
 	isCallingPoint: boolean;
-
+	name: string;
+	platform: string | null;
 	atd: string | null;
 	ata: string | null;
 	etd: string | null;
 	eta: string | null;
 	std: string | null;
 	sta: string | null;
+	inDivision?: boolean;
 };
 
 export type CallingPointOrder =
@@ -104,7 +106,7 @@ export type CallingPoint = {
 	crs: string | null;
 	tiploc: string;
 	times: TimeObject;
-	rtDepDate: string;
+	rtDepDate: string | null;
 	isCancelled: boolean;
 	departureCancelled: boolean;
 	arrivalCancelled: boolean;
@@ -153,7 +155,7 @@ export type TrainService = {
 	formation: Carriage[] | null;
 	formationLengthOnly: boolean;
 	destination: DestinationOrigin[];
-	category: 'standard' | 'express';
+	category: 'standard' | 'express' | 'sleeper' | 'bus' | 'metro';
 };
 
 export type SavedTrain = {
@@ -194,6 +196,7 @@ export type ServiceMapData = {
 	type: 'service';
 	locations: MapDataLocationGroup[];
 	tiplocData: {
+		crs: string | null;
 		tiploc: string;
 		coords: [number, number];
 	}[];

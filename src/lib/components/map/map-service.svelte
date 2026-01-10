@@ -1,17 +1,19 @@
 <script lang="ts">
-	import { TrainFront } from 'lucide-svelte';
-	import { Marker } from 'svelte-maplibre';
-	import MapLocationGroup from './map-location-group.svelte';
-	import type { ServiceMapData, TrainService } from '$lib/types';
-	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
-	import { fade } from 'svelte/transition';
-	import Spinner from '../ui/spinner/spinner.svelte';
+
 	import clsx from 'clsx';
-	import TrainIconByCategory from '../train/train-icon-by-category.svelte';
+	import { MediaQuery } from 'svelte/reactivity';
+	import { fade } from 'svelte/transition';
+	import { Marker } from 'svelte-maplibre';
+
 	import { highlightedStation, paneHeight } from '$lib/state/map.svelte';
 	import { explicitEffect } from '$lib/state/utils.svelte';
-	import { MediaQuery } from 'svelte/reactivity';
+	import type { ServiceMapData, TrainService } from '$lib/types';
+
+	import TrainIconByCategory from '../train/train-icon-by-category.svelte';
+	import Spinner from '../ui/spinner/spinner.svelte';
+
+	import MapLocationGroup from './map-location-group.svelte';
 
 	let {
 		serviceData,
@@ -76,7 +78,6 @@
 					focus={crs}
 					to={filter}
 					href="/board/{crs}/t/{rid}?{filter ? `to=${filter}&` : ''}backTo=/"
-					isAtStation={false}
 					showDestination={mapData.locations.reduce(
 						(acc, curr) => acc + (curr.trainPosition ? 1 : 0),
 						0
@@ -89,7 +90,7 @@
 		{/key}
 		{#if page.data.id === rid}
 			{#each serviceData.callingPoints as cp, i (cp.tiploc + i)}
-				{@const tiploc = mapData?.tiplocData?.find((t) => t.crs === cp.crs)}
+				{@const tiploc = mapData?.tiplocData?.find((t) => t.tiploc === cp.tiploc)}
 				{#if tiploc?.coords}
 					{@const isTrainAtStation = mapData.locations.some(
 						(l) =>

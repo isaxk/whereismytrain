@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+
 	import { onMount } from 'svelte';
 
 	let { data } = $props();
@@ -8,6 +9,7 @@
 	const filter = $derived(data.service.callingPoints.find((l) => l.order === 'filter'));
 
 	const title = $derived.by(() => {
+		if (!filter || !focus) return;
 		if (data.service.destination.some((d) => d.name === filter.name)) {
 			return `${focus.times.plan.dep} ${focus.name} to ${data.service.destination.map((d) => d.name).join(', ')}`;
 		} else {

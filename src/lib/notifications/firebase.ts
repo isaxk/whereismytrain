@@ -1,6 +1,7 @@
 import { browser } from '$app/environment';
+
 import { initializeApp } from 'firebase/app';
-import { getMessaging, getToken, onMessage, type Messaging } from 'firebase/messaging';
+import { getMessaging, type Messaging } from 'firebase/messaging';
 
 const firebaseConfig = {
 	apiKey: 'AIzaSyDyFUzz7pCfBXpPvJY2O8NskGRKRjlsKK0',

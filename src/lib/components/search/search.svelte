@@ -1,16 +1,18 @@
 <script lang="ts">
-	import { paneHeight } from '$lib/state/map.svelte';
-	import { X } from 'lucide-svelte';
-	import Fuse from 'fuse.js';
-	import format from 'format-fuse.js';
-
-	import { untrack, type Snippet } from 'svelte';
-	import { crossfade, fade, scale } from 'svelte/transition';
-	import AllStations from '$lib/data/stations.json';
 	import { browser } from '$app/environment';
-	import Highlight from './highlight.svelte';
-	import type { TransitionEventHandler } from 'svelte/elements';
+
+	import format from 'format-fuse.js';
+	import Fuse from 'fuse.js';
+	import { X } from 'lucide-svelte';
+	import { type Snippet } from 'svelte';
+	import { crossfade, fade } from 'svelte/transition';
+
+	import AllStations from '$lib/data/stations.json';
+	import { paneHeight } from '$lib/state/map.svelte';
+
 	import Popular from '../home/popular.svelte';
+
+	import Highlight from './highlight.svelte';
 
 	let {
 		trigger,
@@ -39,7 +41,7 @@
 
 	let active = $state(false);
 	let value = $state('');
-	let elm: HTMLInputElement;
+	let elm: HTMLInputElement | undefined = $state();
 
 	const [send, receive] = crossfade({ duration: 200 });
 	let beforeBreak: 'top' | 'middle' | 'bottom' | null = null;
@@ -50,7 +52,7 @@
 
 		beforeBreak = paneHeight.break !== 'bottom' ? paneHeight.break : 'middle';
 		paneHeight.break = 'top';
-		setTimeout(() => elm.focus(), 50);
+		setTimeout(() => elm?.focus(), 50);
 	}
 
 	function closeSearch() {
@@ -96,7 +98,10 @@
 			out:send|global={{ key }}
 			in:receive|global={{ key }}
 			onclick={() => openSearch()}
-			class="group/input-group flex h-12 flex-col justify-center overflow-hidden rounded-md border border-input bg-background px-4 text-left shadow-xs transition-[color,box-shadow] outline-none dark:bg-input/30"
+			class={[
+				'group/input-group flex h-12 flex-col justify-center overflow-hidden rounded-md border border-input bg-background px-4 text-left shadow-xs transition-[color,box-shadow] outline-none dark:bg-input/30',
+				className
+			]}
 		>
 			{#if selectedStation}
 				<div class="text-base/4 font-semibold">{selectedStation.crsCode}</div>
@@ -143,10 +148,10 @@
 						class="flex h-10 w-full items-center border-b border-border px-2 text-left last:border-none"
 					>
 						<div class="w-12 text-lg font-semibold">
-							<Highlight value={(result as any).crsCode} />
+							<Highlight value={(result as { crsCode: string }).crsCode} />
 						</div>
 						<div class="text-sm">
-							<Highlight value={(result as any).stationName} />
+							<Highlight value={(result as { stationName: string }).stationName} />
 						</div>
 					</button>
 				{/each}

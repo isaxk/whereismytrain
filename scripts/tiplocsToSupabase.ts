@@ -1,9 +1,9 @@
-import { createClient } from '@supabase/supabase-js';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as dotenv from 'dotenv';
-
 import { fileURLToPath } from 'url';
+
+import { createClient } from '@supabase/supabase-js';
+import * as dotenv from 'dotenv';
 
 // --- ESM-compatible way to get __dirname equivalent ---
 const __filename = fileURLToPath(import.meta.url);

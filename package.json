@@ -29,6 +29,8 @@
 		"clsx": "^2.1.1",
 		"embla-carousel-svelte": "^8.6.0",
 		"eslint": "^9.39.1",
+		"eslint-import-resolver-typescript": "^4.4.4",
+		"eslint-plugin-import": "^2.32.0",
 		"eslint-plugin-svelte": "^3.13.0",
 		"globals": "^16.5.0",
 		"prettier": "^3.6.2",

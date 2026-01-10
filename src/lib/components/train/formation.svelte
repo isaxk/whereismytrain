@@ -1,9 +1,8 @@
 <script lang="ts">
+	import { Accessibility, ArrowLeft, ArrowRight, Bike, Toilet, VolumeOffIcon } from 'lucide-svelte';
+	import { fade } from 'svelte/transition';
+
 	import type { Carriage } from '$lib/types';
-	import ArrowRight from '@lucide/svelte/icons/arrow-right';
-	import { Accessibility, ArrowLeft, Bike, Toilet, VolumeOffIcon } from 'lucide-svelte';
-	import { fade, slide } from 'svelte/transition';
-	import { ca } from 'zod/locales';
 
 	let {
 		formation,

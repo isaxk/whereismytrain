@@ -1,40 +1,31 @@
 <script lang="ts">
-	import { paneHeight } from '$lib/state/map.svelte';
+	import { goto } from '$app/navigation';
+	import { page } from '$app/state';
+
+	import { LngLatBounds } from 'maplibre-gl';
+	import { onMount } from 'svelte';
+	import { MediaQuery } from 'svelte/reactivity';
 	import {
-		Layer,
 		MapLibre,
 		Marker,
-		MarkerLayer,
 		GeoJSON,
 		type LngLatBoundsLike,
-		type LngLatLike,
 		LineLayer,
-		NavigationControl,
-		GeolocateControl,
-		FullscreenControl,
-		ScaleControl
+		NavigationControl
 	} from 'svelte-maplibre';
-	import { LngLatBounds } from 'maplibre-gl';
-	import MapLocationGroup from './map-location-group.svelte';
-	import { navigating, page } from '$app/state';
-	import type { MapData, ServiceMapData, TrainService } from '$lib/types';
-	import { AlertCircle, CircleAlertIcon, TrainFront } from 'lucide-svelte';
-	import StationsJSON from '$lib/data/stations.json';
-	import { fade } from 'svelte/transition';
-	import bbox from '@turf/bbox';
-	import { goto } from '$app/navigation';
-	import MapService from './map-service.svelte';
-	import SavedMapService from './saved-map-service.svelte';
-	import type { Feature, FeatureCollection } from 'geojson';
-	import { MediaQuery } from 'svelte/reactivity';
-	import { onMount, untrack } from 'svelte';
-	import { throttle } from '$lib/utils';
-	import { cameraForBoundsCustom } from '$lib/utils';
-	import { saved } from '$lib/state/saved.svelte';
+
 	import { favourites } from '$lib/data/favourites';
-	import { explicitEffect } from '$lib/state/utils.svelte';
+	import StationsJSON from '$lib/data/stations.json';
+	import { paneHeight } from '$lib/state/map.svelte';
 	import { refreshing } from '$lib/state/services-subscriber.svelte';
+	import { explicitEffect } from '$lib/state/utils.svelte';
+	import type { MapData, ServiceMapData, TrainService } from '$lib/types';
+	import { throttle } from '$lib/utils';
+
+	import MapService from './map-service.svelte';
 	import { easeToIfChanged, getBbox, setBounds } from './map-utils';
+
+	import type { Feature } from 'geojson';
 
 	const lg = new MediaQuery('(min-width: 1024px)');
 
@@ -54,8 +45,8 @@
 			mapData = null;
 		}
 		id = page.data.id;
-		page.data.service?.then((d) => (serviceData = d));
-		page.data.map?.then((d) => (mapData = d));
+		page.data.service?.then((d: TrainService) => (serviceData = d));
+		page.data.map?.then((d: ServiceMapData) => (mapData = d));
 	});
 
 	$effect(() => {
@@ -158,10 +149,10 @@
 		? 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json'
 		: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json'}
 	class="relative h-full w-full"
-	onmoveend={(e) => {
+	onmoveend={() => {
 		updateBounds();
 	}}
-	onzoom={(e) => {
+	onzoom={() => {
 		updateBounds();
 	}}
 	onload={(e) => {
@@ -231,7 +222,7 @@
 					class="rounded-full bg-background"
 					zIndex={favourites.includes(station.crsCode) ? 1000 : 100}
 					lngLat={[station.long, station.lat]}
-					onclick={(e) => {
+					onclick={() => {
 						page.data.crs = station.crsCode;
 						goto('/board/' + station.crsCode);
 					}}

@@ -1,13 +1,14 @@
 <script>
 	import { page } from '$app/state';
-	import { ArrowLeft, ChevronLeft } from 'lucide-svelte';
+
+	import { ArrowLeft } from 'lucide-svelte';
 
 	let { children } = $props();
 </script>
 
 <div class="">
 	<div
-		class="bg-background border-b-border sticky top-0 flex items-center gap-2 rounded-t-xl border-b p-4 pt-6"
+		class="sticky top-0 flex items-center gap-2 rounded-t-xl border-b border-b-border bg-background p-4 pt-6"
 	>
 		<a href="../"><ArrowLeft /></a>
 		<a href="../" class="text-xl font-semibold">{page.data.pageTitle}</a>

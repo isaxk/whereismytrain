@@ -1,15 +1,18 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import type { BoardDetails } from '$lib/types';
-	import { ArrowLeft, ChevronRight, Clock, Pin, Plus } from 'lucide-svelte';
-	import Search from '$lib/components/search/search.svelte';
-	import Skeleton from '$lib/components/ui/skeleton.svelte';
-	import Button from '$lib/components/ui/button/button.svelte';
-	import { pinned } from '$lib/state/saved.svelte';
-	import Spinner from '../ui/spinner/spinner.svelte';
-	import { refreshing } from '$lib/state/services-subscriber.svelte';
-	import { fade } from 'svelte/transition';
+
 	import dayjs from 'dayjs';
+	import { ArrowLeft, ChevronRight, Clock, Pin, Plus } from 'lucide-svelte';
+	import { fade } from 'svelte/transition';
+
+	import Search from '$lib/components/search/search.svelte';
+	import Button from '$lib/components/ui/button/button.svelte';
+	import Skeleton from '$lib/components/ui/skeleton.svelte';
+	import { pinned } from '$lib/state/saved.svelte';
+	import { refreshing } from '$lib/state/services-subscriber.svelte';
+	import type { BoardDetails } from '$lib/types';
+
+	import Spinner from '../ui/spinner/spinner.svelte';
 
 	let {
 		from,
@@ -103,7 +106,7 @@
 				key="destination"
 				onSelect={(crs) => crs && crs !== from && goto('?to=' + crs + '&offset=0')}
 			>
-				{#snippet trigger({ send, receive, selected, onclick })}
+				{#snippet trigger({ send, receive, onclick })}
 					<div out:send|global={{ key: 'destination' }} in:receive|global={{ key: 'destination' }}>
 						<Button variant="outline" {onclick}>
 							<Plus size={14} />

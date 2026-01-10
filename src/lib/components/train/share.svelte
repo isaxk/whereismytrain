@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { ShareIcon } from 'lucide-svelte';
+
 	import Button from '../ui/button/button.svelte';
 
 	let { title, text, url } = $props();

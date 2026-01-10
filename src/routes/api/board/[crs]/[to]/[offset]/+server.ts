@@ -1,17 +1,17 @@
-import { ACCESS_TOKEN } from '$env/static/private';
-import { operatorList } from '$lib/data/operators';
-import { Category, Severity, type Board, type BoardItem, type Notice } from '$lib/types';
 import { json, type RequestHandler, error as kitError } from '@sveltejs/kit';
 import dayjs from 'dayjs';
-import utc from 'dayjs/plugin/utc';
 import tz from 'dayjs/plugin/timezone';
-import { findOvergroundLine } from '$lib/data/overground';
+import utc from 'dayjs/plugin/utc';
+
+import { Category, Severity, type Board, type Notice } from '$lib/types';
+import type { StationBoard } from '$lib/types/api';
+
 import { parseBoardItem } from '../../../../_shared';
+
+import { ACCESS_TOKEN } from '$env/static/private';
 
 dayjs.extend(utc);
 dayjs.extend(tz);
-
-const nullTime = '0001-01-01T00:00:00';
 
 export const GET: RequestHandler = async ({ params }) => {
 	const { crs, to, offset } = params;
@@ -56,42 +56,44 @@ export const GET: RequestHandler = async ({ params }) => {
 			throw new Error('Failed to fetch station board');
 		}
 
-		const data = await response.json();
+		const data: StationBoard = await response.json();
 
 		const services = (data.trainServices ?? [])
 			.concat(data.busServices ?? [])
-			.toSorted((a: any, b: any) => dayjs(a.std).diff(dayjs(b.std)))
-			.map((s: any) => parseBoardItem(s));
+			.toSorted((a, b) => dayjs(a.std).diff(dayjs(b.std)))
+			.map((s) => parseBoardItem(s));
 
-		const nrccMessages: Notice[] = (data.nrccMessages ?? [])
-			.toSorted((a: any, b: any) => b.severity - a.severity)
-			.map((m: any) => ({
-				...m,
-				category: typeof m.category === 'number' ? m.category : Category[m.category],
-				severity:
-					typeof m.severity === 'number' ? m.severity : (Severity[m.severity.toLowerCase()] ?? 0),
-				xhtmlMessage: m.xhtmlMessage.replace(
+		const nrccMessages: Notice[] = (data.nrccMessages ?? []).map((m) => ({
+			...m,
+			category: (typeof m.category === 'number'
+				? m.category
+				: Category[m.category as number]) as Category,
+			severity: (typeof m.severity === 'number'
+				? m.severity
+				: ((Severity as unknown as Record<string, number>)[m.severity as string] ?? 0)) as Severity,
+			xhtmlMessage:
+				m.xhtmlMessage?.replace(
 					/More information can be found in\s*<a href="([^"]+)">[^<]+<\/a>/,
 					'<a href="$1">More info</a>'
-				)
-			}));
+				) ?? ''
+		}));
 
 		const board: Board = {
 			services,
 			details: {
-				name: data.locationName,
+				name: data.locationName ?? '',
 				crs: crs,
 				filterName: data.filterLocationName ?? null,
 				filterCrs: to && to != 'null' ? to : null,
 				offset: parseInt(offset ?? '0'),
-				time,
+				time: time.toString(),
 				notices: nrccMessages
 			}
 		};
 
 		return json(board);
-	} catch (error: any) {
+	} catch (error: unknown) {
 		console.log(error);
-		return kitError(500, error.message);
+		return kitError(500, (error as Error).message);
 	}
 };

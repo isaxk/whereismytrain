@@ -1,14 +1,32 @@
 <script lang="ts">
 	import dayjs from 'dayjs';
-	import type { BoardItem, TrainService } from '$lib/types';
-	import { dayjsFromHHmm } from '$lib/utils';
-	import Button from '../ui/button/button.svelte';
-	import { saved } from '$lib/state/saved.svelte';
+
 	import { subscribeToTrain, unsubscribeToTrain } from '$lib/notifications';
+	import { saved } from '$lib/state/saved.svelte';
+	import type { BoardItem } from '$lib/types';
+	import { dayjsFromHHmm } from '$lib/utils';
+
+	import type { Snippet } from 'svelte';
 
 	let service: BoardItem | null = $state(null);
 
-	let { from, to, time, index, children, existingRid, allowance = 0 } = $props();
+	let {
+		from,
+		to,
+		time,
+		index,
+		children,
+		existingRid,
+		allowance = 0
+	}: {
+		from: string;
+		to: string;
+		time: string | null;
+		index: number;
+		children: Snippet<[BoardItem | null, () => void, boolean, boolean]>;
+		existingRid: string;
+		allowance: number;
+	} = $props();
 
 	let switching = $state(false);
 	let failed = $state(false);
@@ -40,7 +58,7 @@
 	}
 
 	$effect(() => {
-		const offset = dayjsFromHHmm(time).diff(dayjs(), 'minutes');
+		const offset = (time ? dayjsFromHHmm(time) : dayjs()).diff(dayjs(), 'minutes');
 		search(from, to, offset + allowance);
 	});
 

@@ -1,4 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { type RequestHandler, json } from '@sveltejs/kit';
+
 import type { Carriage } from '$lib/types';
 
 export const GET: RequestHandler = async ({ params }) => {
@@ -13,15 +16,16 @@ export const GET: RequestHandler = async ({ params }) => {
 		);
 		if (response.ok) {
 			const gwFormation = await response.json();
-			const portion = gwFormation.Portions.find((p) => p.StationsCrsCodes.includes(crs));
+			const portion = gwFormation.Portions.find((p: any) => p.StationsCrsCodes.includes(crs));
 			let carriages: any[] = [];
 			if (portion) {
-				portion.Assemblies.forEach((assembly) => {
+				portion.Assemblies.forEach((assembly: any) => {
 					carriages = [...carriages, ...assembly.Vehicles];
 				});
 				let frontLength = carriages.length;
 				if (gwFormation.Portions.length > 1) {
-					frontLength = gwFormation.Portions[1].Assemblies.map((a) => a.Vehicles).flat().length;
+					frontLength = gwFormation.Portions[1].Assemblies.map((a: any) => a.Vehicles).flat()
+						.length;
 				}
 				formation = carriages
 					.map((c, i): Carriage => {

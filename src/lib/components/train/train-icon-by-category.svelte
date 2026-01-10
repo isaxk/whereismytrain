@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Bed, Bus, Moon, TrainFront, TrainFrontTunnel, TramFront } from 'lucide-svelte';
+	import { Bus, Moon, TrainFront, TrainFrontTunnel, TramFront } from 'lucide-svelte';
 
 	let { category, ...restProps } = $props();
 </script>
