@@ -1,10 +1,16 @@
 import type { TrainService } from '$lib/types';
 
+import { API_COMPATIBLE_VERSION } from '../../routes/api/_shared';
+
 async function refresh() {
 	refreshing.current = true;
 	console.log(services);
 	for (const service of services) {
-		const response = await fetch(service.url);
+		const response = await fetch(service.url, {
+			headers: {
+				'api-version': API_COMPATIBLE_VERSION
+			}
+		});
 		if (response.ok) {
 			const data = await response.json();
 			if (data) {
