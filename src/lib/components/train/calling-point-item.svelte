@@ -94,9 +94,9 @@
 							? 'text-sm text-red-600 line-through'
 							: newCp.times.rt.arr !== newCp.times.plan.arr
 								? newCp.times.rt.arr
-									? 'text-sm/3'
+									? 'text-xs/3'
 									: 'text-sm/3'
-								: 'text-sm text-good'
+								: 'text-sm font-medium text-good'
 					]}
 				>
 					<div>
@@ -109,7 +109,7 @@
 					{#if newCp.times.rt.arr}
 						<ChangeNotifier
 							changed={newCp.times.rt.arr !== oldCp.times.rt.arr}
-							class="text-sm/3 text-warning"
+							class="text-sm/3 font-medium text-warning"
 						>
 							{newCp.times.rt.arr ?? 'Delayed'}
 						</ChangeNotifier>
@@ -118,7 +118,7 @@
 					{:else}
 						<ChangeNotifier
 							changed={newCp.times.rt.arr !== oldCp.times.rt.arr}
-							class="text-[10px]/3 text-warning"
+							class="text-[10px]/3 font-medium text-warning"
 						>
 							Delayed
 						</ChangeNotifier>
@@ -141,8 +141,8 @@
 							: newCp.times.rt.dep !== newCp.times.plan.dep
 								? newCp.times.rt.dep
 									? 'text-xs/3'
-									: 'text-xs/3'
-								: 'text-sm text-good'
+									: 'text-sm/3'
+								: 'text-sm font-medium text-good'
 					]}
 				>
 					<div>
@@ -155,7 +155,7 @@
 					{#if newCp.times.rt.dep}
 						<ChangeNotifier
 							changed={newCp.times.rt.dep !== oldCp.times.rt.dep}
-							class="w-max text-sm/3 text-warning"
+							class="w-max text-sm/3 font-medium text-warning"
 						>
 							{newCp.times.rt.dep ?? 'Delayed'}
 						</ChangeNotifier>
@@ -164,7 +164,7 @@
 					{:else}
 						<ChangeNotifier
 							changed={newCp.times.rt.dep !== oldCp.times.rt.dep}
-							class="w-max text-[10px]/3 text-warning"
+							class="w-max text-[10px]/3 font-medium text-warning"
 						>
 							Delayed
 						</ChangeNotifier>
