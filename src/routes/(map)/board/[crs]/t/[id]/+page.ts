@@ -2,13 +2,19 @@ import { error } from '@sveltejs/kit';
 
 import type { ServiceMapData } from '$lib/types/index.js';
 
+import { API_COMPATIBLE_VERSION } from '../../../../../api/_shared/index.js';
+
 export const load = async ({ params, fetch, url }) => {
 	const { id, crs } = params;
 
 	const to = url.searchParams.get('to') ?? undefined;
 	const backTo = url.searchParams.get('backTo') ?? null;
 
-	const service = fetch(`/api/service/${id}/${crs}${to ? `/${to}` : ''}`)
+	const service = fetch(`/api/service/${id}/${crs}${to ? `/${to}` : ''}`, {
+		headers: {
+			'api-version': API_COMPATIBLE_VERSION
+		}
+	})
 		.then(async (response) => {
 			const data = await response.json();
 

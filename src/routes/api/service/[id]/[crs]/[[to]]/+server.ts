@@ -14,8 +14,10 @@ import type {
 	ServiceDetails,
 	ServiceLocation as APIServiceLocation,
 	Association
-} from '$lib/types/Api.js';
+} from '$lib/types/api.js';
 import { parseServiceId } from '$lib/utils.js';
+
+import { API_COMPATIBLE_VERSION } from '../../../../_shared';
 
 import { ACCESS_TOKEN } from '$env/static/private';
 
@@ -257,8 +259,12 @@ async function fetchAssocService(rid: string) {
 	}
 }
 
-export const GET = async ({ params }) => {
+export const GET = async ({ params, request }) => {
 	const { id: rawid, crs, to } = params;
+
+	if (request.headers.get('api-version') !== API_COMPATIBLE_VERSION) {
+		return kitError(400, 'Your app version is not compatible. Please refresh your app.');
+	}
 
 	try {
 		const { id, destCrsList } = parseServiceId(rawid);

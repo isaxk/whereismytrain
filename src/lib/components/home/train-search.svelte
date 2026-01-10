@@ -15,7 +15,7 @@
 	import AllStations from '$lib/data/stations.json';
 	import { paneHeight } from '$lib/state/map.svelte';
 	import { pinned } from '$lib/state/saved.svelte';
-	import { dayjsFromHHmm, t } from '$lib/utils';
+	import { t } from '$lib/utils';
 
 	import Highlight from '../search/highlight.svelte';
 	import Button from '../ui/button/button.svelte';
@@ -64,19 +64,27 @@
 	const fromFormatted = $derived(browser ? format(fromResults) : []);
 	const toFormatted = $derived(browser ? format(toResults) : []);
 
+	const initialTime = dayjs().format('HHmm');
+
 	const href = $derived.by(() => {
 		if (from) {
-			const offset = dayjsFromHHmm(`${hour}:${minute}`)
+			const time = dayjs()
+				.hour(parseInt(hour))
+				.minute(parseInt(minute))
 				.add(tomorrow ? 1 : 0, 'day')
-				.diff(dayjs(), 'minute');
-			if (to && hour == dayjs().format('HH') && minute == dayjs().format('mm') && !tomorrow) {
+				.format('HHmm');
+			if (to && time === initialTime && !tomorrow) {
 				return `/board/${from}?to=${to}`;
+			} else if (to && tomorrow) {
+				return `/board/${from}?to=${to}&time=${time}&tomorrow=${tomorrow}`;
 			} else if (to) {
-				return `/board/${from}?offset=${offset}&to=${to}`;
-			} else if (hour == dayjs().format('HH') && minute == dayjs().format('mm') && !tomorrow) {
+				return `/board/${from}?to=${to}&time=${time}`;
+			} else if (time === initialTime && !tomorrow) {
 				return `/board/${from}`;
+			} else if (tomorrow) {
+				return `/board/${from}?time=${time}&tomorrow=${tomorrow}`;
 			} else {
-				return `/board/${from}?offset=${offset}`;
+				return `/board/${from}?time=${time}`;
 			}
 		} else {
 			return `#`;

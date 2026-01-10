@@ -5,34 +5,45 @@ import utc from 'dayjs/plugin/utc';
 
 import { Category, Severity, type Board, type Notice } from '$lib/types';
 import type { StationBoard } from '$lib/types/api';
+import { dayjsFromHHmm } from '$lib/utils';
 
-import { parseBoardItem } from '../../../../_shared';
+import { API_COMPATIBLE_VERSION, parseBoardItem } from '../../../../../_shared';
 
 import { ACCESS_TOKEN } from '$env/static/private';
 
 dayjs.extend(utc);
 dayjs.extend(tz);
 
-export const GET: RequestHandler = async ({ params }) => {
-	const { crs, to, offset } = params;
+export const GET: RequestHandler = async ({ params, request }) => {
+	const { crs, to, time, tomorrow: tomorrowParam } = params;
 
 	if (!crs) {
 		return new Response('CRS is required', { status: 400 });
 	}
 
-	let shouldUseRailData = false;
-	if (Math.abs(parseInt(offset || '0')) > 119) {
-		shouldUseRailData = true;
+	if (request.headers.get('api-version') !== API_COMPATIBLE_VERSION) {
+		return kitError(500, 'Your app version is not compatible. Please refresh your app.');
 	}
 
-	const time = dayjs()
-		.tz('Europe/London')
-		.add(parseInt(offset || '0'), 'minute');
+	const tomorrow = tomorrowParam == 'true';
+
+	console.log('tomorrow', tomorrow);
+
+	const date =
+		time && time != 'null' ? dayjsFromHHmm(time, false).add(tomorrow ? 24 : 0, 'hour') : dayjs();
+	console.log(date.toString());
+
+	const offset = time && time != 'null' ? date.diff(dayjs(), 'minute') : 0;
+
+	let shouldUseRailData = false;
+	if (Math.abs(offset) > 119) {
+		shouldUseRailData = true;
+	}
 
 	let url = `https://huxley2.azurewebsites.net/staffdepartures/${crs}/20?timeOffset=${offset}&timeWindow=120&access_token=${ACCESS_TOKEN}`;
 	if (shouldUseRailData) {
 		const urlObj = new URL(
-			`https://api1.raildata.org.uk/1010-live-departure-board---staff-version1_0/LDBSVWS/api/20220120/GetDepartureBoardByCRS/${crs}/${time.format('YYYYMMDDTHHmmss')}?numRows=20`
+			`https://api1.raildata.org.uk/1010-live-departure-board---staff-version1_0/LDBSVWS/api/20220120/GetDepartureBoardByCRS/${crs}/${date.format('YYYYMMDDTHHmmss')}?numRows=20`
 		);
 		if (to && to != 'null') urlObj.searchParams.append('filterCRS', to);
 		url = urlObj.toString();
@@ -85,8 +96,9 @@ export const GET: RequestHandler = async ({ params }) => {
 				crs: crs,
 				filterName: data.filterLocationName ?? null,
 				filterCrs: to && to != 'null' ? to : null,
-				offset: parseInt(offset ?? '0'),
-				time: time.toString(),
+				offset: offset,
+				time: date.toString(),
+				requestedTime: time ?? null,
 				notices: nrccMessages
 			}
 		};

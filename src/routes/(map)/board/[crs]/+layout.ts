@@ -1,21 +1,31 @@
-import { error } from '@sveltejs/kit';
-
 import AllStationsJSON from '$lib/data/stations.json';
-import type { Board } from '$lib/types/index.js';
+import type { Board } from '$lib/types';
+
+import { API_COMPATIBLE_VERSION } from '../../../api/_shared/index.js';
 
 export const load = async ({ params, fetch, url }) => {
 	const { crs } = params;
 
 	const search = url.searchParams;
 	const to = search.get('to') ?? null;
-	const offset = parseInt(search.get('offset') ?? '0');
+	const time = search.get('time');
+	const tomorrow = search.get('tomorrow') == 'true';
 
 	async function getBoard(): Promise<Board> {
-		const response = await fetch(`/api/board/${crs.toUpperCase()}/${to ?? 'null'}/${offset}`);
-		const data = await response.json();
+		const response = await fetch(
+			`/api/board/${crs.toUpperCase()}/${to ?? 'null'}/${time ?? 'null'}/${tomorrow ? 'true' : 'false'}`,
+			{
+				headers: {
+					'api-version': API_COMPATIBLE_VERSION
+				}
+			}
+		);
+
 		if (!response.ok) {
-			throw error(response.status, data.message);
+			const data = await response.json();
+			throw new Error(data.message);
 		} else {
+			const data = await response.json();
 			return data;
 		}
 	}
@@ -24,7 +34,8 @@ export const load = async ({ params, fetch, url }) => {
 		crs: crs.toUpperCase(),
 		to: to?.toUpperCase() ?? null,
 		board: getBoard(),
-		offset,
+		time,
+		tomorrow,
 		map: (async () => ({
 			type: 'board',
 			from: [

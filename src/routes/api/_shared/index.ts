@@ -6,6 +6,8 @@ import type { ServiceItem } from '$lib/types/api';
 
 export const NULL_TIME = '0001-01-01T00:00:00';
 
+export const API_COMPATIBLE_VERSION = '1';
+
 export function parseBoardItem(item: ServiceItem): BoardItem {
 	if (item.ata === NULL_TIME) item.ata = null;
 	if (item.atd === NULL_TIME) item.atd = null;
