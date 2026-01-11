@@ -98,7 +98,7 @@ export const GET: RequestHandler = async ({ params, request }) => {
 				filterCrs: to && to != 'null' ? to : null,
 				offset: offset,
 				time: date.toString(),
-				requestedTime: time ?? null,
+				requestedTime: time == 'null' ? null : (time ?? null),
 				notices: nrccMessages
 			}
 		};
