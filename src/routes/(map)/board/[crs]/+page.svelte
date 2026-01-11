@@ -27,7 +27,6 @@
 	import StationsJSON from '$lib/data/stations.json';
 	import { mapData } from '$lib/state/map.svelte.js';
 	import { localStore } from '$lib/state/saved.svelte.js';
-	import { refreshing } from '$lib/state/services-subscriber.svelte.js';
 	import { Category, Severity, type BoardDetails, type BoardItem } from '$lib/types/index.js';
 
 	let { data } = $props();
@@ -66,7 +65,7 @@
 				details &&
 				(page.data.crs !== details.crs ||
 					page.data.to !== details.filterCrs ||
-					page.data.time.toString() != details.requestedTime)
+					page.data.time != details.requestedTime)
 			) {
 				services = null;
 			}

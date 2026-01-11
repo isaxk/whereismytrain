@@ -34,7 +34,7 @@ export const load = async ({ params, fetch, url }) => {
 		crs: crs.toUpperCase(),
 		to: to?.toUpperCase() ?? null,
 		board: getBoard(),
-		time,
+		time: time == 'null' ? null : time,
 		tomorrow,
 		map: (async () => ({
 			type: 'board',
