@@ -229,7 +229,7 @@
 			{category}
 			opacity={!to || data.lineLocations.some((l) => l.crs === to && l.crs !== null)
 				? data.isFormedFromTrain
-					? 0.5
+					? 0.2
 					: 1
 				: 0.2}
 			trainBearing={data.trainBearing}
