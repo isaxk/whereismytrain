@@ -227,7 +227,11 @@
 	{#if data.trainPosition}
 		<MapTrainIndication
 			{category}
-			opacity={!to || data.lineLocations.some((l) => l.crs === to && l.crs !== null) ? 1 : 0.2}
+			opacity={!to || data.lineLocations.some((l) => l.crs === to && l.crs !== null)
+				? data.isFormedFromTrain
+					? 0.5
+					: 1
+				: 0.2}
 			trainBearing={data.trainBearing}
 			trainPosition={data.trainPosition}
 			isFormedFromTrain={data.isFormedFromTrain}

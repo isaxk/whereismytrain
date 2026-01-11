@@ -35,7 +35,7 @@
 			style:color
 			style:opacity
 			class={[
-				'a relative z-20 flex flex-col items-center justify-center rounded-full border-2 bg-white',
+				'relative z-20 flex flex-col items-center justify-center rounded-full border-2 bg-white',
 				isFormedFromTrain ? 'h-8 w-8 opacity-20' : 'h-9 w-9 opacity-100'
 			]}
 		>
