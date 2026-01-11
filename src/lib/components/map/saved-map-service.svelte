@@ -41,7 +41,7 @@
 		refresh();
 		unsubscribe = servicesSub.subscribe(rid, crs, filter, async (s) => {
 			serviceData = s;
-			console.log('map-service', rid, crs, filter);
+			// console.log('map-service', rid, crs, filter);
 			const response = await fetch(`/api/mapdata`, {
 				method: 'POST',
 				body: JSON.stringify({ locations: s.locations, formedFrom: s.formedFrom }),

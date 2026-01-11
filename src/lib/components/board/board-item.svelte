@@ -78,7 +78,6 @@
 
 	explicitEffect(
 		() => {
-			console.log('effect');
 			setTimeout(() => {
 				oldRtDep = rtDep;
 				oldDeparted = departed;

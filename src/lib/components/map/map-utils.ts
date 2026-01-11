@@ -69,7 +69,7 @@ export function easeToIfChanged(
 	options: maplibregl.EaseToOptions,
 	key: string
 ) {
-	console.log(lastKey, key);
+	// console.log(lastKey, key);
 	if (lastKey !== key) {
 		map.stop();
 		map.easeTo(options);

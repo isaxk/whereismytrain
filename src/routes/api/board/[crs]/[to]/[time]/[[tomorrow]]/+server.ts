@@ -27,11 +27,11 @@ export const GET: RequestHandler = async ({ params, request }) => {
 
 	const tomorrow = tomorrowParam == 'true';
 
-	console.log('tomorrow', tomorrow);
+	// console.log('tomorrow', tomorrow);
 
 	const date =
 		time && time != 'null' ? dayjsFromHHmm(time, false).add(tomorrow ? 24 : 0, 'hour') : dayjs();
-	console.log(date.toString());
+	// console.log(date.toString());
 
 	const offset = time && time != 'null' ? date.diff(dayjs(), 'minute') : 0;
 

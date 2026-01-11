@@ -4,7 +4,7 @@ import { API_COMPATIBLE_VERSION } from '../../routes/api/_shared';
 
 async function refresh() {
 	refreshing.current = true;
-	console.log(services);
+	// console.log(services);
 	for (const service of services) {
 		const response = await fetch(service.url, {
 			headers: {
@@ -13,7 +13,7 @@ async function refresh() {
 		});
 		if (response.ok) {
 			const data = await response.json();
-			console.log(data);
+			// console.log(data);
 			if (data) {
 				service.subscriptions.forEach((subscription) => subscription.callback(data));
 			}
@@ -58,7 +58,7 @@ export const servicesSub = {
 		callback: (data: TrainService) => void
 	) => {
 		const url = `/api/service/${id}/${focus}/${filter}`;
-		console.log(url);
+		// console.log(url);
 		const service = services.find((s) => s.url === url);
 		if (!service) {
 			services.push({

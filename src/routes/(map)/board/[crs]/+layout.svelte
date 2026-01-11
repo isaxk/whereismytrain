@@ -10,7 +10,7 @@
 
 	onMount(() => {
 		const interval = setInterval(() => {
-			console.log('refreshing');
+			// console.log('refreshing');
 			refreshing.current = true;
 			invalidateAll().then(() => {
 				if (page.data.map) {

@@ -55,12 +55,12 @@
 
 	$effect(() => {
 		untrack(() => {
-			console.log(
-				'page.data.time',
-				page.data.time,
-				'details.requestedTime',
-				details?.requestedTime
-			);
+			// // console.log(
+			// 	// 'page.data.time',
+			// 	// page.data.time,
+			// 	'details.requestedTime',
+			// 	details?.requestedTime
+			// );
 			if (
 				details &&
 				(page.data.crs !== details.crs ||
@@ -86,14 +86,14 @@
 
 		const date = dayjs().add(offset, 'minute');
 
-		console.log(
-			'offset',
-			offset,
-			'date',
-			date.format('YYYY-MM-DD HH:mm'),
-			'dayjs()',
-			dayjs().format('YYYY-MM-DD HH:mm')
-		);
+		// console.log(
+		// 	'offset',
+		// 	offset,
+		// 	'date',
+		// 	date.format('YYYY-MM-DD HH:mm'),
+		// 	'dayjs()',
+		// 	dayjs().format('YYYY-MM-DD HH:mm')
+		// );
 
 		if (offset === 0) {
 			url.searchParams.delete('time');
@@ -116,7 +116,7 @@
 			const last = services[services.length - 1];
 			if (!last.rawTime || !first.rawTime) return offsetUrl(details.offset + 60);
 			const diff = dayjs(last.rawTime).diff(dayjs(first.rawTime), 'minute');
-			console.log('later', 'diff+details.offset', diff + details.offset);
+			// console.log('later', 'diff+details.offset', diff + details.offset);
 			return offsetUrl(details.offset + diff);
 		} else {
 			return '#';
@@ -130,7 +130,7 @@
 			const last = services[services.length - 1];
 			if (!last.rawTime || !first.rawTime) return offsetUrl(details.offset - 20);
 			const diff = dayjs(last.rawTime).diff(dayjs(first.rawTime), 'minute');
-			console.log('earlier', 'details.offset-diff', details.offset - diff);
+			// console.log('earlier', 'details.offset-diff', details.offset - diff);
 			return offsetUrl(details.offset - diff);
 		} else {
 			return '#';

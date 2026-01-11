@@ -30,7 +30,7 @@
 
 	function setupServiceWorkerUpdateCheck() {
 		navigator.serviceWorker.getRegistration().then((reg) => {
-			console.log(reg);
+			// console.log(reg);
 			// d
 
 			if (!reg) return;

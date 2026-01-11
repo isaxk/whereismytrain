@@ -37,7 +37,7 @@
 
 	const refreshed = $derived.by(() => {
 		// console.log(Date.now() - data.lastRefreshed);
-		console.log('diff', Date.now() - data.lastRefreshed);
+		// console.log('diff', Date.now() - data.lastRefreshed);
 		if (data.lastRefreshed && now.diff(dayjs(data.lastRefreshed), 's') > 25) {
 			return false;
 		}
@@ -55,7 +55,7 @@
 
 	explicitEffect(
 		() => {
-			console.log('effect triggered for: data.service_id', data.service_id);
+			// console.log('effect triggered for: data.service_id', data.service_id);
 			unsubscribe?.();
 
 			unsubscribe = servicesSub.subscribe(data.service_id, data.focusCrs, data.filterCrs, (s) => {
@@ -75,7 +75,7 @@
 				now = dayjs();
 			}, 100);
 			return () => {
-				console.log('cleaning up effect');
+				// console.log('cleaning up effect');
 				unsubscribe?.();
 				clearInterval(interval);
 			};
@@ -120,10 +120,10 @@
 		let connection = saved.value.find((s) => {
 			if (s.focusCrs !== filter.crs) return false;
 
-			console.log('connection');
+			// console.log('connection');
 
 			const connectionFocus = s.service.callingPoints.find((cp) => cp.crs === s.focusCrs);
-			console.log('connectionFocus', connectionFocus);
+			// console.log('connectionFocus', connectionFocus);
 			if (connectionFocus) {
 				const schDiff =
 					connectionFocus.times.plan.dep && filter.times.plan.arr
@@ -139,7 +139,7 @@
 								'minute'
 							)
 						: null;
-				console.log(schDiff);
+				// console.log(schDiff);
 				if (
 					(schDiff && schDiff < 90 && schDiff > 1) ||
 					(schDiffWithNew && schDiffWithNew < 90 && schDiffWithNew > 1)
@@ -159,10 +159,10 @@
 
 				if (s.focusCrs !== filter.crs && !acrossLondon) return false;
 
-				console.log('connection');
+				// console.log('connection');
 
 				const connectionFocus = s.service.callingPoints.find((cp) => cp.crs === s.focusCrs);
-				console.log('connectionFocus', connectionFocus);
+				// console.log('connectionFocus', connectionFocus);
 				if (connectionFocus) {
 					const schDiff =
 						connectionFocus.times.plan.dep && filter.times.plan.arr
@@ -179,7 +179,7 @@
 									'minute'
 								)
 							: null;
-					console.log(schDiff);
+					// console.log(schDiff);
 					if (
 						(schDiff && schDiff < (acrossLondon ? 180 : 90) && schDiff > (acrossLondon ? 10 : 1)) ||
 						(schDiffWithNew &&
@@ -198,7 +198,7 @@
 			londonTerminals.includes(connection.focusCrs) &&
 			londonTerminals.includes(filter.crs ?? '') &&
 			connection.focusCrs !== filter.crs;
-		console.log('acrossLondon', acrossLondon);
+		// console.log('acrossLondon', acrossLondon);
 		const connectionFocus = connection.service.callingPoints.find(
 			(cp) => cp.crs === connection.focusCrs
 		);
@@ -217,9 +217,9 @@
 							'minute'
 						)
 					: null;
-			console.log('sch Connection Start', data.originalArrival ?? filter.times.plan.arr);
-			console.log('sch Connection End', connectionFocus.times.plan.dep);
-			console.log('sch Connection Duration', schDiff);
+			// console.log('sch Connection Start', data.originalArrival ?? filter.times.plan.arr);
+			// console.log('sch Connection End', connectionFocus.times.plan.dep);
+			// console.log('sch Connection Duration', schDiff);
 			const rtDiff =
 				connectionFocus.times.rt.dep && filter.times.rt.arr
 					? dayjsFromHHmm(connectionFocus.times.rt.dep).diff(
@@ -232,7 +232,7 @@
 			if (!rtDiff || !schDiff) {
 				status = 'warning';
 			} else if (acrossLondon) {
-				console.log(rtDiff);
+				// console.log(rtDiff);
 				if (acrossLondon && rtDiff <= 20) {
 					status = 'impossible';
 				} else if (acrossLondon && rtDiff <= 30) {

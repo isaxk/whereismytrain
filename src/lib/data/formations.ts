@@ -54,7 +54,7 @@ export function getKnownFormation(op: string, length: number, destinations?: str
 	}
 
 	const condensedFormation = knownFormations[op]?.[length];
-	console.log('condensedFormation:', condensedFormation);
+	// console.log('condensedFormation:', condensedFormation);
 
 	if (condensedFormation) {
 		const formation: Carriage[] = condensedFormation.coachNumbers.map((n, i): Carriage => {
