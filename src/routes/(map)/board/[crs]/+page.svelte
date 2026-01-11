@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { invalidateAll } from '$app/navigation';
 	import { page } from '$app/state';
 
 	import dayjs from 'dayjs';
@@ -14,7 +13,7 @@
 		Rows2,
 		Rows4
 	} from 'lucide-svelte';
-	import { onMount, untrack } from 'svelte';
+	import { untrack } from 'svelte';
 	import { flip } from 'svelte/animate';
 	import { SvelteURLSearchParams } from 'svelte/reactivity';
 	import { fade, fly } from 'svelte/transition';
@@ -55,22 +54,6 @@
 		}
 	});
 
-	onMount(() => {
-		const interval = setInterval(() => {
-			console.log('refreshing');
-			refreshing.current = true;
-			invalidateAll().then((d) => {
-				console.log(d);
-				setTimeout(() => {
-					refreshing.current = false;
-				}, 500);
-			});
-		}, 10000);
-		return () => {
-			clearInterval(interval);
-		};
-	});
-
 	$effect(() => {
 		untrack(() => {
 			console.log(
@@ -83,7 +66,7 @@
 				details &&
 				(page.data.crs !== details.crs ||
 					page.data.to !== details.filterCrs ||
-					page.data.time != details.requestedTime)
+					page.data.time.toString() != details.requestedTime)
 			) {
 				services = null;
 			}
