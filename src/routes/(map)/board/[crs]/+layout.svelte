@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
+	import { page } from '$app/state';
 
 	import { onMount } from 'svelte';
 
@@ -11,11 +12,14 @@
 		const interval = setInterval(() => {
 			console.log('refreshing');
 			refreshing.current = true;
-			invalidateAll().then((d) => {
-				console.log(d);
-				setTimeout(() => {
+			invalidateAll().then(() => {
+				if (page.data.map) {
+					page.data.map.then(() => {
+						refreshing.current = false;
+					});
+				} else {
 					refreshing.current = false;
-				}, 500);
+				}
 			});
 		}, 10000);
 		return () => {
