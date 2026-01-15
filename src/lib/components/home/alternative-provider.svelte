@@ -7,6 +7,7 @@
 	import { dayjsFromHHmm } from '$lib/utils';
 
 	import type { Snippet } from 'svelte';
+	import { API_COMPATIBLE_VERSION } from '../../../routes/api/_shared';
 
 	let service: BoardItem | null = $state(null);
 
@@ -76,7 +77,11 @@
 			to,
 			service.destination.map((d) => d.name).join(', ')
 		);
-		const response = await fetch(`/api/service/${service.rid}/${from}/${to}`);
+		const response = await fetch(`/api/service/${service.rid}/${from}/${to}`, {
+			headers: {
+				'api-version': API_COMPATIBLE_VERSION
+			}
+		});
 
 		if (response.ok) {
 			const data = await response.json();

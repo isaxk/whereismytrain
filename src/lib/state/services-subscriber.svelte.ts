@@ -6,6 +6,7 @@ async function refresh() {
 	refreshing.current = true;
 	// console.log(services);
 	for (const service of services) {
+		console.log('fetching', service.url, 'for refresh');
 		const response = await fetch(service.url, {
 			headers: {
 				'api-version': API_COMPATIBLE_VERSION
@@ -13,8 +14,9 @@ async function refresh() {
 		});
 		if (response.ok) {
 			const data = await response.json();
-			// console.log(data);
+			console.log('data from', service.url, data);
 			if (data) {
+				console.log('subcriptions for', service.url, service.subscriptions);
 				service.subscriptions.forEach((subscription) => subscription.callback(data));
 			}
 		} else {
@@ -70,6 +72,7 @@ export const servicesSub = {
 		}
 		return () => {
 			const service = services.find((s) => s.url === url);
+			console.log('unsubscribing from', url);
 			if (service) {
 				service.subscriptions = service.subscriptions.filter((s) => s.id !== id);
 				if (service.subscriptions.length === 0) {
