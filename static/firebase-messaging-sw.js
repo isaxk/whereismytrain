@@ -100,4 +100,4 @@ try {
 	console.error('Error initializing Firebase in service worker:', error);
 }
 
-console.log('8. Service worker setup complete');
+// console.log('8. Service worker setup complete');

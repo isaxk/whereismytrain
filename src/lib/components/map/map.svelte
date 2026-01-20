@@ -74,7 +74,7 @@
 
 	explicitEffect(
 		() => {
-			console.log('refreshing map');
+			// console.log('refreshing map');
 
 			if (!map || !boundsData || boundsData.length === 0) return;
 

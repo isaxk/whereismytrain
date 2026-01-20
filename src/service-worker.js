@@ -94,7 +94,7 @@ async function cacheFirstWithSpaFallback(event) {
 
 self.addEventListener('message', (event) => {
 	if (event.data?.type === 'GET_VERSION') {
-		console.log('SW received message wow cool', event.data, 'ports', event.ports);
+		console.log('SW received message', event.data, 'ports', event.ports);
 		if (event.data?.type === 'GET_VERSION') {
 			const port = event.ports[0];
 			if (port) {

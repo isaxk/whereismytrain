@@ -32,7 +32,7 @@ export async function subscribeToTrain(
 	if (!token) {
 		token = await initializeNotifications();
 	}
-	console.log('Token:', token);
+	// console.log('Token:', token);
 
 	const { destCrsList, id } = parseServiceId(service_id);
 
@@ -55,7 +55,7 @@ export async function subscribeToTrain(
 		});
 		if (response.ok) {
 			const data = await response.json();
-			console.log(data);
+			// console.log(data);
 			return data.id;
 		} else {
 			return null;
@@ -86,21 +86,21 @@ export async function initializeNotifications() {
 	}
 
 	try {
-		console.log('1. Starting notification initialization...');
+		// console.log('1. Starting notification initialization...');
 
 		// Request permission first
 		const permission = await Notification.requestPermission();
-		console.log('2. Notification permission:', permission);
+		// console.log('2. Notification permission:', permission);
 
 		if (permission !== 'granted') {
 			return null;
 		}
 
 		// Register service worker and wait
-		console.log('3. Registering service worker...');
+		// console.log('3. Registering service worker...');
 		// const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
 		await navigator.serviceWorker.ready;
-		console.log('4. Service worker ready');
+		// console.log('4. Service worker ready');
 
 		const sws = await navigator.serviceWorker.getRegistrations();
 
@@ -114,13 +114,13 @@ export async function initializeNotifications() {
 		// Small delay to ensure service worker is fully initialized
 		await new Promise((resolve) => setTimeout(resolve, 1000));
 
-		console.log('5. About to get FCM token...');
-		console.log('5a. Messaging object exists:', !!messaging);
-		console.log('5b. VAPID key:', env.PUBLIC_VAPID_KEY); // Replace with actual key
+		// console.log('5. About to get FCM token...');
+		// console.log('5a. Messaging object exists:', !!messaging);
+		// console.log('5b. VAPID key:', env.PUBLIC_VAPID_KEY); // Replace with actual key
 
 		// Try getting token without any options first
 		try {
-			console.log('8. Failed without VAPID, trying with VAPID key...');
+			// console.log('Failed without VAPID, trying with VAPID key...');
 			token = await fnTimeout(
 				() =>
 					getToken(messaging!, {
@@ -132,7 +132,7 @@ export async function initializeNotifications() {
 				throw new Error('Failed to get token');
 			}
 
-			console.log('9. Token with VAPID:', token);
+			// console.log('9. Token with VAPID:', token);
 			setupForegroundMessageHandler();
 			return token;
 		} catch (error) {

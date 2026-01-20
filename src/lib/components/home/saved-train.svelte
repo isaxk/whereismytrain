@@ -19,9 +19,9 @@
 	import type { SavedTrain } from '$lib/types';
 	import { dayjsFromHHmm } from '$lib/utils';
 
-	import ChangeNotifier from '../board/change-notifier.svelte';
 	import AlertCard from '../ui/alert-card.svelte';
 	import Button, { buttonVariants } from '../ui/button/button.svelte';
+	import ChangeNotifier from '../ui/change-notifier.svelte';
 	import * as Dialog from '../ui/dialog';
 	import * as DropdownMenu from '../ui/dropdown-menu';
 	import Spinner from '../ui/spinner/spinner.svelte';
@@ -36,8 +36,8 @@
 	let showMissedDialog = $state(false);
 
 	const refreshed = $derived.by(() => {
-		// console.log(Date.now() - data.lastRefreshed);
-		console.log('diff', Date.now() - data.lastRefreshed);
+		// console.log(now - data.lastRefreshed);
+		// console.log('diff', now.diff(dayjs(data.lastRefreshed), 's'));
 		if (data.lastRefreshed && now.diff(dayjs(data.lastRefreshed), 's') > 25) {
 			return false;
 		}
@@ -52,30 +52,37 @@
 	}
 
 	let unsubscribe: () => void;
+	let oldId: string | null = null;
 
 	explicitEffect(
 		() => {
+			if (oldId === data.service_id) {
+				return;
+			}
+			oldId = data.service_id;
 			console.log('effect triggered for: data.service_id', data.service_id);
 			unsubscribe?.();
 
 			unsubscribe = servicesSub.subscribe(data.service_id, data.focusCrs, data.filterCrs, (s) => {
+				console.log('subscription result', data.service_id);
 				if (s) {
 					service = s;
 					const item = saved.value.findIndex((s) => s.id === data.id);
+					console.log('refreshed', data.service_id);
 					if (item !== -1) {
 						saved.value[item] = {
 							...saved.value[item],
 							service: s,
-							lastRefreshed: Date.now()
+							lastRefreshed: now.toISOString()
 						};
 					}
 				}
 			});
 			const interval = setInterval(() => {
 				now = dayjs();
-			}, 100);
+			}, 1000);
 			return () => {
-				console.log('cleaning up effect');
+				// console.log('cleaning up effect');
 				unsubscribe?.();
 				clearInterval(interval);
 			};
@@ -110,6 +117,27 @@
 		}
 	});
 
+	const remaining = $derived.by(() => {
+		if (!focus || !filter) return null;
+
+		let arrival = dayjsFromHHmm(filter.times.plan.arr!);
+
+		if (filter.times.rt.arr && focus.times.rt.dep) {
+			arrival = dayjsFromHHmm(filter.times.rt.arr);
+		}
+
+		const diff = arrival.diff(now, 'minutes');
+		if (diff < 0) {
+			return null;
+		} else if (diff === 60) {
+			return `${Math.floor(diff / 60)}h`;
+		} else if (diff > 60) {
+			return `${Math.floor(diff / 60)}h ${diff % 60}m`;
+		} else {
+			return `${diff}m`;
+		}
+	});
+
 	let now = $state(dayjs());
 
 	// const timeUntilDeparture = $derived(focus ? dayjs(focus.rtDepDate).diff(now, 'minute') : 0);
@@ -120,10 +148,10 @@
 		let connection = saved.value.find((s) => {
 			if (s.focusCrs !== filter.crs) return false;
 
-			console.log('connection');
+			// console.log('connection');
 
 			const connectionFocus = s.service.callingPoints.find((cp) => cp.crs === s.focusCrs);
-			console.log('connectionFocus', connectionFocus);
+			// console.log('connectionFocus', connectionFocus);
 			if (connectionFocus) {
 				const schDiff =
 					connectionFocus.times.plan.dep && filter.times.plan.arr
@@ -139,7 +167,7 @@
 								'minute'
 							)
 						: null;
-				console.log(schDiff);
+				// console.log(schDiff);
 				if (
 					(schDiff && schDiff < 90 && schDiff > 1) ||
 					(schDiffWithNew && schDiffWithNew < 90 && schDiffWithNew > 1)
@@ -159,10 +187,10 @@
 
 				if (s.focusCrs !== filter.crs && !acrossLondon) return false;
 
-				console.log('connection');
+				// console.log('connection');
 
 				const connectionFocus = s.service.callingPoints.find((cp) => cp.crs === s.focusCrs);
-				console.log('connectionFocus', connectionFocus);
+				// console.log('connectionFocus', connectionFocus);
 				if (connectionFocus) {
 					const schDiff =
 						connectionFocus.times.plan.dep && filter.times.plan.arr
@@ -179,7 +207,7 @@
 									'minute'
 								)
 							: null;
-					console.log(schDiff);
+					// console.log(schDiff);
 					if (
 						(schDiff && schDiff < (acrossLondon ? 180 : 90) && schDiff > (acrossLondon ? 10 : 1)) ||
 						(schDiffWithNew &&
@@ -198,7 +226,7 @@
 			londonTerminals.includes(connection.focusCrs) &&
 			londonTerminals.includes(filter.crs ?? '') &&
 			connection.focusCrs !== filter.crs;
-		console.log('acrossLondon', acrossLondon);
+		// console.log('acrossLondon', acrossLondon);
 		const connectionFocus = connection.service.callingPoints.find(
 			(cp) => cp.crs === connection.focusCrs
 		);
@@ -217,9 +245,9 @@
 							'minute'
 						)
 					: null;
-			console.log('sch Connection Start', data.originalArrival ?? filter.times.plan.arr);
-			console.log('sch Connection End', connectionFocus.times.plan.dep);
-			console.log('sch Connection Duration', schDiff);
+			// console.log('sch Connection Start', data.originalArrival ?? filter.times.plan.arr);
+			// console.log('sch Connection End', connectionFocus.times.plan.dep);
+			// console.log('sch Connection Duration', schDiff);
 			const rtDiff =
 				connectionFocus.times.rt.dep && filter.times.rt.arr
 					? dayjsFromHHmm(connectionFocus.times.rt.dep).diff(
@@ -232,7 +260,7 @@
 			if (!rtDiff || !schDiff) {
 				status = 'warning';
 			} else if (acrossLondon) {
-				console.log(rtDiff);
+				// console.log(rtDiff);
 				if (acrossLondon && rtDiff <= 20) {
 					status = 'impossible';
 				} else if (acrossLondon && rtDiff <= 30) {
@@ -312,20 +340,22 @@
 		>
 			{#if focus && filter}
 				<div class="flex h-16 items-center">
-					<div class="flex min-w-12 flex-col items-end">
-						{#if focus.isCancelled}
-							<div class="text-base/4 text-danger">{focus.times.plan.dep}</div>
-						{:else if focus.delay === null}
-							<div class="text-base/4">{focus.times.plan.dep}</div>
-							<div class="text-xs/3 text-warning">Delayed</div>
-						{:else if focus.delay < 1}
-							<div class="text-good">
-								{focus.times.plan.dep}
-							</div>
-						{:else}
-							<div class="text-sm/4">{focus.times.plan.dep}</div>
-							<div class="text-sm/3 text-warning">{focus.times.rt.dep}</div>
-						{/if}
+					<div class="flex min-w-12 justify-end">
+						<ChangeNotifier value={focus.delay} class="flex w-max flex-col items-end text-sm">
+							{#if focus.isCancelled}
+								<div class="text-base/4 text-danger">{focus.times.plan.dep}</div>
+							{:else if focus.delay === null}
+								<div class="text-base/4">{focus.times.plan.dep}</div>
+								<div class="text-xs/3 text-warning">Delayed</div>
+							{:else if focus.delay < 1}
+								<div class="text-good">
+									{focus.times.plan.dep}
+								</div>
+							{:else}
+								<div class="text-xs/4">{focus.times.plan.dep}</div>
+								<div class="text-sm/3 text-warning">{focus.times.rt.dep}</div>
+							{/if}
+						</ChangeNotifier>
 					</div>
 					<div class="flex h-16 min-w-10 flex-col items-center justify-center">
 						<div class="w-1.5 grow"></div>
@@ -339,7 +369,7 @@
 								{focus.name}
 							</div>
 							<ChangeNotifier
-								changed={false}
+								value={focus.platform}
 								class={[
 									'-mr-1 items-center justify-center gap-1 px-1 text-right text-base/5',
 									focus.platform === 'BUS' && 'text-sm text-warning'
@@ -362,14 +392,16 @@
 								{service.operator.name}
 							</div>
 
-							{#if focus.isCancelled}
-								<div class="text-xs/3 font-medium text-danger">Cancelled</div>
-							{:else}
-								<div class="min-w-0 grow truncate">
-									to
-									{service.destination.map((d) => d.name).join(', ')}
-								</div>
-							{/if}
+							<ChangeNotifier value={focus.isCancelled}>
+								{#if focus.isCancelled}
+									<div class="text-xs/3 font-medium text-danger">Cancelled</div>
+								{:else}
+									<div class="min-w-0 grow truncate">
+										to
+										{service.destination.map((d) => d.name).join(', ')}
+									</div>
+								{/if}
+							</ChangeNotifier>
 						</div>
 					</div>
 				</div>
@@ -379,25 +411,47 @@
 					<div class="flex h-5 w-10 flex-col items-center justify-center">
 						<div class="w-1.5 grow" style:background={service.operator.color}></div>
 					</div>
-					<div class="grow text-xs">
-						{duration}
+					<div class="text-xs">
+						<ChangeNotifier value="{filter.arrived} {focus.departed}" class="w-max text-xs">
+							{#if filter.arrived}
+								Arrived
+							{:else if focus.departed}
+								Departed
+							{/if}
+						</ChangeNotifier>
+						<ChangeNotifier value={duration} class="w-max text-xs">
+							{#if filter.arrived}
+								<div class="text-[10px] text-muted-foreground">{duration}</div>
+							{:else if focus.departed}
+								<div class="text-[10px] text-muted-foreground">
+									<span class="text-foreground">{remaining}</span> / {duration} remaining
+								</div>
+							{:else}
+								{duration}
+							{/if}
+						</ChangeNotifier>
 					</div>
 				</div>
 				<div class="flex h-12 items-center">
-					<div class="flex w-12 flex-col items-end">
-						{#if filter.isCancelled}
-							<div class="text-base/4 text-danger">{filter.times.plan.arr}</div>
-						{:else if filter.arrivalDelay === null}
-							<div class="text-base/4">{filter.times.plan.arr}</div>
-							<div class="text-xs/3 text-warning">Delayed</div>
-						{:else if filter.arrivalDelay < 1}
-							<div class="text-good">
-								{filter.times.plan.arr}
-							</div>
-						{:else}
-							<div class="text-sm/4">{filter.times.plan.arr}</div>
-							<div class="text-sm/3 text-warning">{filter.times.rt.arr}</div>
-						{/if}
+					<div class="flex min-w-12 justify-end">
+						<ChangeNotifier
+							value={filter.arrivalDelay}
+							class="flex w-max flex-col items-end text-sm"
+						>
+							{#if filter.isCancelled}
+								<div class="text-sm text-danger">{filter.times.plan.arr}</div>
+							{:else if filter.arrivalDelay === null}
+								<div class="text-base/4">{filter.times.plan.arr}</div>
+								<div class="text-xs/3 text-warning">Delayed</div>
+							{:else if filter.arrivalDelay < 1}
+								<div class="text-sm text-good">
+									{filter.times.plan.arr}
+								</div>
+							{:else}
+								<div class="text-xs/4">{filter.times.plan.arr}</div>
+								<div class="text-sm/3 text-warning">{filter.times.rt.arr}</div>
+							{/if}
+						</ChangeNotifier>
 					</div>
 					<div class="flex h-full w-10 flex-col items-center justify-center">
 						<div class="w-1.5 grow" style:background={service.operator.color}></div>
@@ -409,9 +463,11 @@
 						<div class="text-base/5">
 							{filter.name}
 						</div>
-						{#if filter.isCancelled && !focus.isCancelled}
-							<div class="text-xs/4 font-medium text-danger">Cancelled</div>
-						{/if}
+						<ChangeNotifier value={filter.isCancelled && !focus.isCancelled}>
+							{#if filter.isCancelled && !focus.isCancelled}
+								<div class="text-xs/4 font-medium text-danger">Cancelled</div>
+							{/if}
+						</ChangeNotifier>
 					</div>
 				</div>
 			{/if}
@@ -537,7 +593,7 @@
 			time={focus?.times.plan.dep ?? null}
 			{index}
 			existingRid={data.service_id}
-			allowance={0}
+			allowance={5}
 		>
 			{#snippet children(service, switchTo, switching)}
 				{#if service}

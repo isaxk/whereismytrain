@@ -24,6 +24,8 @@
 	import type { TrainService } from '$lib/types';
 
 	import type { PageData } from './$types';
+	import * as Select from '$lib/components/ui/select';
+	import { dayjsFromHHmm } from '$lib/utils';
 
 	let { data }: { data: PageData } = $props();
 
@@ -67,6 +69,8 @@
 			showPrevious = true;
 		}
 	});
+
+	let selectedTestItem = $state('0');
 </script>
 
 <svelte:head>
@@ -253,6 +257,43 @@
 						>
 					{/if}
 				</div>
+				<!-- <div class="flex gap-2">
+					<Select.Root bind:value={selectedTestItem} type="single">
+						<Select.Trigger>
+							{callingPoints[parseInt(selectedTestItem)]?.name}
+						</Select.Trigger>
+						<Select.Content>
+							{#each callingPoints as { name }, i (i)}
+								<Select.Item value={i.toString()}>{name}</Select.Item>
+							{/each}
+						</Select.Content>
+					</Select.Root>
+					<Button
+						onclick={() => {
+							const point = callingPoints[parseInt(selectedTestItem)];
+							const arr = point.times.rt.arr;
+							const dep = point.times.rt.dep;
+							const delay = Math.floor(Math.random() * 10);
+							if (point.times.plan.arr && arr) {
+								point.arrivalDelay = delay;
+								point.times.rt.arr = arr
+									? dayjsFromHHmm(arr).add(delay, 'minutes').format('HH:mm')
+									: null;
+							}
+							if (point.times.plan.dep) {
+								point.delay = delay;
+								point.times.rt.dep = dep
+									? dayjsFromHHmm(dep).add(delay, 'minutes').format('HH:mm')
+									: null;
+							}
+						}}>Delay</Button
+					>
+					<Button
+						onclick={() => {
+							const point = callingPoints[parseInt(selectedTestItem)];
+							point.isCancelled = true;
+						}}>Cancel</Button>
+				</div> -->
 			</div>
 		{/if}
 	</div>

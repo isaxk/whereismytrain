@@ -32,7 +32,7 @@ export const load = async ({ params, fetch, url }) => {
 	async function mapData(): Promise<ServiceMapData> {
 		const { locations, formedFrom } = await service;
 
-		console.log('service data loaded');
+		// console.log('service data loaded');
 
 		const mapDataResponse = await fetch(`/api/mapdata`, {
 			body: JSON.stringify({ locations: locations, formedFrom: formedFrom }),
@@ -48,7 +48,7 @@ export const load = async ({ params, fetch, url }) => {
 			throw error(500, mapData.message);
 		}
 
-		console.log(mapData);
+		// console.log(mapData);
 
 		return mapData;
 	}

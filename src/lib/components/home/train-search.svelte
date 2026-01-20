@@ -113,7 +113,6 @@
 		bind:this={form}
 		onblur={() => (opened = false)}
 		onsubmit={(e) => {
-			console.log(e);
 			e.preventDefault();
 
 			if (minuteFocused && minute.length === 2) {
@@ -197,7 +196,6 @@
 							window.scrollTo({ top: 0 });
 						}}
 						onkeydown={(e: KeyboardEvent) => {
-							console.log(e.keyCode);
 							if (e.keyCode === 8 && toQ.length === 0) {
 								e.preventDefault();
 								fromInput?.select();
@@ -234,7 +232,6 @@
 							}
 						}
 						onkeydown={(e: KeyboardEvent) => {
-							console.log(e.keyCode);
 							if (e.keyCode === 8 && hour.length === 0) {
 								e.preventDefault();
 								toInput?.select();
@@ -263,7 +260,6 @@
 							}
 						}
 						onkeydown={(e: KeyboardEvent) => {
-							console.log(e.keyCode);
 							if (e.keyCode === 8 && minute.length === 0) {
 								e.preventDefault();
 								hourInput?.select();

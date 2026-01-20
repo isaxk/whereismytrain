@@ -48,7 +48,7 @@
 			filter,
 			service.destination.map((d) => d.name).join(', ')
 		);
-		console.log('subscriptionId', subscriptionId);
+		// console.log('subscriptionId', subscriptionId);
 		if (subscriptionId === null) {
 			failedToSubscribe = true;
 			console.log(failedToSubscribe);
@@ -60,7 +60,7 @@
 
 			if (!aFocus?.times.plan.dep || !bFocus?.times.plan.dep) return 0;
 			const diff = dayjs(a.service.date).diff(b.service.date);
-			console.log('diff', diff);
+			// console.log('diff', diff);
 			return diff === 0 ? 0 : diff > 0 ? 1 : -1;
 		});
 		loading = false;

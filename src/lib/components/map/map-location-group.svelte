@@ -87,7 +87,7 @@
 			if (filter) {
 				const filterIndex = filtered.findIndex((l) => l.crs === filter);
 
-				console.log('filterIndex', filter, filterIndex);
+				// console.log('filterIndex', filter, filterIndex);
 
 				if (filterIndex !== -1 && filterIndex > focus) {
 					coords = filtered.slice(focus, filterIndex + 1);
