@@ -58,6 +58,8 @@
 		// } else
 		if (mapData?.type === 'board' && page.data.crs) {
 			boundsData = mapData.to ? [mapData?.from, mapData?.to] : [mapData?.from];
+		} else if (mapData?.type === 'itinerary') {
+			boundsData = mapData.stops.map((stop) => [stop.long, stop.lat]);
 		}
 	});
 
@@ -185,6 +187,28 @@
 				filter={page.data.to}
 				refreshing={refreshing.current}
 			/>
+		{/if}
+	{:else if mapData?.type === 'itinerary' && page.data.stopsArray}
+		{#if mapData.stops}
+			<GeoJSON id="journey-route" data={mapFocusLine}>
+				<LineLayer
+					layout={{ 'line-cap': 'round', 'line-join': 'round' }}
+					paint={{
+						'line-width': 5,
+						'line-color': 'black',
+						'line-opacity': 1
+					}}
+				/>
+			</GeoJSON>
+			{#each mapData.stops as stop, i (i)}
+				<Marker lngLat={[stop.long, stop.lat]} zIndex={5000}>
+					<div
+						class="flex h-7 w-7 animate-in items-center justify-center rounded-full bg-black text-xs text-[10px] text-white fade-in-20 dark:bg-white dark:text-black"
+					>
+						{stop.crs}
+					</div>
+				</Marker>
+			{/each}
 		{/if}
 	{:else if mapData?.type === 'board' && page.data.crs}
 		{#if mapData.from}

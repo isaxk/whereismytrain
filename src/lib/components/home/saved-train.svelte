@@ -10,6 +10,7 @@
 	} from 'lucide-svelte';
 	import { fly } from 'svelte/transition';
 
+	import tube from '$lib/assets/tube.svg';
 	import * as Popover from '$lib/components/ui/popover/index.js';
 	import { londonTerminals } from '$lib/data/favourites';
 	import { unsubscribeToTrain } from '$lib/notifications';
@@ -28,6 +29,7 @@
 
 	import AlternativeDisplay from './alternative-display.svelte';
 	import AlternativeConnection from './alternative-provider.svelte';
+	import Tubeicon from '$lib/assets/tubeicon.svelte';
 
 	let { data, index }: { data: SavedTrain; index: number } = $props();
 
@@ -327,264 +329,278 @@
 
 <div
 	class={[
-		'relative min-h-44 py-3 transition-all duration-300',
+		'relative h-44 max-h-44 min-h-44 py-3 transition-all duration-300',
 		!refreshed && !refreshing.current ? 'opacity-40' : 'opacity-100',
 		!refreshed && refreshing.current ? 'animate-pulse' : ''
 	]}
 >
 	{#key data.service_id}
-		<a
-			out:fly={{ duration: 200, y: 150 }}
-			in:fly={{ duration: 200, y: -150, delay: 201 }}
-			href={`/board/${data.focusCrs}/t/${data.service_id}?to=${data.filterCrs}&backTo=/`}
+		<div
+			class="absolute inset-0 py-5"
+			out:fly={{ duration: 200, y: 35 }}
+			in:fly={{ duration: 200, y: -35, delay: 201 }}
 		>
-			{#if focus && filter}
-				<div class="flex h-16 items-center">
-					<div class="flex min-w-12 justify-end">
-						<ChangeNotifier value={focus.delay} class="flex w-max flex-col items-end text-sm">
-							{#if focus.isCancelled}
-								<div class="text-base/4 text-danger">{focus.times.plan.dep}</div>
-							{:else if focus.delay === null}
-								<div class="text-base/4">{focus.times.plan.dep}</div>
-								<div class="text-xs/3 text-warning">Delayed</div>
-							{:else if focus.delay < 1}
-								<div class="text-good">
-									{focus.times.plan.dep}
-								</div>
-							{:else}
-								<div class="text-xs/4">{focus.times.plan.dep}</div>
-								<div class="text-sm/3 text-warning">{focus.times.rt.dep}</div>
-							{/if}
-						</ChangeNotifier>
-					</div>
-					<div class="flex h-16 min-w-10 flex-col items-center justify-center">
-						<div class="w-1.5 grow"></div>
-						<div class="flex h-1.5 min-w-4" style:background={service.operator.color}></div>
-						<div class="w-1.5 grow" style:background={service.operator.color}></div>
-					</div>
-
-					<div class="min-w-0 grow">
-						<div class="flex">
-							<div class="grow text-base/6 font-medium">
-								{focus.name}
-							</div>
-							<ChangeNotifier
-								value={focus.platform}
-								class={[
-									'-mr-1 items-center justify-center gap-1 px-1 text-right text-base/5',
-									focus.platform === 'BUS' && 'text-sm text-warning'
-								]}
-							>
-								{#if focus.platform === 'BUS'}
-									<Bus size={16} /> Bus service
-								{:else}
-									<span class="text-xs/4 text-muted-foreground sm:text-xs/6">Platform </span>
-
-									{focus.platform !== 'BUS' ? (focus.platform ?? '-') : ''}
-								{/if}
-							</ChangeNotifier>
-						</div>
-						<div class="flex w-full items-center gap-1 truncate text-xs/4 text-muted-foreground">
-							<div
-								class="h-max w-max rounded-sm px-1.5 py-0.5 text-[10px]/3 text-white"
-								style:background={service.operator.color}
-							>
-								{service.operator.name}
-							</div>
-
-							<ChangeNotifier value={focus.isCancelled}>
+			<a href={`/board/${data.focusCrs}/t/${data.service_id}?to=${data.filterCrs}&backTo=/`}>
+				{#if focus && filter}
+					<div class="flex h-16 items-center">
+						<div class="flex min-w-12 justify-end">
+							<ChangeNotifier value={focus.delay} class="flex w-max flex-col items-end text-sm">
 								{#if focus.isCancelled}
-									<div class="text-xs/3 font-medium text-danger">Cancelled</div>
-								{:else}
-									<div class="min-w-0 grow truncate">
-										to
-										{service.destination.map((d) => d.name).join(', ')}
+									<div class="text-base/4 text-danger">{focus.times.plan.dep}</div>
+								{:else if focus.delay === null}
+									<div class="text-base/4">{focus.times.plan.dep}</div>
+									<div class="text-xs/3 text-warning">Delayed</div>
+								{:else if focus.delay < 1}
+									<div class="text-good">
+										{focus.times.plan.dep}
 									</div>
+								{:else}
+									<div class="text-xs/4">{focus.times.plan.dep}</div>
+									<div class="text-sm/3 text-warning">{focus.times.rt.dep}</div>
+								{/if}
+							</ChangeNotifier>
+						</div>
+						<div class="flex h-16 min-w-10 flex-col items-center justify-center">
+							<div class="w-1.5 grow"></div>
+							<div class="flex h-1.5 min-w-4" style:background={service.operator.color}></div>
+							<div class="w-1.5 grow" style:background={service.operator.color}></div>
+						</div>
+
+						<div class="min-w-0 grow">
+							<div class="flex">
+								<div class="grow text-base/6 font-medium">
+									{focus.name}
+								</div>
+								<ChangeNotifier
+									value={focus.platform}
+									class={[
+										'-mr-1 items-center justify-center gap-1 px-1 text-right text-base/5',
+										focus.platform === 'BUS' && 'text-sm text-warning'
+									]}
+								>
+									{#if focus.platform === 'BUS'}
+										<Bus size={16} /> Bus service
+									{:else}
+										<span class="text-xs/4 text-muted-foreground sm:text-xs/6">Platform </span>
+
+										{focus.platform !== 'BUS' ? (focus.platform ?? '-') : ''}
+									{/if}
+								</ChangeNotifier>
+							</div>
+							<div class="flex w-full items-center gap-1 truncate text-xs/4 text-muted-foreground">
+								<div
+									class="h-max w-max rounded-sm px-1.5 py-0.5 text-[10px]/3 text-white"
+									style:background={service.operator.color}
+								>
+									{service.operator.name}
+								</div>
+
+								<ChangeNotifier value={focus.isCancelled}>
+									{#if focus.isCancelled}
+										<div class="text-xs/3 font-medium text-danger">Cancelled</div>
+									{:else}
+										<div class="min-w-0 grow truncate">
+											to
+											{service.destination.map((d) => d.name).join(', ')}
+										</div>
+									{/if}
+								</ChangeNotifier>
+							</div>
+						</div>
+					</div>
+
+					<div class="flex h-5 items-center">
+						<div class="w-12"></div>
+						<div class="flex h-5 w-10 flex-col items-center justify-center">
+							<div class="w-1.5 grow" style:background={service.operator.color}></div>
+						</div>
+						<div class="text-xs">
+							<ChangeNotifier value="{filter.arrived} {focus.departed}" class="w-max text-xs">
+								{#if filter.arrived}
+									Arrived
+								{:else if focus.departed}
+									Departed
+								{/if}
+							</ChangeNotifier>
+							<ChangeNotifier value={duration} class="w-max text-xs">
+								{#if filter.arrived}
+									<div class="text-[10px] text-muted-foreground">{duration}</div>
+								{:else if focus.departed}
+									<div class="text-[10px] text-muted-foreground">
+										<span class="text-foreground">{remaining}</span> / {duration} remaining
+									</div>
+								{:else}
+									{duration}
 								{/if}
 							</ChangeNotifier>
 						</div>
 					</div>
-				</div>
-
-				<div class="flex h-5 items-center">
-					<div class="w-12"></div>
-					<div class="flex h-5 w-10 flex-col items-center justify-center">
-						<div class="w-1.5 grow" style:background={service.operator.color}></div>
-					</div>
-					<div class="text-xs">
-						<ChangeNotifier value="{filter.arrived} {focus.departed}" class="w-max text-xs">
-							{#if filter.arrived}
-								Arrived
-							{:else if focus.departed}
-								Departed
-							{/if}
-						</ChangeNotifier>
-						<ChangeNotifier value={duration} class="w-max text-xs">
-							{#if filter.arrived}
-								<div class="text-[10px] text-muted-foreground">{duration}</div>
-							{:else if focus.departed}
-								<div class="text-[10px] text-muted-foreground">
-									<span class="text-foreground">{remaining}</span> / {duration} remaining
-								</div>
-							{:else}
-								{duration}
-							{/if}
-						</ChangeNotifier>
-					</div>
-				</div>
-				<div class="flex h-12 items-center">
-					<div class="flex min-w-12 justify-end">
-						<ChangeNotifier
-							value={filter.arrivalDelay}
-							class="flex w-max flex-col items-end text-sm"
-						>
-							{#if filter.isCancelled}
-								<div class="text-sm text-danger">{filter.times.plan.arr}</div>
-							{:else if filter.arrivalDelay === null}
-								<div class="text-base/4">{filter.times.plan.arr}</div>
-								<div class="text-xs/3 text-warning">Delayed</div>
-							{:else if filter.arrivalDelay < 1}
-								<div class="text-sm text-good">
-									{filter.times.plan.arr}
-								</div>
-							{:else}
-								<div class="text-xs/4">{filter.times.plan.arr}</div>
-								<div class="text-sm/3 text-warning">{filter.times.rt.arr}</div>
-							{/if}
-						</ChangeNotifier>
-					</div>
-					<div class="flex h-full w-10 flex-col items-center justify-center">
-						<div class="w-1.5 grow" style:background={service.operator.color}></div>
-						<div class="flex h-1.5 min-w-4" style:background={service.operator.color}></div>
-
-						<div class="w-1.5 grow"></div>
-					</div>
-					<div class="grow font-medium">
-						<div class="text-base/5">
-							{filter.name}
+					<div class="flex h-12 items-center">
+						<div class="flex min-w-12 justify-end">
+							<ChangeNotifier
+								value={filter.arrivalDelay}
+								class="flex w-max flex-col items-end text-sm"
+							>
+								{#if filter.isCancelled}
+									<div class="text-sm text-danger">{filter.times.plan.arr}</div>
+								{:else if filter.arrivalDelay === null}
+									<div class="text-base/4">{filter.times.plan.arr}</div>
+									<div class="text-xs/3 text-warning">Delayed</div>
+								{:else if filter.arrivalDelay < 1}
+									<div class="text-sm text-good">
+										{filter.times.plan.arr}
+									</div>
+								{:else}
+									<div class="text-xs/4">{filter.times.plan.arr}</div>
+									<div class="text-sm/3 text-warning">{filter.times.rt.arr}</div>
+								{/if}
+							</ChangeNotifier>
 						</div>
-						<ChangeNotifier value={filter.isCancelled && !focus.isCancelled}>
-							{#if filter.isCancelled && !focus.isCancelled}
-								<div class="text-xs/4 font-medium text-danger">Cancelled</div>
-							{/if}
-						</ChangeNotifier>
-					</div>
-				</div>
-			{/if}
-		</a>
-		{#if connection?.status === 'ok'}
-			<div class="relative h-5">
-				<div class="absolute -top-2 right-0 left-0 flex h-18 items-center">
-					<div class="w-12"></div>
-					<div class="flex h-16 w-10 flex-col items-center justify-center gap-0.5">
-						<div class="w-px grow rounded-full bg-muted-foreground"></div>
-						<GitCompareArrowsIcon size={15} />
-						<div class="w-px grow rounded-full bg-muted-foreground"></div>
-					</div>
-					<div class="grow text-xs">
-						{#if connection.newSchDiff !== connection.rtTime}
-							<span class="line-through opacity-80">{connection.newSchDiff}m</span>
-						{/if}
-						{connection.rtTime}m to change
-					</div>
-				</div>
-			</div>
-		{:else if connection && connection?.status !== 'ok'}
-			<div class="relative h-5">
-				<div
-					class={[
-						'absolute -top-3 right-0 left-0 flex h-18 items-center',
-						{
-							'text-amber-500':
-								connection?.status === 'warning' || connection.status === 'alternative',
+						<div class="flex h-full w-10 flex-col items-center justify-center">
+							<div class="w-1.5 grow" style:background={service.operator.color}></div>
+							<div class="flex h-1.5 min-w-4" style:background={service.operator.color}></div>
 
-							'text-red-500': connection?.status === 'impossible'
-						}
-					]}
-				>
-					<div class="w-12"></div>
-					<div class={['flex h-16 w-10 flex-col items-center justify-center gap-0.5']}>
-						<div
-							class={[
-								'w-px grow rounded-full',
-								{
-									'bg-amber-500':
-										connection?.status === 'warning' || connection.status === 'alternative',
-
-									'bg-red-500': connection?.status === 'impossible'
-								}
-							]}
-						></div>
-						<GitCompareArrowsIcon size={15} />
-						<div
-							class={[
-								'w-px grow rounded-full',
-								{
-									'bg-amber-500':
-										connection?.status === 'warning' || connection.status === 'alternative',
-
-									'bg-red-500': connection?.status === 'impossible'
-								}
-							]}
-						></div>
-					</div>
-					<div class="grow text-xs">
-						{#if connection.status === 'impossible'}
-							<div class="line-through opacity-80">
-								{(connection.newSchDiff ?? 0) < 0 ? connection.schTime : connection.newSchDiff}m to
-								change
+							<div class="w-1.5 grow"></div>
+						</div>
+						<div class="grow font-medium">
+							<div class="text-base/5">
+								{filter.name}
 							</div>
-							Change not possible
-						{:else}
-							<span class="line-through opacity-80">{connection.newSchDiff}m</span>
-							{connection.rtTime}m to change
+							<ChangeNotifier value={filter.isCancelled && !focus.isCancelled}>
+								{#if filter.isCancelled && !focus.isCancelled}
+									<div class="text-xs/4 font-medium text-danger">Cancelled</div>
+								{/if}
+							</ChangeNotifier>
+						</div>
+					</div>
+				{/if}
+			</a>
+			{#if connection?.status === 'ok'}
+				<div class="relative h-5">
+					<div class="absolute -top-2 right-0 left-0 flex h-18 items-center">
+						<div class="w-12"></div>
+						<div class="flex h-16 w-10 flex-col items-center justify-center gap-0.5">
+							<div class="w-px grow rounded-full bg-muted-foreground"></div>
+							{#if connection.acrossLondon}
+								<div class="h-6 w-6 p-1">
+									<Tubeicon />
+								</div>
+							{:else}
+								<GitCompareArrowsIcon size={15} />
+							{/if}
+							<div class="w-px grow rounded-full bg-muted-foreground"></div>
+						</div>
+						<div class="grow text-xs">
+							{#if connection.newSchDiff !== connection.rtTime}
+								<span class="line-through opacity-80">{connection.newSchDiff}m</span>
+							{/if}
+							{connection.rtTime}m to change {#if connection.acrossLondon}via Underground{/if}
+						</div>
+					</div>
+				</div>
+			{:else if connection && connection?.status !== 'ok'}
+				<div class="relative h-5">
+					<div
+						class={[
+							'absolute -top-3 right-0 left-0 flex h-18 items-center',
+							{
+								'text-amber-500':
+									connection?.status === 'warning' || connection.status === 'alternative',
+
+								'text-red-500': connection?.status === 'impossible'
+							}
+						]}
+					>
+						<div class="w-12"></div>
+						<div class={['flex h-16 w-10 flex-col items-center justify-center gap-0.5']}>
+							<div
+								class={[
+									'w-px grow rounded-full',
+									{
+										'bg-amber-500':
+											connection?.status === 'warning' || connection.status === 'alternative',
+
+										'bg-red-500': connection?.status === 'impossible'
+									}
+								]}
+							></div>
+							{#if connection.acrossLondon}
+								<div class="h-6 w-6 p-1">
+									<Tubeicon />
+								</div>
+							{:else}
+								<GitCompareArrowsIcon size={15} />
+							{/if}
+							<div
+								class={[
+									'w-px grow rounded-full',
+									{
+										'bg-amber-500':
+											connection?.status === 'warning' || connection.status === 'alternative',
+
+										'bg-red-500': connection?.status === 'impossible'
+									}
+								]}
+							></div>
+						</div>
+						<div class="grow text-xs">
+							{#if connection.status === 'impossible'}
+								<div class="line-through opacity-80">
+									{(connection.newSchDiff ?? 0) < 0 ? connection.schTime : connection.newSchDiff}m
+									to change
+								</div>
+								Change not possible
+							{:else}
+								<span class="line-through opacity-80">{connection.newSchDiff}m</span>
+								{connection.rtTime}m to change
+							{/if}
+						</div>
+						{#if connection.status === 'impossible' || connection.status === 'alternative' || connection.status === 'warning'}
+							<Popover.Root>
+								<Popover.Trigger
+									class={[buttonVariants({ variant: 'secondary', size: 'sm' }), 'z-10']}
+									>Find alternative
+								</Popover.Trigger>
+								<Popover.Content class="min-h-56 w-sm max-w-full p-0">
+									<AlternativeConnection
+										from={connection.from}
+										to={connection.to}
+										time={filter?.times.rt.arr ?? null}
+										allowance={Math.max(
+											connection.acrossLondon ? 15 : 3, // The minimum allowance
+											Math.min(
+												connection.acrossLondon ? 45 : 8, // The maximum allowance
+												connection.newSchDiff && connection.newSchDiff > 1
+													? Math.min(connection.newSchDiff, connection.schTime)
+													: (connection.schTime ?? 0)
+											)
+										)}
+										existingRid={connection.rid}
+										index={connection.connectionIndex}
+									>
+										{#snippet children(service, switchTo, switching, failed)}
+											<AlternativeDisplay
+												{service}
+												{switchTo}
+												{switching}
+												{failed}
+												from={connection.from}
+												to={connection.to}
+												offset={dayjsFromHHmm(
+													filter?.times.rt.arr ?? filter?.times.plan.arr ?? dayjs().format('HH:mm')
+												).diff(dayjs(), 'minute')}
+											/>
+										{/snippet}
+									</AlternativeConnection>
+								</Popover.Content>
+							</Popover.Root>
 						{/if}
 					</div>
-					{#if connection.status === 'impossible' || connection.status === 'alternative' || connection.status === 'warning'}
-						<Popover.Root>
-							<Popover.Trigger
-								class={[buttonVariants({ variant: 'secondary', size: 'sm' }), 'z-10']}
-								>Find alternative
-							</Popover.Trigger>
-							<Popover.Content class="min-h-56 w-sm max-w-full p-0">
-								<AlternativeConnection
-									from={connection.from}
-									to={connection.to}
-									time={filter?.times.rt.arr ?? null}
-									allowance={Math.max(
-										connection.acrossLondon ? 15 : 3, // The minimum allowance
-										Math.min(
-											connection.acrossLondon ? 45 : 8, // The maximum allowance
-											connection.newSchDiff && connection.newSchDiff > 1
-												? Math.min(connection.newSchDiff, connection.schTime)
-												: (connection.schTime ?? 0)
-										)
-									)}
-									existingRid={connection.rid}
-									index={connection.connectionIndex}
-								>
-									{#snippet children(service, switchTo, switching, failed)}
-										<AlternativeDisplay
-											{service}
-											{switchTo}
-											{switching}
-											{failed}
-											from={connection.from}
-											to={connection.to}
-											offset={dayjsFromHHmm(
-												filter?.times.rt.arr ?? filter?.times.plan.arr ?? dayjs().format('HH:mm')
-											).diff(dayjs(), 'minute')}
-										/>
-									{/snippet}
-								</AlternativeConnection>
-							</Popover.Content>
-						</Popover.Root>
-					{/if}
 				</div>
-			</div>
-		{:else if !connection}
-			<div class="absolute right-0 bottom-0 left-0 h-px border-b border-border"></div>
-		{/if}
+			{:else if !connection}
+				<div class="absolute right-0 bottom-0 left-0 h-px border-b border-border"></div>
+			{/if}
+		</div>
 	{/key}
 	{#if focus?.isCancelled || filter?.isCancelled}
 		<AlternativeConnection

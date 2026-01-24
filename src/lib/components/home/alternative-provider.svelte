@@ -85,18 +85,18 @@
 
 		if (response.ok) {
 			const data = await response.json();
-			console.log();
-			if (data.rid !== service.rid) {
-				saved.value[index] = {
-					...saved.value[index],
-					service: data,
-					service_id: service.rid,
-					focusCrs: from,
-					filterCrs: to,
-					lastRefreshed: Date.now(),
-					subscriptionId
-				};
-			}
+			console.log('alternative service', data.rid, service.rid);
+			// if (data.rid !== saved.value[index].service_id) {
+			saved.value[index] = {
+				...saved.value[index],
+				service: data,
+				service_id: service.rid,
+				focusCrs: from,
+				filterCrs: to,
+				lastRefreshed: Date.now(),
+				subscriptionId
+				// };
+			};
 		} else {
 			console.error('Failed to switch to alternative service');
 

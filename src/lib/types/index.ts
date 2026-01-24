@@ -191,7 +191,7 @@ export type MapDataLocationGroup = {
 	destination: ServiceLocationWithCoords;
 };
 
-export type MapData = ServiceMapData | BoardMapData;
+export type MapData = ServiceMapData | BoardMapData | ItineraryMapData;
 
 export type ServiceMapData = {
 	type: 'service';
@@ -201,6 +201,15 @@ export type ServiceMapData = {
 		tiploc: string;
 		coords: [number, number];
 	}[];
+};
+
+export type ItineraryMapData = {
+	type: 'itinerary';
+	stops: {
+		crs: string;
+		longitude: number;
+		latitude: number;
+	};
 };
 
 export type BoardMapData = {
