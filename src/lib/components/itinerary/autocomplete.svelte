@@ -9,13 +9,20 @@
 
 	let {
 		value = $bindable(null),
-		placeholder = ''
+		onChoose = () => {},
+		onFocus = () => {},
+		placeholder = '',
+		autofocus = false
 	}: {
 		value: string | null;
 		placeholder: string;
+		onChoose?: (value: string) => void;
+		onFocus?: () => void;
+		autofocus?: boolean;
 	} = $props();
 
 	let focused = $state(false);
+	let input: HTMLInputElement | null = $state(null);
 	let q = $state('');
 
 	const fuzzySearch = $derived(
@@ -30,10 +37,17 @@
 		fuzzySearch.search(q ?? '').slice(0, 5)
 	);
 	const formatted = $derived(browser ? format(results) : []);
+
+	$effect(() => {
+		if (autofocus) {
+			input?.focus();
+		}
+	});
 </script>
 
 <form class="relative w-full">
 	<Input
+		bind:ref={input}
 		class={!focused && value ? 'text-transparent placeholder:opacity-0' : ''}
 		bind:value={q}
 		{placeholder}
@@ -41,6 +55,7 @@
 			q = '';
 			value = null;
 			focused = true;
+			onFocus();
 		}}
 		onblur={() => {
 			setTimeout(() => {
@@ -69,6 +84,8 @@
 						value = results[i].item.crsCode;
 						q = results[i].item.crsCode;
 						focused = false;
+						input.blur();
+						onChoose(results[i].item.crsCode);
 					}}
 					class="flex h-10 w-full items-center border-b border-border px-2 text-left last:border-none"
 				>

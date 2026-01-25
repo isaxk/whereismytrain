@@ -7,14 +7,19 @@
 	import ArrowLeft from '@lucide/svelte/icons/arrow-left';
 	import Spinner from '$lib/components/ui/spinner/spinner.svelte';
 	import { londonTerminals } from '$lib/data/favourites';
+	import Tubeicon from '$lib/assets/tubeicon.svelte';
+	import { dayjsFromHHmm } from '$lib/utils';
+	import { GitCompareArrowsIcon } from 'lucide-svelte';
 
 	let {
+		legIndex = 0,
 		from,
 		to,
 		time,
 		tomorrow,
 		onSelect
 	}: {
+		legIndex?: number;
 		from: string;
 		to: string;
 		time: string;
@@ -74,17 +79,33 @@
 	</div>
 {:else if board}
 	{#if board.services.length === 0}
-		<div class="flex h-full grow flex-col items-center justify-center">
+		<div class="flex h-full grow flex-col items-center justify-center px-10 py-10">
 			{#if londonTerminals.includes(from) && londonTerminals.includes(to)}
 				<div class="text-base">No direct national rail service found between London terminals</div>
-				<Button onclick={() => selectService(null)}>Mark as a tube connection</Button>
+				<Button onclick={() => selectService(null)}><Tubeicon /> Mark as a tube connection</Button>
 			{:else}
-				<p>No services found</p>
+				<div class="text-lg font-medium">No services found</div>
+				{#if Math.abs(dayjsFromHHmm(time).diff(dayjs(), 'm')) > 120}
+					<div class="text-xs">
+						Looking for a replacement bus? Unfortunately we cannot get info for these more than 2
+						hours in advance.
+					</div>
+				{/if}
 			{/if}
 		</div>
 	{:else}
 		{#each board.services as service (service.rid)}
-			<button onclick={() => selectService(service)} class="w-full">
+			{@const timeToConnect = dayjsFromHHmm(service.times.rt.dep ?? service.times.plan.dep!).diff(
+				dayjsFromHHmm(time),
+				'm'
+			)}
+			<button onclick={() => selectService(service)} class="w-full px-4 even:bg-muted/40">
+				{#if legIndex > 0}
+					<div class="flex translate-y-4 items-center gap-2 text-xs text-muted-foreground">
+						<GitCompareArrowsIcon size={16} />
+						{timeToConnect}m to connect
+					</div>
+				{/if}
 				<BoardItemComponent
 					href="#"
 					date={service.rawTime}

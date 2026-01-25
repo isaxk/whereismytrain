@@ -16,7 +16,7 @@
 	import AllStations from '$lib/data/stations.json';
 	import { paneHeight } from '$lib/state/map.svelte';
 	import { pinned } from '$lib/state/saved.svelte';
-	import { t } from '$lib/utils';
+	import { dayjsFromHHmm, t } from '$lib/utils';
 
 	import Highlight from '../search/highlight.svelte';
 	import Button from '../ui/button/button.svelte';
@@ -26,6 +26,7 @@
 	import PinnedBoardItem from './pinned-board-item.svelte';
 	import Popular from './popular.svelte';
 	import ItinerarySearch from './itinerary-search.svelte';
+	import { page } from '$app/state';
 
 	const { send, receive } = t;
 
@@ -99,6 +100,34 @@
 		}
 	});
 
+	let tab = $state('simple');
+
+	$effect(() => {
+		if (page.data.open === 'itinerary') {
+			opened = true;
+			tab = 'itinerary';
+		} else if (page.data.open === 'search') {
+			opened = true;
+			tab = 'simple';
+			if (page.data.withFrom) {
+				from = page.data.withFrom;
+				fromQ = page.data.withFrom;
+			}
+			if (page.data.withTo) {
+				to = page.data.withTo;
+				toQ = page.data.withTo;
+			}
+			if (page.data.withTime) {
+				const time = dayjsFromHHmm(page.data.withTime, false);
+				hour = time.hour().toString().padStart(2, '0');
+				minute = time.minute().toString().padStart(2, '0');
+			}
+			if (page.data.withTomorrow) {
+				tomorrow = true;
+			}
+		}
+	});
+
 	onMount(() => {
 		const interval = setInterval(() => {
 			if (opened) {
@@ -119,7 +148,7 @@
 			<!-- <div class="text-xl font-semibold">Find trains...</div> -->
 		</div>
 
-		<Tabs.Root value="simple">
+		<Tabs.Root bind:value={tab}>
 			<div class="flex w-full items-center gap-2 pt-2">
 				<Button variant="outline" size="icon" onclick={() => (opened = false)}><X /></Button>
 				<Tabs.List class="grow">

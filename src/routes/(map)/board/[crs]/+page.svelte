@@ -210,28 +210,61 @@
 						<Tabs.Content value="expanded" class="flex flex-col">
 							{#if services}
 								<div class="" in:fade|global={{ duration: 200 }}>
-									{#each services as service (service.rid)}
-										<div
-											class="border-b border-border px-4 transition-all odd:bg-muted/40"
-											animate:flip={{ duration: 200 }}
-											out:fly={{ duration: 200, x: -50 }}
-										>
-											<BoardItemComponent
-												href={serviceUrl(service.rid)}
-												date={service.rawTime}
-												isToday={dayjs(service.rawTime).isSame(dayjs(), 'day')}
-												planDep={service.times.plan.dep ?? 'N/A'}
-												rtDep={service.times.rt.dep}
-												departed={service.departed}
-												isCancelled={service.isCancelled}
-												isFilterCancelled={service.isFilterCancelled}
-												destination={service.destination}
-												platform={service.platform}
-												operator={service.operator}
-												filterName={details?.filterName}
-											/>
+									{#if services.length > 0}
+										{#each services as service (service.rid)}
+											<div
+												class="border-b border-border px-4 transition-all odd:bg-muted/40"
+												animate:flip={{ duration: 200 }}
+												out:fly={{ duration: 200, x: -50 }}
+											>
+												<BoardItemComponent
+													href={serviceUrl(service.rid)}
+													date={service.rawTime}
+													isToday={dayjs(service.rawTime).isSame(dayjs(), 'day')}
+													planDep={service.times.plan.dep ?? 'N/A'}
+													rtDep={service.times.rt.dep}
+													departed={service.departed}
+													isCancelled={service.isCancelled}
+													isFilterCancelled={service.isFilterCancelled}
+													destination={service.destination}
+													platform={service.platform}
+													operator={service.operator}
+													filterName={details?.filterName}
+												/>
+											</div>
+										{/each}
+									{:else}
+										<div class="p-4">
+											<div class="text-lg font-medium">No direct services found</div>
+											{#if Math.abs(details?.offset) > 120}
+												<div class="text-xs">
+													Looking for a replacement bus? Unfortunately we cannot get info for these
+													more than 2 hours in advance.
+												</div>
+												{#if details?.filterCrs}
+													<div class="py-2 text-xs">
+														<div class="text-xs font-medium">If your journey includes changes:</div>
+														<ul class="list-disc pl-4">
+															<li>
+																and you already know your route, <a
+																	class="underline"
+																	href={details.requestedTime
+																		? `/?open=itinerary&withFrom=${details?.crs}&withTo=${details?.filterCrs}&withTime=${details.requestedTime}&withTomorrow=${data.tomorrow ?? 'false'}`
+																		: `/?open=itinerary&withFrom=${details?.crs}&withTo=${details?.filterCrs}`}
+																	>add your itinerary</a
+																>
+															</li>
+															<li>
+																otherwise <a class="underline" href="/"
+																	>use the national rail journey planner</a
+																> (or other ticketing apps)
+															</li>
+														</ul>
+													</div>
+												{/if}
+											{/if}
 										</div>
-									{/each}
+									{/if}
 								</div>
 							{:else}
 								<div in:fade|global={{ duration: 200, delay: 200 }}>

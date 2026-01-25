@@ -2,14 +2,17 @@
 	import { Bus } from 'lucide-svelte';
 	import ChangeNotifier from '../ui/change-notifier.svelte';
 	import type { CallingPoint, TrainService } from '$lib/types';
+	import dayjs from 'dayjs';
 
 	let {
+		showDate = false,
 		focus,
 		filter,
 		service,
 		duration = null,
 		remaining = null
 	}: {
+		showDate?: boolean;
 		focus: CallingPoint;
 		filter: CallingPoint;
 		service: TrainService;
@@ -18,7 +21,13 @@
 	} = $props();
 </script>
 
-<div class="flex h-16 items-center">
+{#if showDate}
+	<div class="translate-y-2 border-b border-border px-2 pb-2 text-sm font-medium">
+		{dayjs(focus.rtDepDate).format('ddd DD MMM')}
+	</div>
+{/if}
+
+<div class="flex items-center">
 	<div class="flex min-w-12 justify-end">
 		<ChangeNotifier value={focus.delay} class="flex w-max flex-col items-end text-sm">
 			{#if focus.isCancelled}
