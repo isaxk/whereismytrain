@@ -15,10 +15,15 @@
 		refreshing.current = true;
 		invalidateAll().then(() => {
 			if (page.data.map) {
-				page.data.map.then(() => {
-					refreshing.current = false;
-					timeout = setTimeout(refresh, 10000);
-				});
+				page.data.map
+					.then(() => {
+						refreshing.current = false;
+						timeout = setTimeout(refresh, 10000);
+					})
+					.catch(() => {
+						refreshing.current = false;
+						timeout = setTimeout(refresh, 10000);
+					});
 			} else {
 				refreshing.current = false;
 				timeout = setTimeout(refresh, 10000);

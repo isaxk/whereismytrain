@@ -334,8 +334,8 @@
 	style:min-height="{clientHeight}px"
 	class={[
 		'relative py-3 transition-all duration-300',
-		!refreshed && !refreshing.current ? 'opacity-40' : 'opacity-100',
-		!refreshed && refreshing.current ? 'animate-pulse' : ''
+		(!refreshed && !refreshing.current) || refreshing.error ? 'opacity-40' : 'opacity-100',
+		!refreshed && refreshing.current && !refreshing.error ? 'animate-pulse' : ''
 	]}
 >
 	{#key data.service_id}

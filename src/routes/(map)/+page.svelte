@@ -1,15 +1,23 @@
 <script lang="ts">
 	import {
+		AlertTriangle,
 		Bug,
 		CircleQuestionMark,
 		Download,
 		EllipsisVerticalIcon,
 		LightbulbIcon,
-		User
+		Triangle,
+		User,
+		TriangleAlert,
+		CircleAlert,
+		WifiOff,
+		CloudAlert
 	} from 'lucide-svelte';
 	import { onMount } from 'svelte';
 	import { flip } from 'svelte/animate';
 	import { fly } from 'svelte/transition';
+
+	import relativeTime from 'dayjs/plugin/relativeTime';
 
 	import Install from '$lib/components/home/install.svelte';
 	import SavedTrain from '$lib/components/home/saved-train.svelte';
@@ -22,13 +30,24 @@
 	import { pwa, saved } from '$lib/state/saved.svelte';
 	import { refreshing, servicesSub } from '$lib/state/services-subscriber.svelte';
 	import { iOS } from '$lib/utils.js';
+	import dayjs from 'dayjs';
+
+	dayjs.extend(relativeTime);
+
+	let now = $state(dayjs());
 
 	onMount(() => {
 		const clear = servicesSub.init();
 		setTimeout(() => {
 			servicesSub.forceRefresh();
 		}, 200);
-		return () => clear();
+		const interval = setInterval(() => {
+			now = dayjs();
+		}, 1000);
+		return () => {
+			clear();
+			clearInterval(interval);
+		};
 	});
 </script>
 
@@ -41,9 +60,27 @@
 >
 	<div class="flex items-center justify-start gap-2">
 		<div class="grow text-3xl font-bold">Where is my train?</div>
-		{#if refreshing.current}
-			<Spinner />
-		{/if}
+		<div class="relative flex h-9 items-center">
+			{#if refreshing.current}
+				<Spinner />
+			{:else if refreshing.error === 'Failed to fetch'}
+				<div class="text-danger">
+					<CloudAlert size={20} />
+				</div>
+			{:else if refreshing.error}
+				<div class="text-red-500"><CircleAlert size={20} /></div>
+			{/if}
+			{#if refreshing.error === 'Failed to fetch' && saved.value.length > 0 && dayjs(now).diff(dayjs(saved.value[0].lastRefreshed), 's') > 20}
+				<div
+					class="absolute top-10 -right-11 rounded-md border border-danger bg-background px-1.5 py-0.5 text-xs text-nowrap text-danger"
+				>
+					Offline. Last refreshed {#key now.toString()}{dayjs(
+							saved.value[0].lastRefreshed
+						).fromNow()}{/key}
+				</div>
+			{/if}
+		</div>
+
 		<DropdownMenu.Root>
 			<DropdownMenu.Trigger class={buttonVariants({ variant: 'outline', size: 'icon' })}>
 				<EllipsisVerticalIcon />

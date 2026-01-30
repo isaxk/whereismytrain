@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { page } from '$app/state';
 
-	import dayjs from 'dayjs';
-	import { ArrowLeft, Bus, CalendarIcon, Split } from 'lucide-svelte';
-	import { onDestroy } from 'svelte';
-	import { fade } from 'svelte/transition';
+	import dayjs, { Dayjs } from 'dayjs';
+	import { ArrowLeft, Bus, CalendarIcon, CloudAlert, Split } from 'lucide-svelte';
+	import { onDestroy, onMount } from 'svelte';
+	import { fade, slide } from 'svelte/transition';
 
 	import CallingPointItem from '$lib/components/train/calling-point-item.svelte';
 	import DetailedView from '$lib/components/train/detailed-view.svelte';
@@ -31,19 +31,31 @@
 
 	let serviceData: TrainService | null = $state(null);
 	let error: Error | null = $state(null);
+	let now = $state(dayjs());
 
 	let showPrevious = $state(false);
 	let detailedView = $state(false);
+	let lastSuccessfulRefresh: Dayjs | null = $state(null);
 
 	$effect(() => {
 		data.service
 			.then(async (r) => {
 				serviceData = r;
+				error = null;
+				lastSuccessfulRefresh = dayjs();
 				headerColor.current = r.operator.color;
 			})
 			.catch((e) => {
+				console.log('failed to refresh', e);
 				error = e;
 			});
+	});
+
+	onMount(() => {
+		const interval = setInterval(() => {
+			now = dayjs();
+		}, 1000);
+		return () => clearInterval(interval);
 	});
 
 	onDestroy(() => {
@@ -114,13 +126,12 @@
 		</div>
 		<div class="min-w-0 grow pl-2 text-left">
 			<div class="flex items-center justify-start gap-1 text-xs">
-				<!-- <div class="w-3">
+				{operator.name}
+				<div class="w-3">
 					{#if refreshing.current || refreshing.map}
 						<Spinner class="size-3" />
 					{/if}
-				</div> -->
-				{operator.name}
-				<div class="w-3"></div>
+				</div>
 			</div>
 			<div class="w-full gap-1 overflow-hidden text-sm font-medium text-nowrap text-ellipsis">
 				{title}
@@ -142,8 +153,16 @@
 		</div>
 	</div>
 	<div in:fade|global={{ duration: 200 }} class="flex flex-col gap-4 py-4">
-		{#if isBus || destination.length > 1 || serviceData.reasonCode || !isToday}
+		{#if isBus || destination.length > 1 || serviceData.reasonCode || !isToday || error}
 			<div class="flex flex-col gap-2 px-4">
+				{#if error}
+					<div transition:slide|global={{ duration: 200 }}>
+						<AlertCard Icon={CloudAlert} status="major"
+							>Please check your internet connection. Last refreshed {#key now}{lastSuccessfulRefresh?.fromNow() ??
+									'never'}{/key}</AlertCard
+						>
+					</div>
+				{/if}
 				{#if isBus}
 					<AlertCard Icon={Bus} status="info">This is a bus service.</AlertCard>
 				{/if}
