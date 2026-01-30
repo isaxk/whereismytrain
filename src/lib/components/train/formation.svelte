@@ -87,11 +87,4 @@
 			</div>
 		{/each}
 	</div>
-
-	{#if formation?.some((f) => f.loading && f.loading !== null)}
-		<div class="pt-1 text-right text-[10px]/3 text-foreground/60">
-			* Colours indicate seat availability. <br />
-			A "full" carriage may still have standing room.
-		</div>
-	{/if}
 </div>

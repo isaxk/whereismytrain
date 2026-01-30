@@ -112,10 +112,10 @@
 				dayjsFromHHmm(leg.filter.times.plan.arr),
 				'm'
 			)}
-			{@const rtDiff = dayjsFromHHmm(next.times.rt.dep!).diff(
-				dayjsFromHHmm(leg.filter.times.rt.arr),
-				'm'
-			)}
+			{@const rtDiff =
+				next.times.rt.dep && leg.filter.times.rt.arr
+					? dayjsFromHHmm(next.times.rt.dep!).diff(dayjsFromHHmm(leg.filter.times.rt.arr), 'm')
+					: null}
 			{@const acrossLondon =
 				londonTerminals.includes(leg.filter.crs) &&
 				londonTerminals.includes(next.crs) &&
@@ -137,7 +137,7 @@
 						{#if schDiff !== rtDiff}
 							<span class="line-through opacity-80">{schDiff}m</span>
 						{/if}
-						{rtDiff}m to change {#if acrossLondon}via Underground{/if}
+						{rtDiff ?? schDiff}m to change {#if acrossLondon}via Underground{/if}
 					</div>
 				</div>
 			</div>

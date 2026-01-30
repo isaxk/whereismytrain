@@ -11,6 +11,7 @@
 	import MapTrainIndication from './map-train-indication.svelte';
 
 	import type { Feature } from 'geojson';
+	import { onMount } from 'svelte';
 	let {
 		href,
 		crs,
@@ -137,6 +138,14 @@
 	});
 
 	const coordsTween = $derived(data.trainPosition ? Tween.of(() => data.trainPosition) : null);
+
+	const fadeOpacity = new Tween(0, {
+		duration: 250
+	});
+
+	onMount(() => {
+		fadeOpacity.set(1);
+	});
 </script>
 
 <GeoJSON id="train-route-{rid}-{index}-secondary" data={lineData}>
@@ -150,7 +159,7 @@
 		paint={{
 			'line-width': 5,
 			'line-color': color,
-			'line-opacity': page.data.id === rid ? 0.2 : 0.05
+			'line-opacity': fadeOpacity.current * (page.data.id === rid ? 0.2 : 0.05)
 		}}
 	/>
 </GeoJSON>
@@ -166,13 +175,15 @@
 		paint={{
 			'line-width': 6.5,
 			'line-color': color,
-			'line-opacity': page.data.crs
-				? page.data.id === rid
-					? data.lineLocations.some((l) => l.crs === filter || l.crs === focus)
-						? 1
+			'line-opacity':
+				fadeOpacity.current *
+				(page.data.crs
+					? page.data.id === rid
+						? data.lineLocations.some((l) => l.crs === filter || l.crs === focus)
+							? 1
+							: 0.2
 						: 0.2
-					: 0.2
-				: 0.8
+					: 0.8)
 		}}
 	/>
 </GeoJSON>
@@ -188,7 +199,7 @@
 		paint={{
 			'line-width': 5,
 			'line-color': color,
-			'line-opacity': page.data.id === rid ? 0.4 : 0.1
+			'line-opacity': fadeOpacity.current * (page.data.id === rid ? 0.4 : 0.1)
 		}}
 	/>
 </GeoJSON>

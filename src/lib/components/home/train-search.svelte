@@ -30,6 +30,8 @@
 
 	const { send, receive } = t;
 
+	const ENABLE_ITINERARY_SEARCH = false;
+
 	let from: string | null = $state(null);
 	let to: string | null | undefined = $state(undefined);
 	let hour: string = $state(dayjs().format('HH'));
@@ -151,16 +153,29 @@
 		<Tabs.Root bind:value={tab}>
 			<div class="flex w-full items-center gap-2 pt-2">
 				<Button variant="outline" size="icon" onclick={() => (opened = false)}><X /></Button>
-				<Tabs.List class="grow">
-					<Tabs.Trigger value="simple">Simple</Tabs.Trigger>
-					<Tabs.Trigger value="itinerary">Multiple-stops</Tabs.Trigger>
-				</Tabs.List>
+				{#if ENABLE_ITINERARY_SEARCH}
+					<Button variant="outline" size="icon" onclick={() => (opened = false)}><X /></Button>
+
+					<Tabs.List class="grow">
+						<Tabs.Trigger value="simple">Simple</Tabs.Trigger>
+						<Tabs.Trigger value="itinerary">Multiple-stops</Tabs.Trigger>
+					</Tabs.List>
+				{:else}
+					<div class="pl-1 text-lg font-semibold">Find trains...</div>
+				{/if}
 			</div>
-			<Tabs.Content value="itinerary">
-				<ItinerarySearch />
-			</Tabs.Content>
+			{#if ENABLE_ITINERARY_SEARCH}
+				<Tabs.Content value="itinerary">
+					<ItinerarySearch />
+				</Tabs.Content>
+			{/if}
 			<Tabs.Content value="simple">
-				<div class="flex h-6 items-end justify-end pt-6 pb-2">
+				<div
+					class={[
+						'flex h-6 items-end justify-end pb-2',
+						ENABLE_ITINERARY_SEARCH ? 'pt-6' : '-mt-4'
+					]}
+				>
 					<div class="flex items-center gap-2">
 						<Switch bind:checked={tomorrow} id="tomorrow"></Switch>
 						<Label for="tomorrow">Tomorrow</Label>

@@ -14,6 +14,8 @@
 	import Spinner from '../ui/spinner/spinner.svelte';
 
 	import MapLocationGroup from './map-location-group.svelte';
+	import { Tween } from 'svelte/motion';
+	import { onMount } from 'svelte';
 
 	let {
 		serviceData,
@@ -59,6 +61,14 @@
 		},
 		() => [mapData, paneHeight.current]
 	);
+
+	const fadeOpacity = new Tween(0, {
+		duration: 250
+	});
+
+	onMount(() => {
+		fadeOpacity.set(1);
+	});
 </script>
 
 {#if mapData}
@@ -118,6 +128,7 @@
 							style:background={isTrainAtStation ? '#fff' : serviceData.operator.color}
 							style:color={isTrainAtStation ? serviceData.operator.color : '#fff'}
 							style:border-color={serviceData.operator.color}
+							in:fade={{ duration: 2500 }}
 							class={[
 								'flex flex-col items-center justify-center overflow-hidden rounded-full text-[10px]/3 text-white',
 								isTrainAtStation ? 'h-10 w-10 border-2' : 'h-7 w-7',

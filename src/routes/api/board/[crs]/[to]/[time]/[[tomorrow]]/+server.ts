@@ -34,6 +34,7 @@ export const GET: RequestHandler = async ({ params, request }) => {
 	// console.log(date.toString());
 
 	const offset = time && time != 'null' ? date.diff(dayjs(), 'minute') : 0;
+	console.log('offset', offset);
 
 	let shouldUseRailData = false;
 	if (Math.abs(offset) > 119) {
@@ -96,7 +97,7 @@ export const GET: RequestHandler = async ({ params, request }) => {
 				crs: crs,
 				filterName: data.filterLocationName ?? null,
 				filterCrs: to && to != 'null' ? to : null,
-				offset: offset,
+				offset: typeof offset === 'number' ? offset : 0,
 				time: date.toString(),
 				requestedTime: time == 'null' ? null : (time ?? null),
 				notices: nrccMessages

@@ -112,13 +112,13 @@
 				href={data.backTo ?? `../${page.url.search}`}><ArrowLeft /></Button
 			>
 		</div>
-		<div class="min-w-0 grow text-center">
-			<div class="flex items-center justify-center gap-1 text-xs">
-				<div class="w-3">
+		<div class="min-w-0 grow pl-2 text-left">
+			<div class="flex items-center justify-start gap-1 text-xs">
+				<!-- <div class="w-3">
 					{#if refreshing.current || refreshing.map}
 						<Spinner class="size-3" />
 					{/if}
-				</div>
+				</div> -->
 				{operator.name}
 				<div class="w-3"></div>
 			</div>
@@ -126,7 +126,12 @@
 				{title}
 			</div>
 		</div>
-		<div class="flex min-w-10 items-center justify-end">
+		<div class="flex min-w-22 items-center justify-end gap-2">
+			<Share
+				{title}
+				text="Follow this service"
+				url={`/share/${data.crs}/${data.id}/${callingPoints.find((cp) => cp.order === 'filter')?.crs}`}
+			/>
 			<SavedToggle
 				service={serviceData}
 				crs={data.crs}
@@ -245,7 +250,7 @@
 						{/if}
 					{/if}
 				{/each}
-				<div class="flex w-full flex-col gap-2 pt-2">
+				<!-- <div class="flex w-full flex-col gap-2 pt-2">
 					<Share
 						{title}
 						text="Follow this service"
@@ -256,7 +261,7 @@
 							>Switch to detailed view</Button
 						>
 					{/if}
-				</div>
+				</div> -->
 				<!-- <div class="flex gap-2">
 					<Select.Root bind:value={selectedTestItem} type="single">
 						<Select.Trigger>
