@@ -4,7 +4,7 @@
 	import { highlightedStation } from '$lib/state/map.svelte';
 	import { explicitEffect } from '$lib/state/utils.svelte';
 	import type { CallingPoint, Operator } from '$lib/types';
-	import { t } from '$lib/utils';
+	import { cn, t } from '$lib/utils';
 
 	import ChangeNotifier from '../ui/change-notifier.svelte';
 
@@ -58,13 +58,15 @@
 		class={[
 			'z-0 flex w-10 min-w-10 justify-end gap-0',
 
-			cp.order === 'focus' || cp.order === 'filter'
-				? 'font-medium'
-				: cp.order === 'further'
-					? 'opacity-80'
-					: cp.order === 'post-destination'
-						? 'opacity-60'
-						: 'opacity-100'
+			{
+				'font-medium opacity-100': cp.order === 'focus' || cp.order === 'filter',
+				'opacity-70':
+					cp.order === 'previous' ||
+					cp.order === 'further' ||
+					cp.order === 'post-destination' ||
+					cp.order === 'origin' ||
+					cp.order === 'subsequent'
+			}
 		]}
 	>
 		{#if (['filter', 'subsequent', 'post-destination', 'further'].includes(cp.order) && cp.times.plan.arr && !(cp.arrivalCancelled && !cp.departureCancelled)) || !cp.times.plan.dep || (!cp.arrivalCancelled && cp.departureCancelled)}
@@ -212,17 +214,12 @@
 	<div class={['min-w-0 grow', cp.order === 'post-destination' ? 'opacity-40' : '']}>
 		<div class="flex items-end gap-1">
 			<div
-				class={[
-					'min-w-0 overflow-hidden text-sm/4 text-nowrap text-ellipsis',
+				class={cn([
+					'min-w-0 overflow-hidden text-sm/4 text-nowrap text-ellipsis text-foreground/60',
 					{
-						'font-medium': cp.order === 'focus' || cp.order === 'filter' || cp.isDestination,
-						'text-base-5': cp.order === 'further' || cp.order === 'filter',
-						'text-muted-foreground/75uri':
-							(cp.order === 'further' || cp.order === 'previous') && !cp.isDestination,
-						'text-muted-foreground': cp.order === 'subsequent' && !cp.isDestination,
-						'text-sm/4': cp.order !== 'focus' && cp.order !== 'filter'
+						'font-medium text-foreground': cp.order === 'focus' || cp.order === 'filter'
 					}
-				]}
+				])}
 			>
 				{cp.name}
 			</div>
