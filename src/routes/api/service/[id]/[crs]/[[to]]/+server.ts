@@ -642,7 +642,7 @@ export const GET = async ({ params, request }) => {
 		}
 
 		const final: TrainService = {
-			rid: data.id,
+			rid: rawid,
 			callingPoints: callingPoints.map((cp, i) =>
 				parseCallingPoint(
 					cp,

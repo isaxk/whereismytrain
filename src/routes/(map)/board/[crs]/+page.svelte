@@ -31,6 +31,8 @@
 
 	let { data } = $props();
 
+	const ENABLE_COMPACT_VIEW = false;
+
 	let details: BoardDetails | null = $state(null);
 	let services: BoardItem[] | null = $state(null);
 	let error: string | null = $state(null);
@@ -188,50 +190,86 @@
 				<div class="" in:fade|global={{ duration: 200 }}>
 					<Tabs.Root class="gap-0" bind:value={view.value}>
 						<div class="flex items-center gap-2 border-b border-border px-4 py-2">
-							{#if page.data.offset !== -119}
+							{#if details?.offset !== -119}
 								<Button href={earlierUrl} variant="secondary">
 									<ArrowUp size={18} />
 									Earlier trains
 								</Button>
 							{/if}
 							<div class="grow"></div>
-							{#if page.data.offset != 0}
+
+							{#if details?.offset != 0}
 								<Button href={offsetUrl(0)} variant="secondary">
 									<Clock size={18} />
 									Now
 								</Button>
 							{/if}
-							<Tabs.List>
-								<Tabs.Trigger value="expanded"><Rows2 /></Tabs.Trigger>
-								<Tabs.Trigger value="collapsed"><Rows4 /></Tabs.Trigger>
-							</Tabs.List>
+							{#if ENABLE_COMPACT_VIEW}
+								<Tabs.List>
+									<Tabs.Trigger value="expanded"><Rows2 /></Tabs.Trigger>
+									<Tabs.Trigger value="collapsed"><Rows4 /></Tabs.Trigger>
+								</Tabs.List>
+							{/if}
 						</div>
 
 						<Tabs.Content value="expanded" class="flex flex-col">
 							{#if services}
 								<div class="" in:fade|global={{ duration: 200 }}>
-									{#each services as service (service.rid)}
-										<div
-											class="border-b border-border px-4 transition-all odd:bg-muted/40"
-											animate:flip={{ duration: 200 }}
-											out:fly={{ duration: 200, x: -50 }}
-										>
-											<BoardItemComponent
-												href={serviceUrl(service.rid)}
-												date={service.rawTime}
-												isToday={dayjs(service.rawTime).isSame(dayjs(), 'day')}
-												planDep={service.times.plan.dep ?? 'N/A'}
-												rtDep={service.times.rt.dep}
-												departed={service.departed}
-												isCancelled={service.isCancelled}
-												isFilterCancelled={service.isFilterCancelled}
-												destination={service.destination}
-												platform={service.platform}
-												operator={service.operator}
-												filterName={details?.filterName}
-											/>
+									{#if services.length > 0}
+										{#each services as service (service.rid)}
+											<div
+												class="border-b border-border px-4 transition-all odd:bg-muted/40"
+												animate:flip={{ duration: 200 }}
+												out:fly={{ duration: 200, x: -50 }}
+											>
+												<BoardItemComponent
+													href={serviceUrl(service.rid)}
+													date={service.rawTime}
+													isToday={dayjs(service.rawTime).isSame(dayjs(), 'day')}
+													planDep={service.times.plan.dep ?? 'N/A'}
+													rtDep={service.times.rt.dep}
+													departed={service.departed}
+													isCancelled={service.isCancelled}
+													isFilterCancelled={service.isFilterCancelled}
+													destination={service.destination}
+													platform={service.platform}
+													operator={service.operator}
+													filterName={details?.filterName}
+												/>
+											</div>
+										{/each}
+									{:else}
+										<div class="p-4">
+											<div class="text-lg font-medium">No direct services found</div>
+											{#if Math.abs(details?.offset) > 120}
+												<div class="text-xs">
+													Looking for a replacement bus? Unfortunately we cannot get info for these
+													more than 2 hours in advance.
+												</div>
+												{#if details?.filterCrs}
+													<div class="py-2 text-xs">
+														<div class="text-xs font-medium">If your journey includes changes:</div>
+														<ul class="list-disc pl-4">
+															<li>
+																and you already know your route, <a
+																	class="underline"
+																	href={details.requestedTime
+																		? `/?open=itinerary&withFrom=${details?.crs}&withTo=${details?.filterCrs}&withTime=${details.requestedTime}&withTomorrow=${data.tomorrow ?? 'false'}`
+																		: `/?open=itinerary&withFrom=${details?.crs}&withTo=${details?.filterCrs}`}
+																	>add your itinerary</a
+																>
+															</li>
+															<li>
+																otherwise <a class="underline" href="/"
+																	>use the national rail journey planner</a
+																> (or other ticketing apps)
+															</li>
+														</ul>
+													</div>
+												{/if}
+											{/if}
 										</div>
-									{/each}
+									{/if}
 								</div>
 							{:else}
 								<div in:fade|global={{ duration: 200, delay: 200 }}>
@@ -254,87 +292,89 @@
 								</div>
 							{/if}
 						</Tabs.Content>
-						<Tabs.Content value="collapsed" class="flex flex-col py-2">
-							<div class="flex items-center gap-2 px-4 py-1 text-xs text-muted-foreground">
-								<div class="w-10">TOC</div>
-								<div class="w-10">Time</div>
-								<div class="grow">Destination</div>
-								<div class="">Expected</div>
-								<div class="w-5 text-right">Plat</div>
-							</div>
-							{#if services}
-								<div class="" in:fade|global={{ duration: 200 }}>
-									{#each services as service, index (service.rid)}
-										{#if (index === 0 && !dayjs(service.rawTime).isSame(dayjs(), 'day')) || (index > 0 && !dayjs(service.rawTime).isSame(dayjs(services[index - 1].rawTime), 'day'))}
-											<div
-												class="border-b border-border px-4 py-2 text-lg font-semibold odd:bg-muted/40"
-											>
-												{dayjs(service.rawTime).format('ddd DD MMM')}
-											</div>
-										{/if}
-										<a
-											href="/board/{data.crs}/t/{service.rid}{page.url.search}"
-											class="flex items-center gap-2 rounded border-t border-border px-4 py-1 even:bg-muted/40"
-										>
-											<div
-												style:background={service.operator.color}
-												class="min-w-10 rounded text-center text-white"
-											>
-												{service.operator.id}
-											</div>
-											<div class="w-10 font-medium">{service.times.plan.dep}</div>
-											<div class="min-w-0 grow truncate">
-												{service.destination.map((d) => d.name).join(', ')}
-
-												{#if service.destination[0]?.via}
-													<span class="text-xs text-muted-foreground">
-														{service.destination[0].via}
-													</span>
-												{/if}
-											</div>
-											{#if service.isCancelled}
-												<div class="text-nowrap text-danger">Cancelled</div>
-											{:else if service.times.plan.dep === service.times.rt.dep}
-												<div class="text-nowrap text-good">On time</div>
-											{:else}
-												<div class="text-nowrap text-warning">
-													{service.times.rt.dep ?? 'Delayed'}
-												</div>
-											{/if}
-											{#if service.platform === 'BUS'}
+						{#if ENABLE_COMPACT_VIEW}
+							<Tabs.Content value="collapsed" class="flex flex-col py-2">
+								<div class="flex items-center gap-2 px-4 py-1 text-xs text-muted-foreground">
+									<div class="w-10">TOC</div>
+									<div class="w-10">Time</div>
+									<div class="grow">Destination</div>
+									<div class="">Expected</div>
+									<div class="w-5 text-right">Plat</div>
+								</div>
+								{#if services}
+									<div class="" in:fade|global={{ duration: 200 }}>
+										{#each services as service, index (service.rid)}
+											{#if (index === 0 && !dayjs(service.rawTime).isSame(dayjs(), 'day')) || (index > 0 && !dayjs(service.rawTime).isSame(dayjs(services[index - 1].rawTime), 'day'))}
 												<div
-													class="-mr-1 flex min-w-5 justify-end text-right text-nowrap text-warning"
+													class="border-b border-border px-4 py-2 text-lg font-semibold odd:bg-muted/40"
 												>
-													<Bus size={18} />
-												</div>
-											{:else}
-												<div class="min-w-5 text-right text-nowrap">
-													{service.platform ?? '-'}
+													{dayjs(service.rawTime).format('ddd DD MMM')}
 												</div>
 											{/if}
-										</a>
-									{/each}
-								</div>
-							{:else}
-								<div in:fade={{ duration: 200, delay: 200 }}>
-									{#each Array(20)}
-										<div
-											class="flex h-[33px] w-full items-center gap-2 border-b border-border px-4 py-1"
-										>
-											<div class="min--10">
-												<Skeleton class="h-4 w-8" />
+											<a
+												href="/board/{data.crs}/t/{service.rid}{page.url.search}"
+												class="flex items-center gap-2 rounded border-t border-border px-4 py-1 even:bg-muted/40"
+											>
+												<div
+													style:background={service.operator.color}
+													class="min-w-10 rounded text-center text-white"
+												>
+													{service.operator.id}
+												</div>
+												<div class="w-10 font-medium">{service.times.plan.dep}</div>
+												<div class="min-w-0 grow truncate">
+													{service.destination.map((d) => d.name).join(', ')}
+
+													{#if service.destination[0]?.via}
+														<span class="text-xs text-muted-foreground">
+															{service.destination[0].via}
+														</span>
+													{/if}
+												</div>
+												{#if service.isCancelled}
+													<div class="text-nowrap text-danger">Cancelled</div>
+												{:else if service.times.plan.dep === service.times.rt.dep}
+													<div class="text-nowrap text-good">On time</div>
+												{:else}
+													<div class="text-nowrap text-warning">
+														{service.times.rt.dep ?? 'Delayed'}
+													</div>
+												{/if}
+												{#if service.platform === 'BUS'}
+													<div
+														class="-mr-1 flex min-w-5 justify-end text-right text-nowrap text-warning"
+													>
+														<Bus size={18} />
+													</div>
+												{:else}
+													<div class="min-w-5 text-right text-nowrap">
+														{service.platform ?? '-'}
+													</div>
+												{/if}
+											</a>
+										{/each}
+									</div>
+								{:else}
+									<div in:fade={{ duration: 200, delay: 200 }}>
+										{#each Array(20)}
+											<div
+												class="flex h-[33px] w-full items-center gap-2 border-b border-border px-4 py-1"
+											>
+												<div class="min--10">
+													<Skeleton class="h-4 w-8" />
+												</div>
+												<div class="min-w-10"><Skeleton class="h-4 w-8" /></div>
+												<div class="grow">
+													<Skeleton style="width: {Math.random() * 100 + 50}px;" class="h-4 w-12" />
+												</div>
+												<div class=""><Skeleton class="h-4 w-8" /></div>
+												<div class="min-w-5 text-right"><Skeleton class="h-4 w-4" /></div>
 											</div>
-											<div class="min-w-10"><Skeleton class="h-4 w-8" /></div>
-											<div class="grow">
-												<Skeleton style="width: {Math.random() * 100 + 50}px;" class="h-4 w-12" />
-											</div>
-											<div class=""><Skeleton class="h-4 w-8" /></div>
-											<div class="min-w-5 text-right"><Skeleton class="h-4 w-4" /></div>
-										</div>
-									{/each}
-								</div>
-							{/if}
-						</Tabs.Content>
+										{/each}
+									</div>
+								{/if}
+							</Tabs.Content>
+						{/if}
 						<div class="border-t border-border px-3 py-2">
 							<Button href={laterUrl} variant="secondary">
 								<ArrowDown size={18} />

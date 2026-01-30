@@ -12,10 +12,11 @@
 	import { fly, scale } from 'svelte/transition';
 
 	import * as InputGroup from '$lib/components/ui/input-group/index.js';
+	import * as Tabs from '$lib/components/ui/tabs/index.js';
 	import AllStations from '$lib/data/stations.json';
 	import { paneHeight } from '$lib/state/map.svelte';
 	import { pinned } from '$lib/state/saved.svelte';
-	import { t } from '$lib/utils';
+	import { dayjsFromHHmm, t } from '$lib/utils';
 
 	import Highlight from '../search/highlight.svelte';
 	import Button from '../ui/button/button.svelte';
@@ -24,8 +25,12 @@
 
 	import PinnedBoardItem from './pinned-board-item.svelte';
 	import Popular from './popular.svelte';
+	import ItinerarySearch from './itinerary-search.svelte';
+	import { page } from '$app/state';
 
 	const { send, receive } = t;
+
+	const ENABLE_ITINERARY_SEARCH = false;
 
 	let from: string | null = $state(null);
 	let to: string | null | undefined = $state(undefined);
@@ -97,6 +102,34 @@
 		}
 	});
 
+	let tab = $state('simple');
+
+	$effect(() => {
+		if (page.data.open === 'itinerary') {
+			opened = true;
+			tab = 'itinerary';
+		} else if (page.data.open === 'search') {
+			opened = true;
+			tab = 'simple';
+			if (page.data.withFrom) {
+				from = page.data.withFrom;
+				fromQ = page.data.withFrom;
+			}
+			if (page.data.withTo) {
+				to = page.data.withTo;
+				toQ = page.data.withTo;
+			}
+			if (page.data.withTime) {
+				const time = dayjsFromHHmm(page.data.withTime, false);
+				hour = time.hour().toString().padStart(2, '0');
+				minute = time.minute().toString().padStart(2, '0');
+			}
+			if (page.data.withTomorrow) {
+				tomorrow = true;
+			}
+		}
+	});
+
 	onMount(() => {
 		const interval = setInterval(() => {
 			if (opened) {
@@ -108,273 +141,310 @@
 </script>
 
 {#if opened}
-	<form
+	<div
 		transition:scale={{ start: 0.9, opacity: 0, duration: 200 }}
-		bind:this={form}
 		onblur={() => (opened = false)}
-		onsubmit={(e) => {
-			e.preventDefault();
-
-			if (minuteFocused && minute.length === 2) {
-				goto(href);
-			} else if ((toFormatted.length > 0 && !to) || (toFocused && toResults.length === 0 && from)) {
-				if (toFormatted.length > 0) {
-					to = toResults[0].item.crsCode;
-					toQ = toResults[0].item.crsCode;
-				}
-				hourInput?.select();
-			} else if (fromFormatted.length > 0 && !from) {
-				from = fromResults[0].item.crsCode;
-				fromQ = fromResults[0].item.crsCode;
-				tick().then(() => {
-					toInput?.focus();
-				});
-			} else if (hour.length === 2 || parseInt(hour) < 10) {
-				hour = hour.padStart(2, '0');
-				minuteInput?.select();
-			} else if (from && to && minuteFocused) {
-				goto(href);
-			}
-		}}
 		class={[opened ? 'fixed inset-0 z-1000 rounded-t-2xl bg-background p-4' : '']}
 	>
 		<div class="-mb-2 flex items-center gap-2">
-			<Button variant="outline" size="icon" onclick={() => (opened = false)}><X /></Button>
-			<div class="text-xl font-semibold">Find trains...</div>
+			<!-- <div class="text-xl font-semibold">Find trains...</div> -->
 		</div>
 
-		<div class="flex h-6 items-end justify-end pb-2">
-			<div class="flex items-center gap-2">
-				<Switch bind:checked={tomorrow} id="tomorrow"></Switch>
-				<Label for="tomorrow">Tomorrow</Label>
-			</div>
-		</div>
+		<Tabs.Root bind:value={tab}>
+			<div class="flex w-full items-center gap-2 pt-2">
+				<Button variant="outline" size="icon" onclick={() => (opened = false)}><X /></Button>
+				{#if ENABLE_ITINERARY_SEARCH}
+					<Button variant="outline" size="icon" onclick={() => (opened = false)}><X /></Button>
 
-		<div class="flex items-center gap-2">
-			<div class="w-full" in:receive={{ key: 'find-trains' }} out:send={{ key: 'find-trains' }}>
-				<InputGroup.Root class="h-10 gap-0">
-					<InputGroup.Input
-						bind:ref={fromInput}
-						bind:value={fromQ}
-						onfocus={async () => {
-							await tick();
-							paneHeight.break = 'top';
-							opened = true;
-							// fromFocused = true;
-							fromQ = '';
-							from = null;
-							window.scrollTo({ top: 0 });
-						}}
-						onkeydown={() => {
-							from = null;
-						}}
-						onblur={async () => {
-							await tick();
-							// fromFocused = false;
-						}}
-						autocorrect="off"
-						placeholder={[opened ? 'Search for a station...' : 'Find trains...']}
-						class={['px-0', from && fromQ === from ? 'w-14 max-w-14 font-semibold' : '']}
-					/>
-					<div class={[from ? 'opacity-100' : 'hidden ']}>
-						<ChevronRight size={20} />
-					</div>
-					<InputGroup.Input
-						class={[
-							'px-0',
-							from ? 'opacity-100' : 'hidden ',
-							to && toQ === to ? ' font-semibold' : ''
-						]}
-						bind:ref={toInput}
-						bind:value={toQ}
-						onfocus={async () => {
-							await tick();
-							opened = true;
-							toFocused = true;
-							toQ = '';
-							to = null;
-							window.scrollTo({ top: 0 });
-						}}
-						onkeydown={(e: KeyboardEvent) => {
-							if (e.keyCode === 8 && toQ.length === 0) {
-								e.preventDefault();
-								fromInput?.select();
-							}
-							to = null;
-						}}
-						autocorrect="off"
-						onblur={() => (toFocused = false)}
-						placeholder="(optional)"
-					/>
-					<div class={[from ? 'opacity-100' : 'hidden ']}>
-						<Clock size={18} />
-					</div>
-
-					<InputGroup.Input
-						pattern="\d*"
-						class={['max-w-8 min-w-8 px-0', from ? 'opacity-100' : 'hidden ']}
-						bind:value={
-							() => hour.toString(),
-							(v) => {
-								const num = v.slice(0, 2).replaceAll(/\D/g, '');
-								let maxed = num;
-								if (parseInt(num || '0') > 24) {
-									maxed = '24';
-								} else if (parseInt(num || '0') < 0) {
-									maxed = '00';
-								}
-
-								hour = maxed.toString();
-
-								if (maxed.length === 2) {
-									minuteInput?.select();
-								}
-							}
-						}
-						onkeydown={(e: KeyboardEvent) => {
-							if (e.keyCode === 8 && hour.length === 0) {
-								e.preventDefault();
-								toInput?.select();
-							}
-						}}
-						bind:ref={hourInput}
-						maxlength="2"
-						placeholder="hh"
-					/>
-					<div class={[from ? 'opacity-100' : 'hidden ']}>:</div>
-					<InputGroup.Input
-						pattern="\d*"
-						class={['mr-1 -ml-1 max-w-8 min-w-8 px-0', from ? 'opacity-100' : 'hidden ']}
-						bind:value={
-							() => minute.toString(),
-							(v) => {
-								const num = v.slice(0, 2).replaceAll(/\D/g, '');
-								let maxed = num;
-								if (parseInt(num || '0') > 59) {
-									maxed = '59';
-								} else if (parseInt(num || '0') < 0) {
-									maxed = '00';
-								}
-
-								minute = maxed.toString();
-							}
-						}
-						onkeydown={(e: KeyboardEvent) => {
-							if (e.keyCode === 8 && minute.length === 0) {
-								e.preventDefault();
-								hourInput?.select();
-							}
-						}}
-						bind:ref={minuteInput}
-						onfocus={() => (minuteFocused = true)}
-						onblur={() => (minuteFocused = false)}
-						maxlength="2"
-						max={59}
-						min={0}
-						placeholder="mm"
-					/>
-					<InputGroup.Addon>
-						<SearchIcon />
-					</InputGroup.Addon>
-				</InputGroup.Root>
-			</div>
-			{#if from}
-				<Button {href} size="lg" variant="default">Go</Button>
-			{/if}
-		</div>
-		<Button type="submit" class="hidden"></Button>
-		{#if opened}
-			<div class="py-4">
-				{#if !to && from !== null}
-					{#if toFormatted.length > 0}
-						{#each toFormatted as result, i (i)}
-							<button
-								type="button"
-								onclick={() => {
-									to = toResults[i].item.crsCode;
-									toQ = toResults[i].item.crsCode;
-									hourInput?.select();
-								}}
-								class="flex h-10 w-full items-center border-b border-border px-2 text-left last:border-none"
-							>
-								<div class="w-12 text-lg font-semibold">
-									<Highlight value={(result as { crsCode: string }).crsCode} />
-								</div>
-								<div class="text-sm">
-									<Highlight value={(result as { stationName: string }).stationName} />
-								</div>
-							</button>
-						{/each}
-					{:else}
-						<Popular crs={from}>
-							{#snippet children(name, crs)}
-								<button
-									type="button"
-									onclick={() => {
-										to = crs;
-										toQ = crs;
-										hourInput?.select();
-									}}
-									class="flex h-10 w-full items-center border-b border-border px-2 text-left last:border-none"
-								>
-									<div class="w-12 text-lg font-semibold">
-										{crs}
-									</div>
-									<div class="text-sm">
-										{name}
-									</div>
-								</button>
-							{/snippet}
-						</Popular>
-					{/if}
-				{:else if fromFormatted.length > 0 && !from}
-					{#each fromFormatted as result, i (i)}
-						<button
-							type="button"
-							onclick={() => {
-								from = fromResults[i].item.crsCode;
-								fromQ = fromResults[i].item.crsCode;
-								tick().then(() => toInput?.focus());
-							}}
-							class="flex h-10 w-full items-center border-b border-border px-2 text-left last:border-none"
-						>
-							<div class="w-12 text-lg font-semibold">
-								<Highlight value={(result as { crsCode: string }).crsCode} />
-							</div>
-							<div class="text-sm">
-								<Highlight value={(result as { stationName: string }).stationName} />
-							</div>
-						</button>
-					{/each}
-				{:else if pinned.value.length === 0}
-					<div
-						class="flex items-center border-t border-border px-4 py-2 text-sm text-muted-foreground"
-					>
-						No pinned boards. Tap the pin on a board page to pin it here.
-					</div>
+					<Tabs.List class="grow">
+						<Tabs.Trigger value="simple">Simple</Tabs.Trigger>
+						<Tabs.Trigger value="itinerary">Multiple-stops</Tabs.Trigger>
+					</Tabs.List>
 				{:else}
-					{#each pinned.value as item (item.fromCrs + item.toCrs)}
-						<div
-							class="border-b border-border last:border-none"
-							transition:fly={{ duration: 200, x: -100 }}
-							animate:flip={{ duration: 200 }}
-						>
-							<PinnedBoardItem
-								{...item}
-								onselect={(f, t) => {
-									fromQ = f;
-									from = f;
-									toQ = t ?? '';
-									to = t;
-									tick().then(() => hourInput?.select());
-								}}
-							/>
-						</div>
-					{/each}
+					<div class="pl-1 text-lg font-semibold">Find trains...</div>
 				{/if}
 			</div>
-		{/if}
-	</form>
+			{#if ENABLE_ITINERARY_SEARCH}
+				<Tabs.Content value="itinerary">
+					<ItinerarySearch />
+				</Tabs.Content>
+			{/if}
+			<Tabs.Content value="simple">
+				<div
+					class={[
+						'flex h-6 items-end justify-end pb-2',
+						ENABLE_ITINERARY_SEARCH ? 'pt-6' : '-mt-4'
+					]}
+				>
+					<div class="flex items-center gap-2">
+						<Switch bind:checked={tomorrow} id="tomorrow"></Switch>
+						<Label for="tomorrow">Tomorrow</Label>
+					</div>
+				</div>
+				<form
+					class="contents"
+					bind:this={form}
+					onsubmit={(e) => {
+						e.preventDefault();
+
+						if (minuteFocused && minute.length === 2) {
+							goto(href);
+						} else if (
+							(toFormatted.length > 0 && !to) ||
+							(toFocused && toResults.length === 0 && from)
+						) {
+							if (toFormatted.length > 0) {
+								to = toResults[0].item.crsCode;
+								toQ = toResults[0].item.crsCode;
+							}
+							hourInput?.select();
+						} else if (fromFormatted.length > 0 && !from) {
+							from = fromResults[0].item.crsCode;
+							fromQ = fromResults[0].item.crsCode;
+							tick().then(() => {
+								toInput?.focus();
+							});
+						} else if (hour.length === 2 || parseInt(hour) < 0) {
+							hour = hour.padStart(2, '0');
+							minuteInput?.select();
+						} else if (from && to && minuteFocused) {
+							goto(href);
+						}
+					}}
+				>
+					<div class="flex items-center gap-2">
+						<div
+							class="w-full"
+							in:receive={{ key: 'find-trains' }}
+							out:send={{ key: 'find-trains' }}
+						>
+							<InputGroup.Root class="h-10 gap-0">
+								<InputGroup.Input
+									bind:ref={fromInput}
+									bind:value={fromQ}
+									onfocus={async () => {
+										await tick();
+										paneHeight.break = 'top';
+										opened = true;
+										// fromFocused = true;
+										fromQ = '';
+										from = null;
+										window.scrollTo({ top: 0 });
+									}}
+									onkeydown={() => {
+										from = null;
+									}}
+									onblur={async () => {
+										await tick();
+										// fromFocused = false;
+									}}
+									autocorrect="off"
+									placeholder={[opened ? 'Search for a station...' : 'Find trains...']}
+									class={['px-0', from && fromQ === from ? 'w-14 max-w-14 font-semibold' : '']}
+								/>
+								<div class={[from ? 'opacity-100' : 'hidden ']}>
+									<ChevronRight size={20} />
+								</div>
+								<InputGroup.Input
+									class={[
+										'px-0',
+										from ? 'opacity-100' : 'hidden ',
+										to && toQ === to ? ' font-semibold' : ''
+									]}
+									bind:ref={toInput}
+									bind:value={toQ}
+									onfocus={async () => {
+										await tick();
+										opened = true;
+										toFocused = true;
+										toQ = '';
+										to = null;
+										window.scrollTo({ top: 0 });
+									}}
+									onkeydown={(e: KeyboardEvent) => {
+										if (e.keyCode === 8 && toQ.length === 0) {
+											e.preventDefault();
+											fromInput?.select();
+										}
+										to = null;
+									}}
+									autocorrect="off"
+									onblur={() => (toFocused = false)}
+									placeholder="(optional)"
+								/>
+								<div class={[from ? 'opacity-100' : 'hidden ']}>
+									<Clock size={18} />
+								</div>
+
+								<InputGroup.Input
+									pattern="\d*"
+									class={['max-w-8 min-w-8 px-0', from ? 'opacity-100' : 'hidden ']}
+									bind:value={
+										() => hour.toString(),
+										(v) => {
+											const num = v.slice(0, 2).replaceAll(/\D/g, '');
+											let maxed = num;
+											if (parseInt(num || '0') > 24) {
+												maxed = '24';
+											} else if (parseInt(num || '0') < 0) {
+												maxed = '00';
+											}
+
+											hour = maxed.toString();
+
+											if (maxed.length === 2) {
+												minuteInput?.select();
+											}
+										}
+									}
+									onkeydown={(e: KeyboardEvent) => {
+										if (e.keyCode === 8 && hour.length === 0) {
+											e.preventDefault();
+											toInput?.select();
+										}
+									}}
+									bind:ref={hourInput}
+									maxlength="2"
+									placeholder="hh"
+								/>
+								<div class={[from ? 'opacity-100' : 'hidden ']}>:</div>
+								<InputGroup.Input
+									pattern="\d*"
+									class={['mr-1 -ml-1 max-w-8 min-w-8 px-0', from ? 'opacity-100' : 'hidden ']}
+									bind:value={
+										() => minute.toString(),
+										(v) => {
+											const num = v.slice(0, 2).replaceAll(/\D/g, '');
+											let maxed = num;
+											if (parseInt(num || '0') > 59) {
+												maxed = '59';
+											} else if (parseInt(num || '0') < 0) {
+												maxed = '00';
+											}
+
+											minute = maxed.toString();
+										}
+									}
+									onkeydown={(e: KeyboardEvent) => {
+										if (e.keyCode === 8 && minute.length === 0) {
+											e.preventDefault();
+											hourInput?.select();
+										}
+									}}
+									bind:ref={minuteInput}
+									onfocus={() => (minuteFocused = true)}
+									onblur={() => (minuteFocused = false)}
+									maxlength="2"
+									max={59}
+									min={0}
+									placeholder="mm"
+								/>
+								<InputGroup.Addon>
+									<SearchIcon />
+								</InputGroup.Addon>
+							</InputGroup.Root>
+						</div>
+						{#if from}
+							<Button {href} size="lg" variant="default">Go</Button>
+						{/if}
+					</div>
+					<Button type="submit" class="hidden"></Button>
+
+					{#if opened}
+						<div class="py-4">
+							{#if !to && from !== null}
+								{#if toFormatted.length > 0}
+									{#each toFormatted as result, i (i)}
+										<button
+											type="button"
+											onclick={() => {
+												to = toResults[i].item.crsCode;
+												toQ = toResults[i].item.crsCode;
+												hourInput?.select();
+											}}
+											class="flex h-10 w-full items-center border-b border-border px-2 text-left last:border-none"
+										>
+											<div class="w-12 text-lg font-semibold">
+												<Highlight value={(result as { crsCode: string }).crsCode} />
+											</div>
+											<div class="text-sm">
+												<Highlight value={(result as { stationName: string }).stationName} />
+											</div>
+										</button>
+									{/each}
+								{:else}
+									<Popular crs={from}>
+										{#snippet children(name, crs)}
+											<button
+												type="button"
+												onclick={() => {
+													to = crs;
+													toQ = crs;
+													hourInput?.select();
+												}}
+												class="flex h-10 w-full items-center border-b border-border px-2 text-left last:border-none"
+											>
+												<div class="w-12 text-lg font-semibold">
+													{crs}
+												</div>
+												<div class="text-sm">
+													{name}
+												</div>
+											</button>
+										{/snippet}
+									</Popular>
+								{/if}
+							{:else if fromFormatted.length > 0 && !from}
+								{#each fromFormatted as result, i (i)}
+									<button
+										type="button"
+										onclick={() => {
+											from = fromResults[i].item.crsCode;
+											fromQ = fromResults[i].item.crsCode;
+											tick().then(() => toInput?.focus());
+										}}
+										class="flex h-10 w-full items-center border-b border-border px-2 text-left last:border-none"
+									>
+										<div class="w-12 text-lg font-semibold">
+											<Highlight value={(result as { crsCode: string }).crsCode} />
+										</div>
+										<div class="text-sm">
+											<Highlight value={(result as { stationName: string }).stationName} />
+										</div>
+									</button>
+								{/each}
+							{:else if pinned.value.length === 0}
+								<div
+									class="flex items-center border-t border-border px-4 py-2 text-sm text-muted-foreground"
+								>
+									No pinned boards. Tap the pin on a board page to pin it here.
+								</div>
+							{:else}
+								{#each pinned.value as item (item.fromCrs + item.toCrs)}
+									<div
+										class="border-b border-border last:border-none"
+										transition:fly={{ duration: 200, x: -100 }}
+										animate:flip={{ duration: 200 }}
+									>
+										<PinnedBoardItem
+											{...item}
+											onselect={(f, t) => {
+												fromQ = f;
+												from = f;
+												toQ = t ?? '';
+												to = t;
+												tick().then(() => hourInput?.select());
+											}}
+										/>
+									</div>
+								{/each}
+							{/if}
+						</div>
+					{/if}
+				</form></Tabs.Content
+			>
+		</Tabs.Root>
+	</div>
 {:else}
 	<div in:receive={{ key: 'find-trains' }} out:send={{ key: 'find-trains' }}>
 		<Button

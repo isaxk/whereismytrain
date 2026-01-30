@@ -213,11 +213,12 @@
 		<div class="flex items-end gap-1">
 			<div
 				class={[
-					'min-w-0 overflow-hidden text-base/5 text-nowrap text-ellipsis',
+					'min-w-0 overflow-hidden text-sm/4 text-nowrap text-ellipsis',
 					{
-						'font-semibold': cp.order === 'focus' || cp.order === 'filter' || cp.isDestination,
+						'font-medium': cp.order === 'focus' || cp.order === 'filter' || cp.isDestination,
 						'text-base-5': cp.order === 'further' || cp.order === 'filter',
-						'text-muted-foreground/60': cp.order === 'further' && !cp.isDestination,
+						'text-muted-foreground/75uri':
+							(cp.order === 'further' || cp.order === 'previous') && !cp.isDestination,
 						'text-muted-foreground': cp.order === 'subsequent' && !cp.isDestination,
 						'text-sm/4': cp.order !== 'focus' && cp.order !== 'filter'
 					}

@@ -5,24 +5,36 @@ import { API_COMPATIBLE_VERSION } from '../../routes/api/_shared';
 async function refresh() {
 	refreshing.current = true;
 	// console.log(services);
+	let error = null;
 	for (const service of services) {
 		console.log('fetching', service.url, 'for refresh');
-		const response = await fetch(service.url, {
-			headers: {
-				'api-version': API_COMPATIBLE_VERSION
+		try {
+			const response = await fetch(service.url, {
+				headers: {
+					'api-version': API_COMPATIBLE_VERSION
+				}
+			});
+			if (response.ok) {
+				const data = await response.json();
+				console.log('data from', service.url, data);
+				if (data) {
+					console.log('subcriptions for', service.url, service.subscriptions);
+					service.subscriptions.forEach((subscription) => subscription.callback(data));
+				}
+			} else {
+				const data = await response.json();
+				console.error(`Failed to fetch service ${service.url} ${data.error}`);
+				error = data.error;
+				refreshing.error = data.error;
 			}
-		});
-		if (response.ok) {
-			const data = await response.json();
-			console.log('data from', service.url, data);
-			if (data) {
-				console.log('subcriptions for', service.url, service.subscriptions);
-				service.subscriptions.forEach((subscription) => subscription.callback(data));
-			}
-		} else {
-			const data = await response.json();
-			console.error(`Failed to fetch service ${service.url} ${data.error}`);
+		} catch (e) {
+			console.error(`Failed to fetch service ${service.url} ${e}`);
+			error = 'Failed to fetch';
+			refreshing.error = 'Failed to fetch';
 		}
+	}
+	if (!error) {
+		refreshing.error = null;
 	}
 	setTimeout(
 		() => {
@@ -32,8 +44,13 @@ async function refresh() {
 	);
 }
 
-export const refreshing = $state({
+export const refreshing: {
+	current: boolean;
+	error: string | null;
+	map: boolean;
+} = $state({
 	current: false,
+	error: null,
 	map: false
 });
 

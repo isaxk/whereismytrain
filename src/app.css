@@ -174,3 +174,7 @@ input[type='number']::-webkit-outer-spin-button {
 	mask-image: linear-gradient(to bottom, black 0%, black 50%, transparent 100%);
 	-webkit-mask-image: linear-gradient(to bottom, black 0%, black 50%, transparent 100%);
 }
+
+input[type='time']::-webkit-calendar-picker-indicator {
+	background: none;
+}

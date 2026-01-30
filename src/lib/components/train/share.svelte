@@ -14,4 +14,6 @@
 	}
 </script>
 
-<Button variant="outline" class="w-full" onclick={share}><ShareIcon /> Share this service</Button>
+<Button variant="outline" class="bg-white/5 hover:bg-white/10" size="icon" onclick={share}
+	><ShareIcon /></Button
+>
