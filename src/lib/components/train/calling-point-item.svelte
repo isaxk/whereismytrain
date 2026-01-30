@@ -240,25 +240,29 @@
 				<div class="flex w-max items-center gap-1 text-xs/4 text-red-600">
 					<X size={16} /> Cancelled
 				</div>
-			{:else if pickupOnly}
-				<div class="flex items-center gap-1 text-[10px]/4 text-muted-foreground">
-					<ArrowUpRight size={12} /> Pick up only
-				</div>
-			{:else if setdownOnly}
-				<div class="flex items-center gap-1 text-[10px]/4 text-muted-foreground">
-					<ArrowDownRight size={12} /> Set down only
-				</div>
 			{/if}
 		</ChangeNotifier>
 	</div>
+
 	<ChangeNotifier
 		value={cp.platform}
 		class={[
-			'flex items-center gap-1',
+			'flex flex-col items-end justify-center gap-0',
 			cp.order === 'focus' ? 'text-lg font-medium' : 'text-sm text-zinc-400',
 			cp.order === 'post-destination' ? 'opacity-25' : ''
 		]}
 	>
 		{cp.platform ?? '-'}
+		<div>
+			{#if pickupOnly}
+				<div class="flex items-center gap-1 text-[10px]/3 text-muted-foreground">
+					<ArrowUpRight size={12} /> boarding only
+				</div>
+			{:else if setdownOnly}
+				<div class="flex items-center gap-1 text-[10px]/3 text-muted-foreground">
+					<ArrowDownRight size={12} /> alighting only
+				</div>
+			{/if}
+		</div>
 	</ChangeNotifier>
 </div>
