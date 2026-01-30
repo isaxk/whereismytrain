@@ -36,19 +36,19 @@
 
 	let now = $state(dayjs());
 
-	onMount(() => {
-		const clear = servicesSub.init();
-		setTimeout(() => {
-			servicesSub.forceRefresh();
-		}, 200);
-		const interval = setInterval(() => {
-			now = dayjs();
-		}, 1000);
-		return () => {
-			clear();
-			clearInterval(interval);
-		};
-	});
+	// onMount(() => {
+	// 	const clear = servicesSub.init();
+	// 	setTimeout(() => {
+	// 		servicesSub.forceRefresh();
+	// 	}, 200);
+	// 	const interval = setInterval(() => {
+	// 		now = dayjs();
+	// 	}, 1000);
+	// 	return () => {
+	// 		clear();
+	// 		clearInterval(interval);
+	// 	};
+	// });
 </script>
 
 <svelte:head>

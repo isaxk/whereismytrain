@@ -12,6 +12,7 @@
 	import { Toaster } from '$lib/components/ui/sonner/index.js';
 	import { initializeNotifications, setupForegroundMessageHandler } from '$lib/notifications';
 	import { pwa } from '$lib/state/saved.svelte';
+	import { servicesSub } from '$lib/state/services-subscriber.svelte.js';
 
 	let { children, data } = $props();
 
@@ -26,6 +27,14 @@
 		setupForegroundMessageHandler();
 		initializeNotifications();
 		setupServiceWorkerUpdateCheck();
+
+		const clear = servicesSub.init();
+		setTimeout(() => {
+			servicesSub.forceRefresh();
+		}, 200);
+		return () => {
+			clear();
+		};
 	});
 
 	function setupServiceWorkerUpdateCheck() {
