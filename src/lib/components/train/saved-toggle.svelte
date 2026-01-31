@@ -63,6 +63,8 @@
 		if (subscriptionId === null) {
 			failedToSubscribe = true;
 			console.log(failedToSubscribe);
+		} else {
+			failedToSubscribe = false;
 		}
 		saved.value = [...saved.value, { ...newItem, subscriptionId }].toSorted((a, b) => {
 			const aFocus = a.service.callingPoints.find((cp) => cp.order === 'focus');

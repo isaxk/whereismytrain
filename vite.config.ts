@@ -6,6 +6,6 @@ import devtoolsJson from 'vite-plugin-devtools-json';
 export default defineConfig({
 	plugins: [tailwindcss(), sveltekit(), devtoolsJson()],
 	server: {
-		allowedHosts: ['jefferson-lbs-coins-wed.trycloudflare.com']
+		allowedHosts: ['howto-boxing-celebration-adequate.trycloudflare.com']
 	}
 });

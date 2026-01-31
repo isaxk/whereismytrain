@@ -43,6 +43,7 @@ export async function subscribeToTrain(
 			focusCrs: focusCrs,
 			filterCrs: filterCrs,
 			destination: destination,
+			path: `/board/${focusCrs}/t/${service_id}?to=${filterCrs}`,
 			destCrs: destCrsList[0]
 		};
 		const response = await fetch('https://pqwbjxgovvgpxmccjsdw.supabase.co/functions/v1/register', {
