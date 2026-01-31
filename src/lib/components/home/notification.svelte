@@ -143,7 +143,7 @@
 			{/if} -->
 			</div>
 			<div
-				class="mt-1 h-max rounded-md px-1.5 py-0.5 text-[10px] text-white"
+				class="mt-1 h-max rounded-md px-1.5 py-0.5 text-[10px] text-nowrap text-white"
 				style:background={savedItem?.service.operator.color}
 			>
 				{savedItem?.service.operator.name}
