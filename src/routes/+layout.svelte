@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { page } from '$app/state';
 	import { injectAnalytics } from '@vercel/analytics/sveltekit';
 	import { onMount } from 'svelte';
 	let { children } = $props();
@@ -9,7 +10,9 @@
 		if ('serviceWorker' in navigator) {
 			navigator.serviceWorker.addEventListener('message', (event) => {
 				if (event.data.type === 'NOTIFICATION_CLICK') {
-					goto(event.data.url);
+					if (event.data.url !== page.url.pathname) {
+						goto(event.data.url);
+					}
 				}
 			});
 		}
