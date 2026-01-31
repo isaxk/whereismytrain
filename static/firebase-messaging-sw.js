@@ -24,10 +24,12 @@ try {
     console.log('[firebase-messaging-sw.js] Received background message ', payload);
 
    	const notificationOptions = {
-		body: payload.data.body,
+        body: payload.data.body,
+
         icon: '/favicon.png',
         data: {
-      tag: payload.data.tag,
+          tag: payload.data.tag,
+          url: payload.data.path,
 		}
       };
 
@@ -47,3 +49,47 @@ try {
 } catch (error) {
 	console.error('Error initializing Firebase in service worker:', error);
 }
+
+self.addEventListener('notificationclick', (event) => {
+	console.log('Notification clicked:', event);
+
+	// event.notification.close(); // Close the notification
+
+	// Get the URL from the notification data
+  const urlToOpen = event.notification.data?.url || '/';
+
+	console.log('urlToOpen', urlToOpen);
+
+	event.waitUntil(
+		clients.matchAll({ type: 'window', includeUncontrolled: true })
+			.then((clientList) => {
+				// Check if app is already open
+				for (const client of clientList) {
+					if (client.url.includes(self.location.origin) && 'focus' in client) {
+						// App is open - navigate to the train page and focus
+						client.postMessage({
+													type: 'NOTIFICATION_CLICK',
+													url: urlToOpen
+												});
+            setTimeout(() => {
+              client.postMessage({
+													type: 'NOTIFICATION_CLICK',
+													url: urlToOpen
+												});
+            }, 500)
+            setTimeout(() => {
+              client.postMessage({
+													type: 'NOTIFICATION_CLICK',
+													url: urlToOpen
+												});
+						}, 2000)
+            return client.focus();
+					}
+				}
+				// App is not open - open new window/tab
+				if (clients.openWindow) {
+					return clients.openWindow(urlToOpen);
+				}
+			})
+	);
+});
