@@ -344,7 +344,7 @@
 {:else}
 	<div
 		in:fade|global={{ duration: 100, delay: 150 }}
-		class="sticky top-0 flex h-18 items-center border-b border-border p-4 pt-6"
+		class="sticky top-0 flex h-18 items-center gap-4 border-b border-border p-4 pt-6"
 	>
 		<div class="absolute top-1.5 right-0 left-0 flex h-2 w-full items-center">
 			<div class="h-[5px] w-10 rounded-sm bg-background/40"></div>
@@ -355,7 +355,7 @@
 			variant="outline"
 			href={data.backTo ?? `../${page.url.search}`}><ArrowLeft /></Button
 		>
-		<div class="flex h-9 grow flex-col items-center justify-center gap-1">
+		<div class="flex h-9 grow flex-col justify-center gap-1">
 			<Skeleton class="h-3 w-20" />
 			<Skeleton class="h-4 w-32" />
 		</div>
@@ -364,28 +364,27 @@
 	<div in:fade|global={{ duration: 100, delay: 150 }} class="flex h-full flex-col p-4">
 		{#each Array(10), i (i)}
 			<div class={['flex h-12 items-center gap-2']}>
-				<div class={['-z-10 flex gap-3']}>
-					<div class={['w-8']}>
+				<div class={['flex gap-3']}>
+					<div class={['flex min-w-8 justify-end']}>
 						<Skeleton class="h-3 w-6" />
 					</div>
-					<div class={['w-8']}><Skeleton class="h-3 w-6" /></div>
 				</div>
 				<div class={['flex h-full animate-pulse flex-col items-center justify-center pl-2']}>
 					{#if i === 0}
 						<div class="grow"></div>
-						<div class="min-h-1.5 w-4 bg-zinc-300"></div>
-						<div class="w-1.5 grow bg-zinc-300"></div>
+						<div class="min-h-1.5 w-4 bg-zinc-200"></div>
+						<div class="w-1.5 grow bg-zinc-200"></div>
 					{:else if i === 9}
-						<div class="w-1.5 grow bg-zinc-300"></div>
-						<div class="min-h-1.5 w-4 bg-zinc-300"></div>
+						<div class="w-1.5 grow bg-zinc-200"></div>
+						<div class="min-h-1.5 w-4 bg-zinc-200"></div>
 						<div class="grow"></div>
 					{:else}
-						<div class="w-1.5 grow bg-zinc-300"></div>
-						<div class="flex w-4 bg-zinc-300">
+						<div class="w-1.5 grow bg-zinc-200"></div>
+						<div class="flex w-4 bg-zinc-200">
 							<div class="w-[5px]"></div>
-							<div class="min-h-1.5 grow bg-zinc-300"></div>
+							<div class="min-h-1.5 grow bg-zinc-200"></div>
 						</div>
-						<div class="w-1.5 grow bg-zinc-300"></div>
+						<div class="w-1.5 grow bg-zinc-200"></div>
 					{/if}
 				</div>
 				<div class="min-w-0 grow pl-2">
