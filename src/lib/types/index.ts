@@ -159,14 +159,35 @@ export type TrainService = {
 	category: 'standard' | 'express' | 'sleeper' | 'bus' | 'metro';
 };
 
+export type SavedTrainServiceInfo = {
+	crs: string;
+	filter: string;
+	planDep: string;
+	rtDep: string | null;
+	delay: number | null;
+	departed: boolean;
+	planArr: string;
+	rtArr: string | null;
+	arrived: boolean;
+	filterDelay: number | null;
+	from: string;
+	to: string;
+	destination: string;
+	platform: string | null;
+	isCancelled: boolean;
+	isCancelledAtFilter: boolean;
+	operator: Operator;
+	refreshedAt: number;
+};
+
 export type SavedTrain = {
 	id: string;
-	service: TrainService;
 	focusCrs: string;
 	filterCrs: string;
+	date: string;
+	service: SavedTrainServiceInfo;
 	service_id: string;
 	subscriptionId: string | null;
-	lastRefreshed: number;
 	originalArrival: string | null;
 };
 

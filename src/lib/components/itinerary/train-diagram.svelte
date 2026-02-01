@@ -1,92 +1,169 @@
 <script lang="ts">
 	import { Bus } from 'lucide-svelte';
 	import ChangeNotifier from '../ui/change-notifier.svelte';
-	import type { CallingPoint, TrainService } from '$lib/types';
+	import type { CallingPoint, Operator, SavedTrainServiceInfo, TrainService } from '$lib/types';
 	import dayjs from 'dayjs';
+	import { onMount } from 'svelte';
+
+	// let {
+	// 	showDate = false,
+	// 	focus,
+	// 	filter,
+	// 	service,
+	// 	duration = null,
+	// 	remaining = null
+	// }: {
+	// 	showDate?: boolean;
+	// 	focus: CallingPoint;
+	// 	filter: CallingPoint;
+	// 	service: TrainService;
+	// 	duration: string | null;
+	// 	remaining: string | null;
+	// } = $props();
 
 	let {
-		showDate = false,
-		focus,
-		filter,
-		service,
-		duration = null,
-		remaining = null
-	}: {
-		showDate?: boolean;
-		focus: CallingPoint;
-		filter: CallingPoint;
-		service: TrainService;
-		duration: string | null;
-		remaining: string | null;
-	} = $props();
+		planDep,
+		rtDep,
+		delay,
+		departed,
+		planArr,
+		rtArr,
+		arrived,
+		filterDelay,
+		from,
+		to,
+		destination,
+		platform,
+		isCancelled,
+		isCancelledAtFilter,
+		operator,
+		showDate = false
+	}: SavedTrainServiceInfo & { showDate?: boolean } = $props();
+
+	const planDepTime = $derived(dayjs(planDep).format('HH:mm'));
+	const rtDepTime = $derived(rtDep ? dayjs(rtDep).format('HH:mm') : null);
+	const planArrTime = $derived(dayjs(planArr).format('HH:mm'));
+	const rtArrTime = $derived(rtArr ? dayjs(rtArr).format('HH:mm') : null);
+
+	let now = $state(dayjs());
+
+	onMount(() => {
+		const interval = setInterval(() => {
+			now = dayjs();
+		}, 1000);
+		return () => clearInterval(interval);
+	});
+
+	const duration = $derived.by(() => {
+		let arrival = dayjs(planArr);
+		let departure = dayjs(planDep);
+
+		if (rtArr && rtDep) {
+			arrival = dayjs(rtArr);
+			departure = dayjs(rtDep);
+		}
+
+		let diff = arrival.diff(departure, 'minutes');
+
+		if (diff > 60 && diff % 60 !== 0) {
+			return `${Math.floor(diff / 60)}h ${diff % 60}m`;
+		} else if (diff >= 60 && diff % 60 === 0) {
+			return `${Math.floor(diff / 60)}h`;
+		} else {
+			return `${diff}m`;
+		}
+	});
+
+	const remaining = $derived.by(() => {
+		let arrival = dayjs(planArr);
+
+		if (rtArr && rtDep) {
+			arrival = dayjs(rtArr);
+		}
+
+		const diff = arrival.diff(now, 'minutes');
+		if (diff < 0) {
+			return null;
+		} else if (diff > 60 && diff % 60 !== 0) {
+			return `${Math.floor(diff / 60)}h ${diff % 60}m`;
+		} else if (diff >= 60 && diff % 60 === 0) {
+			return `${Math.floor(diff / 60)}h`;
+		} else {
+			return `${diff}m`;
+		}
+	});
 </script>
 
 {#if showDate}
 	<div class="translate-y-2 border-b border-border px-2 pb-2 text-sm font-medium">
-		{dayjs(focus.rtDepDate).format('ddd DD MMM')}
+		{dayjs(rtDep ?? planDep).format('ddd DD MMM')}
 	</div>
 {/if}
 
 <div class="flex items-center">
 	<div class="flex min-w-12 justify-end">
-		<ChangeNotifier value={focus.delay} class="flex w-max flex-col items-end text-sm">
-			{#if focus.isCancelled}
-				<div class="text-base/4 text-danger">{focus.times.plan.dep}</div>
-			{:else if focus.delay === null}
-				<div class="text-base/4">{focus.times.plan.dep}</div>
-				<div class="text-xs/3 text-warning">Delayed</div>
-			{:else if focus.delay < 1}
+		<ChangeNotifier value={rtDep} class="flex w-max flex-col items-end text-sm">
+			{#if isCancelled}
+				<div class="text-base/4 text-danger">{planDepTime}</div>
+			{:else if delay === null}
+				<div class="text-sm/3">{planDepTime}</div>
+				{#if departed}
+					<div class="text-[10px]/3">Unknown</div>
+				{:else}
+					<div class="text-xs/3 text-warning">Delayed</div>
+				{/if}
+			{:else if delay < 1}
 				<div class="text-good">
-					{focus.times.plan.dep}
+					{planDepTime}
 				</div>
 			{:else}
-				<div class="text-xs/4">{focus.times.plan.dep}</div>
-				<div class="text-sm/3 text-warning">{focus.times.rt.dep}</div>
+				<div class="text-xs/4">{planDepTime}</div>
+				<div class="text-sm/3 text-warning">{rtDepTime}</div>
 			{/if}
 		</ChangeNotifier>
 	</div>
 	<div class="flex h-16 min-w-10 flex-col items-center justify-center">
 		<div class="w-1.5 grow"></div>
-		<div class="flex h-1.5 min-w-4" style:background={service.operator.color}></div>
-		<div class="w-1.5 grow" style:background={service.operator.color}></div>
+		<div class="flex h-1.5 min-w-4" style:background={operator.color}></div>
+		<div class="w-1.5 grow" style:background={operator.color}></div>
 	</div>
 
 	<div class="min-w-0 grow">
 		<div class="flex">
 			<div class="grow text-base/6 font-medium">
-				{focus.name}
+				{from}
 			</div>
 			<ChangeNotifier
-				value={focus.platform}
+				value={platform}
 				class={[
 					'-mr-1 items-center justify-center gap-1 px-1 text-right text-base/5',
-					focus.platform === 'BUS' && 'text-sm text-warning'
+					platform === 'BUS' && 'text-sm text-warning'
 				]}
 			>
-				{#if focus.platform === 'BUS'}
+				{#if platform === 'BUS'}
 					<Bus size={16} /> Bus service
 				{:else}
 					<span class="text-xs/4 text-muted-foreground sm:text-xs/6">Platform </span>
 
-					{focus.platform !== 'BUS' ? (focus.platform ?? '-') : ''}
+					{platform !== 'BUS' ? (platform ?? '-') : ''}
 				{/if}
 			</ChangeNotifier>
 		</div>
 		<div class="flex w-full items-center gap-1 truncate text-xs/4 text-muted-foreground">
 			<div
 				class="h-max w-max rounded-sm px-1.5 py-0.5 text-[10px]/3 text-white"
-				style:background={service.operator.color}
+				style:background={operator.color}
 			>
-				{service.operator.name}
+				{operator.name}
 			</div>
 
-			<ChangeNotifier value={focus.isCancelled}>
-				{#if focus.isCancelled}
+			<ChangeNotifier value={isCancelled}>
+				{#if isCancelled}
 					<div class="text-xs/3 font-medium text-danger">Cancelled</div>
 				{:else}
 					<div class="min-w-0 grow truncate">
 						to
-						{service.destination.map((d) => d.name).join(', ')}
+						{destination}
 					</div>
 				{/if}
 			</ChangeNotifier>
@@ -97,20 +174,20 @@
 <div class="flex h-5 items-center">
 	<div class="w-12"></div>
 	<div class="flex h-5 w-10 flex-col items-center justify-center">
-		<div class="w-1.5 grow" style:background={service.operator.color}></div>
+		<div class="w-1.5 grow" style:background={operator.color}></div>
 	</div>
 	<div class="text-xs">
-		<ChangeNotifier value="{filter.arrived} {focus.departed}" class="w-max text-xs">
-			{#if filter.arrived}
+		<ChangeNotifier value="{arrived} {departed}" class="w-max text-xs">
+			{#if arrived}
 				Arrived
-			{:else if focus.departed}
+			{:else if departed}
 				Departed
 			{/if}
 		</ChangeNotifier>
 		<ChangeNotifier value={duration} class="w-max text-xs">
-			{#if filter.arrived}
+			{#if arrived}
 				<div class="text-[10px] text-muted-foreground">{duration}</div>
-			{:else if focus.departed}
+			{:else if departed}
 				<div class="text-[10px] text-muted-foreground">
 					<span class="text-foreground">{remaining}</span> / {duration} remaining
 				</div>
@@ -122,34 +199,34 @@
 </div>
 <div class="flex h-12 items-center">
 	<div class="flex min-w-12 justify-end">
-		<ChangeNotifier value={filter.arrivalDelay} class="flex w-max flex-col items-end text-sm">
-			{#if filter.isCancelled}
-				<div class="text-sm text-danger">{filter.times.plan.arr}</div>
-			{:else if filter.arrivalDelay === null}
-				<div class="text-base/4">{filter.times.plan.arr}</div>
+		<ChangeNotifier value={filterDelay} class="flex w-max flex-col items-end text-sm">
+			{#if isCancelledAtFilter}
+				<div class="text-sm text-danger">{planArrTime}</div>
+			{:else if filterDelay === null}
+				<div class="text-base/4">{planArrTime}</div>
 				<div class="text-xs/3 text-warning">Delayed</div>
-			{:else if filter.arrivalDelay < 1}
+			{:else if filterDelay < 1}
 				<div class="text-sm text-good">
-					{filter.times.plan.arr}
+					{planArrTime}
 				</div>
 			{:else}
-				<div class="text-xs/4">{filter.times.plan.arr}</div>
-				<div class="text-sm/3 text-warning">{filter.times.rt.arr}</div>
+				<div class="text-xs/4">{planArrTime}</div>
+				<div class="text-sm/3 text-warning">{rtArrTime}</div>
 			{/if}
 		</ChangeNotifier>
 	</div>
 	<div class="flex h-full w-10 flex-col items-center justify-center">
-		<div class="w-1.5 grow" style:background={service.operator.color}></div>
-		<div class="flex h-1.5 min-w-4" style:background={service.operator.color}></div>
+		<div class="w-1.5 grow" style:background={operator.color}></div>
+		<div class="flex h-1.5 min-w-4" style:background={operator.color}></div>
 
 		<div class="w-1.5 grow"></div>
 	</div>
 	<div class="grow font-medium">
 		<div class="text-base/5">
-			{filter.name}
+			{to}
 		</div>
-		<ChangeNotifier value={filter.isCancelled && !focus.isCancelled}>
-			{#if filter.isCancelled && !focus.isCancelled}
+		<ChangeNotifier value={isCancelledAtFilter && !isCancelled}>
+			{#if isCancelledAtFilter && !isCancelled}
 				<div class="text-xs/4 font-medium text-danger">Cancelled</div>
 			{/if}
 		</ChangeNotifier>

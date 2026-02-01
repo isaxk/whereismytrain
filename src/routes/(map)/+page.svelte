@@ -36,19 +36,11 @@
 
 	let now = $state(dayjs());
 
-	// onMount(() => {
-	// 	const clear = servicesSub.init();
-	// 	setTimeout(() => {
-	// 		servicesSub.forceRefresh();
-	// 	}, 200);
-	// 	const interval = setInterval(() => {
-	// 		now = dayjs();
-	// 	}, 1000);
-	// 	return () => {
-	// 		clear();
-	// 		clearInterval(interval);
-	// 	};
-	// });
+	onMount(() => {
+		setTimeout(() => {
+			servicesSub.forceRefresh();
+		}, 200);
+	});
 </script>
 
 <svelte:head>
@@ -155,7 +147,27 @@
 				transition:fly={{ duration: 200, x: -100 }}
 				animate:flip={{ duration: 200 }}
 			>
-				<SavedTrain data={item} {index} />
+				<svelte:boundary>
+					<SavedTrain data={item} {index} />
+					{#snippet failed()}
+						<div>
+							An error occurred loading this subscribed train. Try unsubscribing and re-subscribing.
+						</div>
+						<div class="flex">
+							<a
+								class="underline"
+								href="/board/{item.focusCrs}/t/{item.service_id}?to={item.filterCrs}"
+								>Visit train page</a
+							>
+							<Button
+								variant="ghost"
+								onclick={() => {
+									saved.value = saved.value.filter((i) => i.id !== item.id);
+								}}>Remove</Button
+							>
+						</div>
+					{/snippet}
+				</svelte:boundary>
 			</div>
 		{/each}
 	{/if}

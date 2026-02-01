@@ -2,7 +2,7 @@
 	import dayjs from 'dayjs';
 
 	import { subscribeToTrain, unsubscribeToTrain } from '$lib/notifications';
-	import { saved } from '$lib/state/saved.svelte';
+	import { parseSavedInfo, saved, setSavedTrainData } from '$lib/state/saved.svelte';
 	import type { BoardItem } from '$lib/types';
 	import { dayjsFromHHmm } from '$lib/utils';
 
@@ -24,7 +24,7 @@
 		to: string;
 		time: string | null;
 		index: number;
-		children: Snippet<[BoardItem | null, () => void, boolean, boolean]>;
+		children: Snippet<[BoardItem | null, () => Promise<boolean>, boolean, boolean]>;
 		existingRid: string;
 		allowance: number;
 	} = $props();
@@ -86,10 +86,15 @@
 		if (response.ok) {
 			const data = await response.json();
 			console.log('alternative service', data.rid, service.rid);
+
+			const serviceInfo = parseSavedInfo(data);
+
+			setSavedTrainData(service.rid, serviceInfo);
+
 			// if (data.rid !== saved.value[index].service_id) {
 			saved.value[index] = {
 				...saved.value[index],
-				service: data,
+				service: serviceInfo,
 				service_id: service.rid,
 				focusCrs: from,
 				filterCrs: to,
