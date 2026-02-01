@@ -176,15 +176,15 @@
 	<div class="flex h-5 w-10 flex-col items-center justify-center">
 		<div class="w-1.5 grow" style:background={operator.color}></div>
 	</div>
-	<div class="text-xs">
-		<ChangeNotifier value="{arrived} {departed}" class="w-max text-xs">
+	<ChangeNotifier value="{duration}-{arrived}-{departed}" class="w-max text-xs">
+		<div class="w-max text-xs">
 			{#if arrived}
 				Arrived
 			{:else if departed}
 				Departed
 			{/if}
-		</ChangeNotifier>
-		<ChangeNotifier value={duration} class="w-max text-xs">
+		</div>
+		<div class="w-max text-xs">
 			{#if arrived}
 				<div class="text-[10px] text-muted-foreground">{duration}</div>
 			{:else if departed}
@@ -194,8 +194,8 @@
 			{:else}
 				{duration}
 			{/if}
-		</ChangeNotifier>
-	</div>
+		</div>
+	</ChangeNotifier>
 </div>
 <div class="flex h-12 items-center">
 	<div class="flex min-w-12 justify-end">
