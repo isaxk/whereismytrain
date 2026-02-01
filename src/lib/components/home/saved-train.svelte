@@ -99,6 +99,8 @@
 
 					if (!serviceInfo) return;
 
+					saved.value[index].service = serviceInfo;
+
 					service = serviceInfo;
 
 					setSavedTrainData(data.service_id, serviceInfo);
