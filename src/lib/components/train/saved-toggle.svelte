@@ -5,7 +5,13 @@
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 	import { subscribeToTrain, unsubscribeToTrain } from '$lib/notifications';
-	import { localStore, pwa, saved } from '$lib/state/saved.svelte';
+	import {
+		localStore,
+		parseSavedInfo,
+		pwa,
+		saved,
+		setSavedTrainData
+	} from '$lib/state/saved.svelte';
 	import type { TrainService, SavedTrain as SavedTrainType } from '$lib/types';
 	import { iOS } from '$lib/utils';
 
@@ -31,25 +37,24 @@
 	let failedToSubscribe = $state(false);
 
 	const existingOnRoute = $derived(
-		saved.value.find(
-			(t) =>
-				t.focusCrs === crs &&
-				t.filterCrs === filter &&
-				t.service_id !== rid &&
-				dayjs(t.service.date).isSame(dayjs(service.date), 'day')
-		)
+		saved.value.find((t) => t.focusCrs === crs && t.filterCrs === filter && t.service_id !== rid)
 	);
 
 	async function save(filter: string) {
 		loading = true;
+
+		const serviceInfo = parseSavedInfo(service);
+
+		if (!serviceInfo) return;
+
 		let newItem: SavedTrainType = {
 			id: crypto.randomUUID(),
 			service_id: rid,
 			focusCrs: crs,
 			filterCrs: filter,
-			service,
-			lastRefreshed: Date.now(),
+			service: serviceInfo,
 			subscriptionId: null,
+			date: service.date,
 			originalArrival:
 				service.callingPoints.find((cp) => cp.order === 'filter')?.times.plan.arr ?? null
 		};
@@ -66,13 +71,9 @@
 		} else {
 			failedToSubscribe = false;
 		}
+		setSavedTrainData(rid, serviceInfo);
 		saved.value = [...saved.value, { ...newItem, subscriptionId }].toSorted((a, b) => {
-			const aFocus = a.service.callingPoints.find((cp) => cp.order === 'focus');
-			const bFocus = b.service.callingPoints.find((cp) => cp.order === 'focus');
-			if (!aFocus || !bFocus) return 0;
-
-			if (!aFocus?.times.plan.dep || !bFocus?.times.plan.dep) return 0;
-			const diff = dayjs(a.service.date).diff(b.service.date);
+			const diff = dayjs(a.date).diff(dayjs(b.date));
 			// console.log('diff', diff);
 			return diff === 0 ? 0 : diff > 0 ? 1 : -1;
 		});

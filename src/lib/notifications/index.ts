@@ -40,6 +40,7 @@ export async function subscribeToTrain(
 		const body = {
 			fcmToken: token,
 			serviceId: id,
+			rid: service_id,
 			focusCrs: focusCrs,
 			filterCrs: filterCrs,
 			destination: destination,

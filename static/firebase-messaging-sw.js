@@ -15,6 +15,26 @@ const firebaseConfig = {
 	measurementId: 'G-X54HGYE974'
 };
 
+const DB_NAME = 'whereismytrain';
+const DB_VERSION = 1;
+
+function openDB() {
+	return new Promise((resolve, reject) => {
+		const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+		request.onupgradeneeded = (event) => {
+			const db = event.target.result;
+			if (!db.objectStoreNames.contains('trains')) {
+				db.createObjectStore('trains');
+			}
+		};
+
+		request.onsuccess = () => resolve(request.result);
+		request.onerror = () => reject(request.error);
+	});
+}
+
+
 try {
 	firebase.initializeApp(firebaseConfig);
 
@@ -32,6 +52,57 @@ try {
           url: payload.data.path,
 		}
       };
+
+
+    /* type SavedTrainServiceInfo = {
+	crs: string;
+	filter: string;
+	planDep: string;
+	rtDep: string | null;
+	delay: number | null;
+	departed: boolean;
+	planArr: string;
+	rtArr: string | null;
+	arrived: boolean;
+	filterDelay: number | null;
+	from: string;
+	to: string;
+	destination: string;
+	platform: string | null;
+	isCancelled: boolean;
+	isCancelledAtFilter: boolean;
+	operator: Operator;
+	refreshedAt: number;
+    }; */
+
+    const service = JSON.parse(payload.data.service);
+    const newData = {
+      rtDep: service.estimated_departure ?? null,
+      delay: service.delay ?? null,
+      departed: service.departed,
+      rtArr: service.estimated_arrival ?? null,
+      arrived: service.arrived,
+      filterDelay: service.filter_delay ?? null,
+      platform: service.platform ?? null,
+      isCancelled: service.isCancelled,
+      isCancelledAtFilter: service.isCancelledAtFilter,
+      refreshedAt: Date.now()
+    }
+
+
+    const db = await openDB();
+    const transaction = db.transaction('trains', 'readwrite');
+    const store = transaction.objectStore('trains');
+
+    const request = await store.get(service.rid);
+
+    request.onsuccess = (e) => {
+      const data = {...e.target.result, ...newData};
+
+      store.put(data, service.rid);
+    }
+
+
 
     const allNotifications = await self.registration.getNotifications();
     console.log('allNotifications', allNotifications);

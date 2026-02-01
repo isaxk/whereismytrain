@@ -9,6 +9,7 @@
 	import ChangeNotifier from '../ui/change-notifier.svelte';
 
 	import TrainIconByCategory from './train-icon-by-category.svelte';
+	import dayjs from 'dayjs';
 
 	const { send, receive } = t;
 
@@ -45,6 +46,27 @@
 			}, 2000);
 		}
 	});
+
+	const time = $derived.by(() => {
+		if (
+			(['filter', 'subsequent', 'post-destination', 'further'].includes(cp.order) &&
+				cp.times.plan.arr &&
+				!(cp.arrivalCancelled && !cp.departureCancelled)) ||
+			!cp.times.plan.dep ||
+			(!cp.arrivalCancelled && cp.departureCancelled)
+		) {
+			return {
+				plan: cp.times.plan.arr ? dayjs(cp.times.plan.arr).format('HH:mm') : null,
+				rt: cp.times.rt.arr ? dayjs(cp.times.rt.arr).format('HH:mm') : null,
+				delay: cp.arrivalDelay ?? null
+			};
+		}
+		return {
+			plan: cp.times.plan.dep ? dayjs(cp.times.plan.dep).format('HH:mm') : null,
+			rt: cp.times.rt.dep ? dayjs(cp.times.rt.dep).format('HH:mm') : null,
+			delay: cp.delay ?? null
+		};
+	});
 </script>
 
 <div
@@ -69,7 +91,46 @@
 			}
 		]}
 	>
-		{#if (['filter', 'subsequent', 'post-destination', 'further'].includes(cp.order) && cp.times.plan.arr && !(cp.arrivalCancelled && !cp.departureCancelled)) || !cp.times.plan.dep || (!cp.arrivalCancelled && cp.departureCancelled)}
+		<ChangeNotifier
+			value={time.delay}
+			class={[
+				'flex w-max origin-left flex-col items-end',
+				cp.order === 'focus' || cp.order === 'filter' ? 'scale-100' : 'scale-95'
+			]}
+		>
+			<div
+				class={[
+					cp.isCancelled
+						? 'text-sm text-red-600 line-through'
+						: time.rt !== time.plan
+							? time.rt
+								? 'text-xs/3'
+								: 'text-sm/3'
+							: 'text-sm font-medium text-good'
+				]}
+			>
+				<div>
+					{time.plan}
+				</div>
+			</div>
+			{#if time.rt !== time.plan && !cp.isCancelled}
+				{#if time.rt}
+					<div class="text-sm/3 font-medium text-warning">
+						{time.rt}
+					</div>
+				{:else}
+					<div class={['text-right text-[10px]/3 font-medium', !cp.departed && 'text-warning']}>
+						{#if cp.departed}
+							Unknown
+						{:else}
+							Delayed
+						{/if}
+					</div>
+				{/if}
+			{/if}
+		</ChangeNotifier>
+
+		<!-- {#if (['filter', 'subsequent', 'post-destination', 'further'].includes(cp.order) && cp.times.plan.arr && !(cp.arrivalCancelled && !cp.departureCancelled)) || !cp.times.plan.dep || (!cp.arrivalCancelled && cp.departureCancelled)}
 			<ChangeNotifier
 				value={cp.delay}
 				class={[
@@ -139,7 +200,7 @@
 					{/if}
 				{/if}
 			</ChangeNotifier>
-		{/if}
+		{/if} -->
 	</div>
 
 	<div

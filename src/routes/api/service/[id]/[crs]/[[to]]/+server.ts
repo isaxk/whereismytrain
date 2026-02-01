@@ -68,7 +68,8 @@ function parseCallingPoint(
 		name: string;
 		indexInCPs: number;
 	}[],
-	all: WorkingCallingPoint[]
+	all: WorkingCallingPoint[],
+	locations: ServiceLocation[][]
 ): CallingPoint {
 	if (item.ata === nullTime) item.ata = null;
 	if (item.atd === nullTime) item.atd = null;
@@ -96,12 +97,12 @@ function parseCallingPoint(
 
 	const times: TimeObject = {
 		rt: {
-			arr: item.ata || item.eta ? dayjs(item.ata ?? item.eta).format('HH:mm') : null,
-			dep: item.atd || item.etd ? dayjs(item.atd ?? item.etd).format('HH:mm') : null
+			arr: item.ata ?? item.eta ?? null,
+			dep: item.atd ?? item.etd ?? null
 		},
 		plan: {
-			arr: item.sta ? dayjs(item.sta).format('HH:mm') : null,
-			dep: item.std ? dayjs(item.std).format('HH:mm') : null
+			arr: item.sta ?? null,
+			dep: item.std ?? null
 		}
 	};
 
@@ -219,6 +220,15 @@ function parseCallingPoint(
 	}
 
 	// console.log('no departs after join', showTrain);
+	//
+
+	const locationsOnSplit = locations.find((group) =>
+		cpsOnSplit.every((cp) => group.some((loc) => loc.crs === cp.crs))
+	);
+	const indexOnLocations = locationsOnSplit?.findIndex((loc) => loc.crs === item.crs);
+	const departedAfter = locationsOnSplit?.some(
+		(loc, i) => (loc.atd || loc.ata) && i > (indexOnLocations ?? 100000)
+	);
 
 	return {
 		crs: item.crs!,
@@ -228,7 +238,7 @@ function parseCallingPoint(
 		delay,
 		arrivalDelay,
 		rtDepDate: item.atd ?? item.etd ?? null,
-		departed: item.atdSpecified === true && item.atd !== nullTime,
+		departed: (item.atdSpecified === true && item.atd !== nullTime) || departedAfter === true,
 		arrived: item.ataSpecified === true && item.ata !== nullTime,
 		isCancelled: item.isCancelled ?? false,
 		departureCancelled,
@@ -651,7 +661,8 @@ export const GET = async ({ params, request }) => {
 					focusIndex,
 					filterIndex,
 					destination,
-					callingPoints
+					callingPoints,
+					locations
 				)
 			),
 			locations,

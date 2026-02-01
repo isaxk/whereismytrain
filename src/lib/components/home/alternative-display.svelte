@@ -9,7 +9,7 @@
 		failed,
 		from,
 		to,
-		offset,
+		time,
 		service,
 		switchTo,
 		switching,
@@ -23,13 +23,13 @@
 		<div>
 			<Item.Title>Could not find an alternative in the next 2 hours</Item.Title>
 			<Item.Description
-				><a class="block" href="/board/{from}?to={to}&offset={offset}">Make a search</a>
+				><a class="block" href="/board/{from}?to={to}&time={time}">Make a search</a>
 				<a href="https://www.nationalrail.co.uk">or use the national rail journey planner</a
 				></Item.Description
 			>
 		</div>
 		<Item.Actions class="flex w-full max-w-full  gap-2">
-			<Button href="/board/{from}?to={to}&offset={offset}" variant="secondary" class="w-1/2 grow">
+			<Button href="/board/{from}?to={to}&time={time}" variant="secondary" class="w-1/2 grow">
 				Make a search
 			</Button>
 			<Button href="https://nationalrail.co.uk" variant="secondary" class="w-1/2 grow">
@@ -70,7 +70,7 @@
 				{/if}
 			</Button>
 			<div class="grid w-full grid-cols-2 gap-2">
-				<Button href="/board/{from}?to={to}&offset={offset}" variant="secondary" class="grow">
+				<Button href="/board/{from}?to={to}&time={time}" variant="secondary" class="grow">
 					More alternatives
 				</Button>
 				<Button href="https://nationalrail.co.uk" variant="secondary" class="grow">
