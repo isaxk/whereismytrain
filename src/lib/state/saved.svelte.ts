@@ -39,34 +39,6 @@ export const saved = localStore<SavedTrain[]>('saved-services-v3', []);
 export const pinned = localStore<PinnedBoard[]>('pinned-boards', []);
 export const pwa = localStore<boolean>('is-installed-pwa', false);
 
-export function parseSavedInfo(service: TrainService): SavedTrainServiceInfo | null {
-	const focus = service.callingPoints.find((cp) => cp.order === 'focus');
-	const filter = service.callingPoints.find((cp) => cp.order === 'filter');
-	if (!focus || !filter) return null;
-	return {
-		crs: focus.crs,
-		from: focus.name,
-		planDep: focus.times.plan.dep!,
-		planArr: filter.times.plan.arr!,
-		departed: focus.departed,
-		delay: focus.delay,
-		isCancelled: focus.isCancelled,
-
-		filter: filter.crs,
-		to: filter.name,
-		rtDep: focus?.times.rt.dep ?? null,
-		rtArr: filter?.times.rt.arr ?? null,
-		arrived: filter.arrived,
-		filterDelay: filter.arrivalDelay,
-		isCancelledAtFilter: filter.isCancelled,
-
-		destination: service.destination.map((d) => d.name).join(', '),
-
-		platform: focus.platform,
-		operator: service.operator
-	};
-}
-
 const DB_NAME = 'whereismytrain';
 const DB_VERSION = 1;
 

@@ -55,6 +55,8 @@
 		"@types/maplibre-gl": "^1.14.0",
 		"@vercel/analytics": "^1.6.1",
 		"bits-ui": "^2.14.4",
+		"convex": "^1.31.7",
+		"convex-svelte": "^0.0.12",
 		"csv-parser": "^3.2.0",
 		"cupertino-pane": "^1.5.4",
 		"dayjs": "^1.11.19",

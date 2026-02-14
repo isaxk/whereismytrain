@@ -216,7 +216,7 @@
 							{#if services}
 								<div class="" in:fade|global={{ duration: 200 }}>
 									{#if services.length > 0}
-										{#each services as service (service.rid)}
+										{#each services as service (service.rid + service.rawTime)}
 											<div
 												class="border-b border-border px-4 transition-all odd:bg-muted/40"
 												animate:flip={{ duration: 200 }}

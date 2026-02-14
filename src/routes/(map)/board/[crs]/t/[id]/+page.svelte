@@ -24,8 +24,6 @@
 	import type { TrainService } from '$lib/types';
 
 	import type { PageData } from './$types';
-	import * as Select from '$lib/components/ui/select';
-	import { dayjsFromHHmm } from '$lib/utils';
 
 	let { data }: { data: PageData } = $props();
 
@@ -34,6 +32,7 @@
 	let now = $state(dayjs());
 
 	let showPrevious = $state(false);
+	let showSplit = $state(false);
 	let detailedView = $state(false);
 	let lastSuccessfulRefresh: Dayjs | null = $state(null);
 
@@ -100,6 +99,8 @@
 		operator,
 		title,
 		callingPoints,
+		focus,
+		filter,
 		isBus,
 		destination,
 		isToday,
@@ -141,7 +142,7 @@
 			<Share
 				{title}
 				text="Follow this service"
-				url={`/share/${data.crs}/${data.id}/${callingPoints.find((cp) => cp.order === 'filter')?.crs}`}
+				url={`/share/${data.crs}/${data.id}/${filter.crs}`}
 			/>
 			<SavedToggle
 				service={serviceData}
@@ -180,7 +181,6 @@
 				{/if}
 
 				{#if serviceData.reasonCode}
-					{@const focus = callingPoints.find((l) => l.crs === data.crs)}
 					<Disruption
 						type={focus?.isCancelled ? 'cancel' : 'delay'}
 						code={serviceData.reasonCode}
@@ -225,11 +225,15 @@
 					<div>Platform</div>
 				</div>
 				{#each callingPoints as cp, i (cp.tiploc + cp.times.plan.dep + i)}
-					{#if (cp.order !== 'previous' && cp.order !== 'origin' && !(cp.order === 'post-destination' && previousIncludesStartDivide)) || ((cp.order === 'previous' || cp.order === 'origin' || cp.order === 'post-destination') && showPrevious)}
+					{#if !['previous', 'origin'].includes(cp.order) || showPrevious}
 						{@const next = callingPoints[i + 1]}
 						{@const prev = callingPoints[i - 1]}
 
-						{#if cp.order === 'focus' && callingPoints.filter((c) => c.order === 'previous' || c.order === 'origin').length > 0}
+						{@const anyPrevious =
+							callingPoints.filter((c) => c.order === 'previous' || c.order === 'origin').length >
+							0}
+
+						{#if cp.order === 'focus' && anyPrevious}
 							<LineToggle
 								bind:show={showPrevious}
 								name="previous"
@@ -246,78 +250,48 @@
 							<DivideLine type="split" color={operator.color} />
 						{/if}
 
-						<CallingPointItem
-							{cp}
-							{operator}
-							{category}
-							index={i}
-							length={callingPoints.length}
-							pickupOnly={!cp.times.plan.arr && i > 0 && !cp.startDivide && !prev.endDivide}
-							setdownOnly={!cp.times.plan.dep &&
-								i < callingPoints.length - 1 &&
-								!cp.endDivide &&
-								!next.startDivide &&
-								!cp.isDestination}
-							showTrain={!(cp.departed && callingPoints[i + 1]?.order === 'focus')}
-							greyLine={!callingPoints.some((cp, j) => j > i && !cp.isCancelled) &&
-								cp.isCancelled &&
-								!callingPoints.some((cp) => cp.inDivision)}
-						/>
+						{#if cp.startDivide && !filter.inDivision}
+							<div class="-mt-4">
+								<LineToggle
+									bind:show={showSplit}
+									name="division"
+									color={operator.color}
+									trainVisible={(cp.departed || cp.arrived) &&
+										!callingPoints.find((cp) => cp.endDivide)?.arrived &&
+										!showSplit}
+									{category}
+									inDivision={true}
+								/>
+							</div>
+						{/if}
+
+						{#if showSplit || filter.inDivision || !cp.inDivision || cp.endDivide}
+							<CallingPointItem
+								{cp}
+								{operator}
+								{category}
+								index={i}
+								length={callingPoints.length}
+								pickupOnly={!cp.times.plan.arr && i > 0 && !cp.startDivide && !prev.endDivide}
+								setdownOnly={!cp.times.plan.dep &&
+									i < callingPoints.length - 1 &&
+									!cp.endDivide &&
+									!next.startDivide &&
+									!cp.isDestination}
+								showTrain={!(cp.departed && next?.order === 'focus')}
+								showArrivalMark={next?.startDivide}
+								showDepartureMark={prev?.endDivide || cp.startDivide}
+								hideDetails={cp.endDivide &&
+									!showSplit &&
+									!callingPoints.find((cp) => cp.order === 'filter')?.inDivision}
+							/>
+						{/if}
 
 						{#if cp.endDivide && (showPrevious || !previousIncludesStartDivide)}
 							<DivideLine type="end-split" color={operator.color} />
 						{/if}
 					{/if}
 				{/each}
-				<!-- <div class="flex w-full flex-col gap-2 pt-2">
-					<Share
-						{title}
-						text="Follow this service"
-						url={`/share/${data.crs}/${data.id}/${callingPoints.find((cp) => cp.order === 'filter')?.crs}`}
-					/>
-					{#if !detailedView}
-						<Button variant="outline" class="w-full" onclick={() => (detailedView = true)}
-							>Switch to detailed view</Button
-						>
-					{/if}
-				</div> -->
-				<!-- <div class="flex gap-2">
-					<Select.Root bind:value={selectedTestItem} type="single">
-						<Select.Trigger>
-							{callingPoints[parseInt(selectedTestItem)]?.name}
-						</Select.Trigger>
-						<Select.Content>
-							{#each callingPoints as { name }, i (i)}
-								<Select.Item value={i.toString()}>{name}</Select.Item>
-							{/each}
-						</Select.Content>
-					</Select.Root>
-					<Button
-						onclick={() => {
-							const point = callingPoints[parseInt(selectedTestItem)];
-							const arr = point.times.rt.arr;
-							const dep = point.times.rt.dep;
-							const delay = Math.floor(Math.random() * 10);
-							if (point.times.plan.arr && arr) {
-								point.arrivalDelay = delay;
-								point.times.rt.arr = arr
-									? dayjsFromHHmm(arr).add(delay, 'minutes').format('HH:mm')
-									: null;
-							}
-							if (point.times.plan.dep) {
-								point.delay = delay;
-								point.times.rt.dep = dep
-									? dayjsFromHHmm(dep).add(delay, 'minutes').format('HH:mm')
-									: null;
-							}
-						}}>Delay</Button
-					>
-					<Button
-						onclick={() => {
-							const point = callingPoints[parseInt(selectedTestItem)];
-							point.isCancelled = true;
-						}}>Cancel</Button>
-				</div> -->
 			</div>
 		{/if}
 	</div>
@@ -344,7 +318,7 @@
 {:else}
 	<div
 		in:fade|global={{ duration: 100, delay: 150 }}
-		class="sticky top-0 flex h-18 items-center border-b border-border p-4 pt-6"
+		class="sticky top-0 flex h-18 items-center gap-4 border-b border-border p-4 pt-6"
 	>
 		<div class="absolute top-1.5 right-0 left-0 flex h-2 w-full items-center">
 			<div class="h-[5px] w-10 rounded-sm bg-background/40"></div>
@@ -355,7 +329,7 @@
 			variant="outline"
 			href={data.backTo ?? `../${page.url.search}`}><ArrowLeft /></Button
 		>
-		<div class="flex h-9 grow flex-col items-center justify-center gap-1">
+		<div class="flex h-9 grow flex-col justify-center gap-1">
 			<Skeleton class="h-3 w-20" />
 			<Skeleton class="h-4 w-32" />
 		</div>
@@ -364,28 +338,27 @@
 	<div in:fade|global={{ duration: 100, delay: 150 }} class="flex h-full flex-col p-4">
 		{#each Array(10), i (i)}
 			<div class={['flex h-12 items-center gap-2']}>
-				<div class={['-z-10 flex gap-3']}>
-					<div class={['w-8']}>
+				<div class={['flex gap-3']}>
+					<div class={['flex min-w-8 justify-end']}>
 						<Skeleton class="h-3 w-6" />
 					</div>
-					<div class={['w-8']}><Skeleton class="h-3 w-6" /></div>
 				</div>
 				<div class={['flex h-full animate-pulse flex-col items-center justify-center pl-2']}>
 					{#if i === 0}
 						<div class="grow"></div>
-						<div class="min-h-1.5 w-4 bg-zinc-300"></div>
-						<div class="w-1.5 grow bg-zinc-300"></div>
+						<div class="min-h-1.5 w-4 bg-zinc-200"></div>
+						<div class="w-1.5 grow bg-zinc-200"></div>
 					{:else if i === 9}
-						<div class="w-1.5 grow bg-zinc-300"></div>
-						<div class="min-h-1.5 w-4 bg-zinc-300"></div>
+						<div class="w-1.5 grow bg-zinc-200"></div>
+						<div class="min-h-1.5 w-4 bg-zinc-200"></div>
 						<div class="grow"></div>
 					{:else}
-						<div class="w-1.5 grow bg-zinc-300"></div>
-						<div class="flex w-4 bg-zinc-300">
+						<div class="w-1.5 grow bg-zinc-200"></div>
+						<div class="flex w-4 bg-zinc-200">
 							<div class="w-[5px]"></div>
-							<div class="min-h-1.5 grow bg-zinc-300"></div>
+							<div class="min-h-1.5 grow bg-zinc-200"></div>
 						</div>
-						<div class="w-1.5 grow bg-zinc-300"></div>
+						<div class="w-1.5 grow bg-zinc-200"></div>
 					{/if}
 				</div>
 				<div class="min-w-0 grow pl-2">

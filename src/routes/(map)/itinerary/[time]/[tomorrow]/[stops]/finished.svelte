@@ -1,4 +1,4 @@
-<script lang="ts">
+<!-- <script lang="ts">
 	import TrainDiagram from '$lib/components/itinerary/train-diagram.svelte';
 	import { londonTerminals } from '$lib/data/favourites';
 	import type { CallingPoint, TrainService, SavedTrain as SavedTrainType } from '$lib/types';
@@ -151,4 +151,4 @@
 		<Bell />
 		Add trains
 	{/if}
-</Button>
+</Button> -->

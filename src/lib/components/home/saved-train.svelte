@@ -14,12 +14,7 @@
 	import * as Popover from '$lib/components/ui/popover/index.js';
 	import { londonTerminals } from '$lib/data/favourites';
 	import { unsubscribeToTrain } from '$lib/notifications';
-	import {
-		getSavedTrainData,
-		parseSavedInfo,
-		saved,
-		setSavedTrainData
-	} from '$lib/state/saved.svelte';
+	import { getSavedTrainData, saved, setSavedTrainData } from '$lib/state/saved.svelte';
 	import { refreshing, servicesSub } from '$lib/state/services-subscriber.svelte';
 	import { explicitEffect } from '$lib/state/utils.svelte';
 	import type { SavedTrain, SavedTrainServiceInfo } from '$lib/types';
@@ -37,8 +32,13 @@
 	import Tubeicon from '$lib/assets/tubeicon.svelte';
 	import TrainDiagram from '../itinerary/train-diagram.svelte';
 	import { onMount, untrack } from 'svelte';
+	import { parseSavedInfo } from '$lib/shared/service';
+	import { useConvexClient } from 'convex-svelte';
+	import { api } from '../../../convex/_generated/api';
 
 	let { data, index }: { data: SavedTrain; index: number } = $props();
+
+	const convex = useConvexClient();
 
 	let service: SavedTrainServiceInfo | null = $state(data.service);
 	let serviceId = $state(data.service_id);
@@ -75,7 +75,9 @@
 
 	function remove() {
 		if (data.subscriptionId) {
-			unsubscribeToTrain(data.subscriptionId);
+			convex.mutation(api.notifications.deregisterSubscription, {
+				subscriptionId: data.subscriptionId
+			});
 		}
 		saved.value = saved.value.filter((s) => s.id !== data.id);
 	}

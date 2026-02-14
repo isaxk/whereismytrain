@@ -23,48 +23,37 @@ function fnTimeout(fn: () => Promise<any>, delay: number) {
 	});
 }
 
-export async function subscribeToTrain(
-	service_id: string,
-	focusCrs: string,
-	filterCrs: string,
-	destination: string
-) {
+// export async function subscribeToTrain(
+// 	service_id: string,
+// 	focusCrs: string,
+// 	filterCrs: string,
+// 	destination: string
+// ) {
+// 	if (!token) {
+// 		token = await initializeNotifications();
+// 	}
+// 	// console.log('Token:', token);
+
+// 	const { destCrsList, id } = parseServiceId(service_id);
+
+// 	if (token) {
+// 		const result = await convex.action(api.notifications.registerSubscription, {
+// 			fcmToken: token,
+// 			serviceId: id,
+// 			focusCrs,
+// 			filterCrs
+// 		});
+// 	} else {
+// 		return null;
+// 	}
+// }
+
+export async function getFCMToken() {
 	if (!token) {
 		token = await initializeNotifications();
 	}
-	// console.log('Token:', token);
 
-	const { destCrsList, id } = parseServiceId(service_id);
-
-	if (token) {
-		const body = {
-			fcmToken: token,
-			serviceId: id,
-			rid: service_id,
-			focusCrs: focusCrs,
-			filterCrs: filterCrs,
-			destination: destination,
-			path: `/board/${focusCrs}/t/${service_id}?to=${filterCrs}`,
-			destCrs: destCrsList[0]
-		};
-		const response = await fetch('https://pqwbjxgovvgpxmccjsdw.supabase.co/functions/v1/register', {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-				Authorization: `Bearer ${env.PUBLIC_SUPABASE_ANON_KEY}`
-			},
-			body: JSON.stringify(body)
-		});
-		if (response.ok) {
-			const data = await response.json();
-			// console.log(data);
-			return data.id;
-		} else {
-			return null;
-		}
-	} else {
-		return null;
-	}
+	return token;
 }
 
 export async function unsubscribeToTrain(id: string) {
@@ -165,23 +154,23 @@ export function setupForegroundMessageHandler() {
 			page.url.pathname !== '/' &&
 			page.data.id !== JSON.parse(payload.data?.service ?? 'null')?.service_id
 		) {
-			toast(NotificationComponent, {
-				componentProps: {
-					title: payload.notification?.title ?? '',
-					service: payload.data?.service ?? '{}',
-					alertType:
-						(payload.data?.alertType as
-							| 'delay'
-							| 'cancelled'
-							| 'platform'
-							| 'departed'
-							| 'filter-cancelled'
-							| 'filter-delay'
-							| 'reminder'
-							| '') ?? ''
-				},
-				duration: 5000
-			});
+			// toast(NotificationComponent, {
+			// 	componentProps: {
+			// 		title: payload.notification?.title ?? '',
+			// 		service: payload.data?.service ?? '{}',
+			// 		alertType:
+			// 			(payload.data?.alertType as
+			// 				| 'delay'
+			// 				| 'cancelled'
+			// 				| 'platform'
+			// 				| 'departed'
+			// 				| 'filter-cancelled'
+			// 				| 'filter-delay'
+			// 				| 'reminder'
+			// 				| '') ?? ''
+			// 	},
+			// 	duration: 5000
+			// });
 		}
 	});
 }

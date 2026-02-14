@@ -6,7 +6,7 @@ import type { ServiceItem } from '$lib/types/api';
 
 export const NULL_TIME = '0001-01-01T00:00:00';
 
-export const API_COMPATIBLE_VERSION = '2';
+export const API_COMPATIBLE_VERSION = '4';
 
 export function parseBoardItem(item: ServiceItem): BoardItem {
 	if (item.ata === NULL_TIME) item.ata = null;
@@ -23,7 +23,7 @@ export function parseBoardItem(item: ServiceItem): BoardItem {
 	// const pta = item.sta ? dayjs(item.sta) : null;
 	const ptd = item.std ? dayjs(item.std) : null;
 
-	item.rid = `${item.rid}d${item.destination?.map((d) => d.crs).join('d')}`;
+	item.rid = `${item.rid}`;
 
 	if (rtd && ptd) {
 		delay = rtd.diff(ptd, 'minutes');

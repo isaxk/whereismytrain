@@ -124,8 +124,6 @@ export type CallingPoint = {
 	isOrigin: boolean;
 	departed: boolean;
 	arrived: boolean;
-	isDestination: boolean;
-	isPostDestination: boolean;
 	showTrain: boolean;
 };
 
@@ -148,6 +146,8 @@ export type TrainService = {
 	formedFrom: string | null;
 	locations: ServiceLocation[][];
 	callingPoints: CallingPoint[];
+	focus: CallingPoint;
+	filter: CallingPoint;
 	operator: Operator;
 	isToday: boolean;
 	date: string;

@@ -8,7 +8,7 @@
 
 	import { highlightedStation, paneHeight } from '$lib/state/map.svelte';
 	import { explicitEffect } from '$lib/state/utils.svelte';
-	import type { ServiceMapData, TrainService } from '$lib/types';
+	import type { Category, ServiceMapData, TrainService } from '$lib/types';
 
 	import TrainIconByCategory from '../train/train-icon-by-category.svelte';
 	import Spinner from '../ui/spinner/spinner.svelte';
@@ -16,6 +16,7 @@
 	import MapLocationGroup from './map-location-group.svelte';
 	import { Tween } from 'svelte/motion';
 	import { onMount } from 'svelte';
+	import MapStationMarker from './map-station-marker.svelte';
 
 	let {
 		serviceData,
@@ -77,7 +78,7 @@
 			{#each mapData.locations as group, index (index)}
 				<MapLocationGroup
 					{rid}
-					{crs}
+					focus={crs}
 					{refreshing}
 					category={serviceData.category}
 					filter={group.lineLocations.some((l) => l.crs === filter)
@@ -85,7 +86,9 @@
 						: group.lineLocations.some((l) => l.crs === crs)
 							? (serviceData.callingPoints.find((l) => l.startDivide)?.crs ?? null)
 							: null}
-					focus={crs}
+					crs={group.lineLocations.some((l) => l.crs === crs)
+						? crs
+						: (group.lineLocations[0].crs ?? crs)}
 					to={filter}
 					href="/board/{crs}/t/{rid}?{filter ? `to=${filter}&` : ''}backTo=/"
 					showDestination={mapData.locations.reduce(
@@ -100,7 +103,15 @@
 		{/key}
 		{#if page.data.id === rid}
 			{#each serviceData.callingPoints as cp, i (cp.tiploc + i)}
-				{@const tiploc = mapData?.tiplocData?.find((t) => t.tiploc === cp.tiploc)}
+				<MapStationMarker
+					{cp}
+					locations={mapData.locations}
+					tiplocData={mapData.tiplocData}
+					operator={serviceData.operator}
+					category={serviceData.category}
+					isFilterNotOnSplit={!serviceData.filter?.inDivision && cp.inDivision}
+				/>
+				<!-- {@const tiploc = mapData?.tiplocData?.find((t) => t.tiploc === cp.tiploc)}
 				{#if tiploc?.coords}
 					{@const isTrainAtStation = mapData.locations.some(
 						(l) =>
@@ -141,7 +152,7 @@
 									? 'opacity-50'
 									: '',
 
-								cp.isCancelled && 'line-through opacity-30'
+								cp.isCancelled && 'line-through'
 							]}
 						>
 							{#if isTrainAtStation}
@@ -171,13 +182,6 @@
 											<Spinner class="size-20 scale-120" />
 										</div>
 									{/if}
-									<!-- <div class="text-[7px]/3">
-									to {mapData.locations.find(
-										(l) =>
-											l.trainPosition?.[0] === tiploc.coords[0] &&
-											l.trainPosition?.[1] === tiploc.coords[1]
-									)?.destination.crs}
-								</div> -->
 								</div>
 							{:else}
 								<div class={['text-current', cp.isCancelled && 'text-red-200 line-through']}>
@@ -186,7 +190,7 @@
 							{/if}
 						</div>
 					</Marker>
-				{/if}
+				{/if} -->
 			{/each}
 		{/if}
 	</div>

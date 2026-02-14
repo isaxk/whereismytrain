@@ -1,13 +1,18 @@
 <script lang="ts">
 	import dayjs from 'dayjs';
 
-	import { subscribeToTrain, unsubscribeToTrain } from '$lib/notifications';
-	import { parseSavedInfo, saved, setSavedTrainData } from '$lib/state/saved.svelte';
+	import { getFCMToken, unsubscribeToTrain } from '$lib/notifications';
+	import { saved, setSavedTrainData } from '$lib/state/saved.svelte';
+	import { parseSavedInfo } from '$lib/shared/service';
 	import type { BoardItem } from '$lib/types';
 	import { dayjsFromHHmm } from '$lib/utils';
 
 	import type { Snippet } from 'svelte';
 	import { API_COMPATIBLE_VERSION } from '../../../routes/api/_shared';
+	import { useConvexClient } from 'convex-svelte';
+	import { api } from '../../../convex/_generated/api';
+
+	const convex = useConvexClient();
 
 	let service: BoardItem | null = $state(null);
 
@@ -68,15 +73,19 @@
 		if (!service || !saved.value[index]) return;
 		switching = true;
 		if (saved.value[index].subscriptionId) {
-			await unsubscribeToTrain(saved.value[index].subscriptionId);
+			convex.mutation(api.notifications.deregisterSubscription, {
+				subscriptionId: saved.value[index].subscriptionId
+			});
 		}
 
-		const subscriptionId = await subscribeToTrain(
-			service.rid,
-			from,
-			to,
-			service.destination.map((d) => d.name).join(', ')
-		);
+		const fcmToken = await getFCMToken();
+
+		const subscriptionId = await convex.action(api.notifications.registerSubscription, {
+			fcmToken,
+			serviceId: service.rid,
+			focusCrs: from,
+			filterCrs: to
+		});
 		const response = await fetch(`/api/service/${service.rid}/${from}/${to}`, {
 			headers: {
 				'api-version': API_COMPATIBLE_VERSION

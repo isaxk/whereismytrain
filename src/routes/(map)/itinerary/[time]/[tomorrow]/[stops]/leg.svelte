@@ -65,8 +65,8 @@
 		});
 		const data: TrainService = await response.json();
 		if (response.ok) {
-			const focus = data.callingPoints.find((p) => p.order === 'focus');
-			const filter = data.callingPoints.find((p) => p.order === 'filter');
+			const focus = data.focus;
+			const filter = data.filter;
 			if (focus && filter) onSelect({ service: data, focus, filter });
 			loading = false;
 		}

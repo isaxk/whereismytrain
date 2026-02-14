@@ -4,20 +4,19 @@
 
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
-	import { subscribeToTrain, unsubscribeToTrain } from '$lib/notifications';
-	import {
-		localStore,
-		parseSavedInfo,
-		pwa,
-		saved,
-		setSavedTrainData
-	} from '$lib/state/saved.svelte';
+	import { getFCMToken, unsubscribeToTrain } from '$lib/notifications';
+	import { localStore, pwa, saved, setSavedTrainData } from '$lib/state/saved.svelte';
 	import type { TrainService, SavedTrain as SavedTrainType } from '$lib/types';
 	import { iOS } from '$lib/utils';
 
 	import Install from '../home/install.svelte';
 	import Button, { buttonVariants } from '../ui/button/button.svelte';
 	import { Spinner } from '../ui/spinner/index';
+	import { parseSavedInfo } from '$lib/shared/service';
+	import { useConvexClient } from 'convex-svelte';
+	import { api } from '../../../convex/_generated/api';
+
+	const convex = useConvexClient();
 
 	let {
 		service,
@@ -55,15 +54,18 @@
 			service: serviceInfo,
 			subscriptionId: null,
 			date: service.date,
-			originalArrival:
-				service.callingPoints.find((cp) => cp.order === 'filter')?.times.plan.arr ?? null
+			originalArrival: service.filter.times.plan.arr ?? null
 		};
-		const subscriptionId = await subscribeToTrain(
-			rid,
-			focus,
-			filter,
-			service.destination.map((d) => d.name).join(', ')
-		);
+
+		const token = await getFCMToken();
+
+		const subscriptionId = await convex.action(api.notifications.registerSubscription, {
+			fcmToken: token,
+			serviceId: rid,
+			focusCrs: crs,
+			filterCrs: filter
+		});
+
 		// console.log('subscriptionId', subscriptionId);
 		if (subscriptionId === null) {
 			failedToSubscribe = true;
@@ -93,7 +95,7 @@
 	function remove() {
 		const subscriptionId = saved.value.find((s) => s.service_id === rid)?.subscriptionId;
 		if (subscriptionId) {
-			unsubscribeToTrain(subscriptionId);
+			convex.mutation(api.notifications.deregisterSubscription, { subscriptionId });
 		}
 		saved.value = saved.value.filter((s) => s.service_id !== rid);
 	}

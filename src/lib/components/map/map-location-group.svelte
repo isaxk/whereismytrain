@@ -24,7 +24,8 @@
 		showDestination,
 		filter,
 		to = null,
-		focus
+		focus,
+		routeCancelled = false
 	}: {
 		href: string;
 		crs: string;
@@ -38,49 +39,33 @@
 		filter?: string | null;
 		to?: string | null;
 		focus?: string | null;
+		routeCancelled?: boolean;
 	} = $props();
 
 	const coordinates = $derived(data.lineLocations.map((l) => l.coords));
 
 	const unCancelled = $derived(
 		data.lineLocations.filter((c, i) => {
-			const prevCP = data.lineLocations.find((l, j) => l.isCallingPoint && j < i);
-			const nextCP = data.lineLocations.find((l, j) => l.isCallingPoint && j > i);
-
-			const prevCpIsCancelled = prevCP?.isCancelled ?? false;
-			const nextCpIsCancelled = nextCP?.isCancelled ?? false;
-
-			if (c.isCallingPoint && c.isCancelled) {
-				return false;
-			}
-
-			if (!c.isCancelled) {
-				return true;
-			}
-
-			if (!nextCP && c.isCancelled) {
-				return false;
-			}
-
-			if (!prevCpIsCancelled && !nextCpIsCancelled) {
-				return true;
-			}
-			return false;
+			return !c.isCancelled;
 		})
 	);
 
 	const unCancelledCoordinates = $derived(unCancelled.map((l) => l.coords));
 
 	const primaryCoordinates = $derived.by(() => {
-		const filtered = unCancelled;
+		let filtered = unCancelled;
 
-		if (!filter || !crs || !filtered.some((l) => l.crs === crs || l.crs === filter)) {
+		if (!filter || !crs) {
+			return [];
+		}
+
+		if (routeCancelled) {
 			return [];
 		}
 
 		let focus = filtered.findIndex((l) => l.crs === crs);
 		if (focus === -1) {
-			focus = 0;
+			return [];
 		}
 		if (focus !== -1) {
 			let coords = [];
@@ -111,7 +96,7 @@
 		},
 		geometry: {
 			type: 'LineString',
-			coordinates: coordinates
+			coordinates: unCancelledCoordinates
 		}
 	});
 

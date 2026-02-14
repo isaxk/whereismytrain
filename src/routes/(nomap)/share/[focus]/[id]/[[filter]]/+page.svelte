@@ -5,8 +5,8 @@
 
 	let { data } = $props();
 
-	const focus = $derived(data.service.callingPoints.find((l) => l.order === 'focus'));
-	const filter = $derived(data.service.callingPoints.find((l) => l.order === 'filter'));
+	const focus = $derived(data.service.focus);
+	const filter = $derived(data.service.filter);
 
 	const title = $derived.by(() => {
 		if (!filter || !focus) return;
