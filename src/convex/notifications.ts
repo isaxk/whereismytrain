@@ -83,6 +83,32 @@ export const refresh = internalAction({
 
 		await Promise.all(
 			subscriptions.map(async (sub) => {
+				const timeUntilDeparture = dayjs(sub.planDep).diff(dayjs(), 'minutes', true);
+				const timeUntilArrival = dayjs(sub.planArr).diff(dayjs(), 'minutes', true);
+				const timeSinceLastUpdate = dayjs().diff(dayjs(sub.updated), 'minutes', true);
+
+				let shouldRefresh = true;
+
+				if (sub.departed) {
+					if (timeUntilArrival > 10 && timeSinceLastUpdate < 5) {
+						shouldRefresh = false;
+					} else if (timeUntilArrival > 5 && timeSinceLastUpdate < 2) {
+						shouldRefresh = false;
+					}
+				} else {
+					if (timeUntilDeparture > 120 && timeSinceLastUpdate < 20) {
+						shouldRefresh = false;
+					} else if (timeUntilDeparture > 60 && timeSinceLastUpdate < 12) {
+						shouldRefresh = false;
+					} else if (timeUntilDeparture > 30 && timeSinceLastUpdate < 6) {
+						shouldRefresh = false;
+					} else if (timeUntilDeparture > 15 && timeSinceLastUpdate < 3) {
+						shouldRefresh = false;
+					}
+				}
+
+				if (!shouldRefresh) return;
+
 				// console.log(sub);
 				let newSub = services.get(sub.serviceId) ?? null;
 				if (!newSub) {
