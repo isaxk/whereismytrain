@@ -1,39 +1,41 @@
 <script lang="ts">
+	import dayjs from 'dayjs';
 	import { ArrowDownRight, ArrowUpRight, X } from 'lucide-svelte';
 
 	import { highlightedStation } from '$lib/state/map.svelte';
-	import { explicitEffect } from '$lib/state/utils.svelte';
 	import type { CallingPoint, Operator } from '$lib/types';
 	import { cn, t } from '$lib/utils';
 
 	import ChangeNotifier from '../ui/change-notifier.svelte';
 
 	import TrainIconByCategory from './train-icon-by-category.svelte';
-	import dayjs from 'dayjs';
 
 	const { send, receive } = t;
 
 	let {
+		hideDetails = false,
 		cp,
 		operator,
 		index,
 		length,
 		showTrain = false,
-		greyLine = false,
 		pickupOnly = false,
 		setdownOnly = false,
-
+		showArrivalMark = false,
+		showDepartureMark = false,
 		category = 'standard'
 	}: {
+		hideDetails: boolean;
 		cp: CallingPoint;
 		operator: Operator;
 		index: number;
 		length: number;
 		showTrain?: boolean;
-		greyLine?: boolean;
 		pickupOnly?: boolean;
 		setdownOnly?: boolean;
-		category?: 'standard' | 'express';
+		showArrivalMark?: boolean;
+		showDepartureMark?: boolean;
+		category?: 'standard' | 'express' | 'metro' | 'sleeper' | 'bus';
 	} = $props();
 
 	let elm: HTMLDivElement;
@@ -49,7 +51,7 @@
 
 	const time = $derived.by(() => {
 		if (
-			(['filter', 'subsequent', 'post-destination', 'further'].includes(cp.order) &&
+			(['filter', 'post-destination', 'further'].includes(cp.order) &&
 				cp.times.plan.arr &&
 				!(cp.arrivalCancelled && !cp.departureCancelled)) ||
 			!cp.times.plan.dep ||
@@ -83,11 +85,13 @@
 			{
 				'font-medium opacity-100': cp.order === 'focus' || cp.order === 'filter',
 				'opacity-70':
-					cp.order === 'previous' ||
-					cp.order === 'further' ||
-					cp.order === 'post-destination' ||
-					cp.order === 'origin' ||
-					cp.order === 'subsequent'
+					(cp.order === 'previous' ||
+						cp.order === 'further' ||
+						cp.order === 'post-destination' ||
+						cp.order === 'origin' ||
+						cp.order === 'subsequent') &&
+					!hideDetails,
+				'opacity-0': hideDetails
 			}
 		]}
 	>
@@ -109,13 +113,15 @@
 							: 'text-sm font-medium text-good'
 				]}
 			>
-				<div>
-					{time.plan}
+				<div class="text-nowrap">
+					<span class="text-xs font-normal text-foreground"
+						>{#if showArrivalMark}a.{:else if showDepartureMark}d.{/if}
+					</span>{time.plan}
 				</div>
 			</div>
 			{#if time.rt !== time.plan && !cp.isCancelled}
 				{#if time.rt}
-					<div class="text-sm/3 font-medium text-warning">
+					<div class="text-sm/3 font-medium text-nowrap text-warning">
 						{time.rt}
 					</div>
 				{:else}
@@ -129,85 +135,12 @@
 				{/if}
 			{/if}
 		</ChangeNotifier>
-
-		<!-- {#if (['filter', 'subsequent', 'post-destination', 'further'].includes(cp.order) && cp.times.plan.arr && !(cp.arrivalCancelled && !cp.departureCancelled)) || !cp.times.plan.dep || (!cp.arrivalCancelled && cp.departureCancelled)}
-			<ChangeNotifier
-				value={cp.delay}
-				class={[
-					'flex w-max origin-left flex-col items-end',
-					cp.order === 'focus' || cp.order === 'filter' ? 'scale-100' : 'scale-95'
-				]}
-			>
-				<div
-					class={[
-						cp.isCancelled || cp.arrivalCancelled
-							? 'text-sm text-red-600 line-through'
-							: cp.times.rt.arr !== cp.times.plan.arr
-								? cp.times.rt.arr
-									? 'text-xs/3'
-									: 'text-sm/3'
-								: 'text-sm font-medium text-good'
-					]}
-				>
-					<div>
-						{#if !['filter', 'subsequent', 'post-destination', 'further'].includes(cp.order)}
-							<span class="text-[10px]">(a)</span>
-						{/if}{cp.times.plan.arr}
-					</div>
-				</div>
-				{#if cp.times.rt.arr !== cp.times.plan.arr && !cp.isCancelled && !cp.arrivalCancelled}
-					{#if cp.times.rt.arr}
-						<div class="text-sm/3 font-medium text-warning">
-							{cp.times.rt.arr ?? 'Delayed'}
-						</div>
-					{:else}
-						<div class="text-[10px]/3 font-medium text-warning">Delayed</div>
-					{/if}
-				{/if}
-			</ChangeNotifier>
-		{:else}
-			<ChangeNotifier
-				value={cp.arrivalDelay}
-				class={[
-					'flex w-10 min-w-10 origin-left flex-col items-end text-nowrap',
-					cp.order === 'focus' || cp.order === 'filter' ? 'scale-100' : 'scale-95'
-				]}
-			>
-				<div
-					class={[
-						cp.isCancelled || cp.departureCancelled
-							? 'text-sm text-red-600 line-through'
-							: cp.times.rt.dep !== cp.times.plan.dep
-								? cp.times.rt.dep
-									? 'text-xs/3'
-									: 'text-sm/3'
-								: 'text-sm font-medium text-good'
-					]}
-				>
-					<div>
-						{#if ['filter', 'subsequent', 'post-destination', 'further'].includes(cp.order)}
-							<span class="text-[10px]">(d)</span>
-						{/if}{cp.times.plan.dep}
-					</div>
-				</div>
-				{#if cp.times.rt.dep !== cp.times.plan.dep && !cp.isCancelled && !cp.departureCancelled}
-					{#if cp.times.rt.dep}
-						<div class="w-max text-sm/3 font-medium text-warning">
-							{cp.times.rt.dep ?? 'Delayed'}
-						</div>
-					{:else}
-						<div class="w-max text-[10px]/3 font-medium text-warning">Delayed</div>
-					{/if}
-				{/if}
-			</ChangeNotifier>
-		{/if} -->
 	</div>
 
 	<div
 		class={[
 			'relative flex h-full flex-col items-center justify-center',
-			cp.inDivision ? 'min-w-12 pl-4' : 'min-w-8 pl-0',
-			cp.isPostDestination || greyLine ? 'opacity-75' : ''
+			cp.inDivision ? 'min-w-12 pl-4' : 'min-w-8 pl-0'
 		]}
 	>
 		{#if cp.isOrigin || cp.startJoin}
@@ -218,10 +151,10 @@
 			<div style:background={operator.color} class="w-1.5 grow bg-black"></div>
 			<div style:background={operator.color} class="h-1.5 w-4"></div>
 			<div class="grow"></div>
-		{:else if cp.isDestination || (cp.departureCancelled && !cp.isCancelled)}
+			<!-- {:else if cp.isDestination || (cp.departureCancelled && !cp.isCancelled)}
 			<div style:background={operator.color} class="w-1.5 grow bg-black"></div>
 			<div style:background={operator.color} class="h-1.5 w-4"></div>
-			<div style:background={operator.color} class="w-1.5 grow bg-black opacity-75"></div>
+			<div style:background={operator.color} class="w-1.5 grow bg-black opacity-75"></div> -->
 		{:else}
 			<div style:background={operator.color} class="w-1.5 grow bg-black"></div>
 			<div class="flex w-4">
@@ -287,9 +220,7 @@
 			<div
 				class={[
 					'text-zinc-400',
-					cp.order === 'focus' || cp.isDestination || cp.order === 'filter'
-						? 'text-[10px]/4'
-						: 'text-[10px]/3'
+					cp.order === 'focus' || cp.order === 'filter' ? 'text-[10px]/4' : 'text-[10px]/3'
 				]}
 			>
 				({cp.crs})
@@ -310,7 +241,8 @@
 		class={[
 			'flex flex-col items-end justify-center gap-0',
 			cp.order === 'focus' ? 'text-lg font-medium' : 'text-sm text-zinc-400',
-			cp.order === 'post-destination' ? 'opacity-25' : ''
+			cp.order === 'post-destination' ? 'opacity-25' : '',
+			hideDetails ? 'opacity-0' : ''
 		]}
 	>
 		{cp.platform ?? '-'}

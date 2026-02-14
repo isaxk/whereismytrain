@@ -13,11 +13,15 @@
 	import { initializeNotifications, setupForegroundMessageHandler } from '$lib/notifications';
 	import { pwa } from '$lib/state/saved.svelte';
 	import { servicesSub } from '$lib/state/services-subscriber.svelte.js';
+	import { setupConvex } from 'convex-svelte';
+	import { PUBLIC_CONVEX_URL } from '$env/static/public';
 
 	let { children, data } = $props();
 
 	const lg = new MediaQuery('(min-width: 1024px)');
 	let mounted = $state(false);
+
+	setupConvex(PUBLIC_CONVEX_URL);
 
 	onMount(() => {
 		mounted = true;

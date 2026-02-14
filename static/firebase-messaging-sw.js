@@ -94,12 +94,12 @@ try {
     const transaction = db.transaction('trains', 'readwrite');
     const store = transaction.objectStore('trains');
 
-    const request = await store.get(service.rid);
+    const request = await store.get(service.serviceId);
 
     request.onsuccess = (e) => {
       const data = {...e.target.result, ...newData};
 
-      store.put(data, service.rid);
+      store.put(data, service.serviceId);
     }
 
 
