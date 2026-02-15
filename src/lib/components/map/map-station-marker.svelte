@@ -16,7 +16,6 @@
 		ServiceLocationWithCoords
 	} from '$lib/types';
 
-
 	import TrainIconByCategory from '../train/train-icon-by-category.svelte';
 	import Spinner from '../ui/spinner/spinner.svelte';
 
@@ -104,7 +103,9 @@
 						isOfFormedFrom ? 'h-2 min-h-2 opacity-50' : 'h-5 min-h-5'
 					]}
 				>
-					<div class={['transition-all', refreshing.current ? 'scale-60' : 'scale-100']}>
+					<div
+						class={['rounded-full transition-all', refreshing.current ? 'scale-60' : 'scale-100']}
+					>
 						<TrainIconByCategory {category} size={isOfFormedFrom ? 10 : 14} />
 					</div>
 					{#if refreshing.current}
