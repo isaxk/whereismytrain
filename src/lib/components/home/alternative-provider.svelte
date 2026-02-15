@@ -81,12 +81,18 @@
 
 		const fcmToken = await getFCMToken();
 
-		const subscriptionId = await convex.action(api.notifications.registerSubscription, {
-			fcmToken,
-			serviceId: service.rid,
-			focusCrs: from,
-			filterCrs: to
-		});
+		let subscriptionId: string | null = null;
+
+		if (fcmToken) {
+			const result = await convex.action(api.notifications.registerSubscription, {
+				fcmToken,
+				serviceId: service.rid,
+				focusCrs: from,
+				filterCrs: to
+			});
+			subscriptionId = result;
+		}
+
 		const response = await fetch(`/api/service/${service.rid}/${from}/${to}`, {
 			headers: {
 				'api-version': API_COMPATIBLE_VERSION
@@ -99,6 +105,8 @@
 
 			const serviceInfo = parseSavedInfo(data);
 
+			if (!serviceInfo) return;
+
 			setSavedTrainData(service.rid, serviceInfo);
 
 			// if (data.rid !== saved.value[index].service_id) {
@@ -108,7 +116,6 @@
 				service_id: service.rid,
 				focusCrs: from,
 				filterCrs: to,
-				lastRefreshed: Date.now(),
 				subscriptionId
 				// };
 			};

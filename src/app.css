@@ -86,7 +86,7 @@
 
 @media (max-width: 600px) {
 	[data-sonner-toaster][data-y-position='top'] {
-		top: env(safe-area-inset-top) !important;
+		top: max(env(safe-area-inset-top), 10px) !important;
 	}
 }
 
@@ -178,3 +178,15 @@ input[type='number']::-webkit-outer-spin-button {
 input[type='time']::-webkit-calendar-picker-indicator {
 	background: none;
 }
+
+/*[data-sonner-toast] {
+	padding: 4px 20px 4px 10px !important;
+}
+
+[data-sonner-toast] [data-title] {
+	width: 100%;
+}
+
+[data-sonner-toast] [data-content] {
+	width: 100%;
+}*/

@@ -90,7 +90,8 @@
 			else if (rtDiff < (originalDiff ?? schDiff) && rtDiff < 30) status = 'alternative';
 			else if (rtDiff / schDiff < 0.6) status = 'warning';
 		} else {
-			if (rtDiff === null || schDiff === null) status = 'alternative';
+			if ((rtDiff ?? schDiff ?? originalDiff ?? 2) < 1) status = 'impossible';
+			else if (rtDiff === null || schDiff === null) status = 'warning';
 			else if (rtDiff < 1) status = 'impossible';
 			else if (rtDiff / (originalDiff ?? schDiff) < 0.6 && rtDiff < 10) status = 'alternative';
 			else if (rtDiff < (originalDiff ?? schDiff) && rtDiff < 8) status = 'alternative';
@@ -179,21 +180,20 @@
 				</div>
 				<div class="grow text-xs">
 					{#if connection.status === 'impossible'}
-						{#if connection.schDiff !== connection.rtDiff}
+						{#if connection.schDiff !== connection.rtDiff && (connection.schDiff ?? 2) >= 1}
 							<div class="line-through opacity-80">
-								{(connection.schDiff ?? 0) < 0 ? connection.originalDiff : connection.schDiff}m to
-								change {#if acrossLondon}via Underground{/if}
+								{connection.schDiff ?? 0}m to change {#if acrossLondon}via Underground{/if}
 							</div>
 						{/if}
 						Change not possible
 					{:else}
-						{#if connection.schDiff !== connection.rtDiff}
+						{#if connection.schDiff !== connection.rtDiff && connection.rtDiff}
 							<span class="line-through opacity-80">{connection.schDiff}m</span>
 						{/if}
-						{connection.rtDiff}m to change {#if acrossLondon}via Underground{/if}
+						{connection.rtDiff ?? connection.schDiff}m to change {#if acrossLondon}via Underground{/if}
 					{/if}
 				</div>
-				{#if connection.status === 'impossible' || connection.status === 'alternative' || connection.status === 'warning'}
+				{#if connection.status === 'impossible' || connection.status === 'alternative'}
 					<Popover.Root bind:open={popoverOpen}>
 						<Popover.Trigger class={[buttonVariants({ variant: 'secondary', size: 'sm' }), 'z-10']}
 							>Find alternative
@@ -202,11 +202,11 @@
 							<AlternativeProvider
 								from={connectingService.crs}
 								to={connectingService.filter}
-								time={dayjs(rtArr).format('HH:mm') ?? null}
+								time={dayjs(rtArr ?? planArr).format('HH:mm') ?? null}
 								allowance={Math.max(
 									acrossLondon
-										? (connection.rtDiff ?? Number.POSITIVE_INFINITY) + 5
-										: Number.POSITIVE_INFINITY,
+										? (connection.rtDiff ?? Number.NEGATIVE_INFINITY) + 5
+										: Number.NEGATIVE_INFINITY,
 									acrossLondon ? 45 : 2, // The minimum allowance
 									Math.min(
 										acrossLondon ? 60 : 8, // The maximum allowance
