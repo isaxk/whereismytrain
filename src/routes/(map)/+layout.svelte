@@ -2,6 +2,7 @@
 	import '../../app.css';
 	import { browser } from '$app/environment';
 
+	import { setupConvex } from 'convex-svelte';
 	import { ModeWatcher } from 'mode-watcher';
 	import { onMount } from 'svelte';
 	import { MediaQuery } from 'svelte/reactivity';
@@ -13,7 +14,7 @@
 	import { initializeNotifications, setupForegroundMessageHandler } from '$lib/notifications';
 	import { pwa } from '$lib/state/saved.svelte';
 	import { servicesSub } from '$lib/state/services-subscriber.svelte.js';
-	import { setupConvex } from 'convex-svelte';
+
 	import { PUBLIC_CONVEX_URL } from '$env/static/public';
 
 	let { children, data } = $props();

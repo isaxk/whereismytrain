@@ -1,43 +1,46 @@
 <script lang="ts">
 	import * as Item from '$lib/components/ui/item';
+	import type { BoardItem as BoardItemType } from '$lib/types';
 
 	import BoardItem from '../board/board-item.svelte';
 	import Button from '../ui/button/button.svelte';
 	import Spinner from '../ui/spinner/spinner.svelte';
 
 	let {
-		failed,
+		state,
 		from,
 		to,
 		time,
 		service,
-		switchTo,
+		onSwitch,
 		switching,
 		outline = false,
 		showDescription = true
-	} = $props();
+	}: {
+		from: string;
+		to: string;
+		time: string;
+		outline?: boolean;
+		showDescription?: boolean;
+	} & (
+		| {
+				state: 'loading' | 'failed';
+				service?: BoardItemType;
+				onSwitch?: () => void;
+				switching?: boolean;
+		  }
+		| {
+				state: 'complete';
+				service: BoardItemType;
+				onSwitch: () => void;
+				switching: boolean;
+		  }
+	) = $props();
 </script>
 
 <Item.Root variant={outline ? 'outline' : 'default'}>
-	{#if failed}
-		<div>
-			<Item.Title>Could not find an alternative in the next 2 hours</Item.Title>
-			<Item.Description
-				><a class="block" href="/board/{from}?to={to}&time={time}">Make a search</a>
-				<a href="https://www.nationalrail.co.uk">or use the national rail journey planner</a
-				></Item.Description
-			>
-		</div>
-		<Item.Actions class="flex w-full max-w-full  gap-2">
-			<Button href="/board/{from}?to={to}&time={time}" variant="secondary" class="w-1/2 grow">
-				Make a search
-			</Button>
-			<Button href="https://nationalrail.co.uk" variant="secondary" class="w-1/2 grow">
-				NR Journey Planner
-			</Button>
-		</Item.Actions>
-	{:else if service}
-		<div class="w-full">
+	{#if state === 'complete' && service}
+		<div class="h-max w-full">
 			<Item.Title>An alternative was found</Item.Title>
 			{#if showDescription}
 				<Item.Description class="grow text-xs text-muted-foreground">
@@ -52,7 +55,7 @@
 					class="h-18 pt-2"
 					href="#"
 					rtDep={service.times.rt.dep}
-					planDep={service.times.plan.dep}
+					planDep={service.times.plan.dep ?? ''}
 					destination={service.destination}
 					isCancelled={service.isCancelled}
 					departed={service.departed}
@@ -62,7 +65,7 @@
 			</div>
 		</div>
 		<Item.Actions class="flex w-full max-w-full flex-col gap-2">
-			<Button variant="default" class="w-full" onclick={() => switchTo()}>
+			<Button variant="default" class="w-full" onclick={() => onSwitch?.()}>
 				{#if switching}
 					<Spinner />
 				{:else}
@@ -78,7 +81,24 @@
 				</Button>
 			</div>
 		</Item.Actions>
+	{:else if state === 'failed'}
+		<div class="w-full">
+			<Item.Title>No direct alternatives found</Item.Title>
+			<Item.Description
+				>They may services later in the day, or another route you can take.</Item.Description
+			>
+			<Item.Actions class="flex w-full max-w-full gap-2 pt-2">
+				<Button href="/board/{from}?to={to}&time={time}" variant="secondary" class="grow">
+					Make a search
+				</Button>
+				<Button href="https://nationalrail.co.uk" variant="secondary" class="grow">
+					NR Journey Planner
+				</Button>
+			</Item.Actions>
+		</div>
 	{:else}
-		<Item.Title><Spinner /> Searching for an alternative</Item.Title>
+		<div class="w-full">
+			<Item.Title><Spinner /> Searching for alternatives...</Item.Title>
+		</div>
 	{/if}
 </Item.Root>

@@ -19,7 +19,7 @@ async function refresh() {
 				console.log('data from', service.url, data);
 				if (data) {
 					console.log('subcriptions for', service.url, service.subscriptions);
-					service.subscriptions.forEach((subscription) => subscription.callback(data));
+					service.subscriptions.forEach((subscription) => subscription.callback?.(data));
 				}
 			} else {
 				const data = await response.json();
@@ -89,8 +89,9 @@ export const servicesSub = {
 		}
 		return () => {
 			const service = services.find((s) => s.url === url);
-			console.log('unsubscribing from', url);
+
 			if (service) {
+				console.log('unsubscribing from', url);
 				service.subscriptions = service.subscriptions.filter((s) => s.id !== id);
 				if (service.subscriptions.length === 0) {
 					services = services.filter((s) => s.url !== url);

@@ -1,16 +1,17 @@
 <script lang="ts">
+	import { useConvexClient } from 'convex-svelte';
 	import dayjs from 'dayjs';
 
 	import { getFCMToken, unsubscribeToTrain } from '$lib/notifications';
-	import { saved, setSavedTrainData } from '$lib/state/saved.svelte';
 	import { parseSavedInfo } from '$lib/shared/service';
+	import { saved, setSavedTrainData } from '$lib/state/saved.svelte';
 	import type { BoardItem } from '$lib/types';
 	import { dayjsFromHHmm } from '$lib/utils';
 
-	import type { Snippet } from 'svelte';
-	import { API_COMPATIBLE_VERSION } from '../../../routes/api/_shared';
-	import { useConvexClient } from 'convex-svelte';
 	import { api } from '../../../convex/_generated/api';
+	import { API_COMPATIBLE_VERSION } from '../../../routes/api/_shared';
+
+	import type { Snippet } from 'svelte';
 
 	const convex = useConvexClient();
 

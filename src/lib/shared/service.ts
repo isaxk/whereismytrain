@@ -669,7 +669,7 @@ export function parseSavedInfo(service: TrainService): SavedTrainServiceInfo | n
 		planArr: filter.times.plan.arr!,
 		departed: focus.departed,
 		delay: focus.delay,
-		isCancelled: focus.isCancelled,
+		isCancelled: focus.isCancelled || focus.departureCancelled,
 
 		filter: filter.crs ?? '',
 		to: filter.name,

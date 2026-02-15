@@ -10,4 +10,12 @@ crons.interval(
 	internal.notifications.refresh
 );
 
+crons.interval(
+	'delete arrived subscriptions',
+	{
+		minutes: 30
+	},
+	internal.notifications.deleteOld
+);
+
 export default crons;

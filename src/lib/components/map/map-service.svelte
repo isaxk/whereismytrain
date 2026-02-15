@@ -2,6 +2,8 @@
 	import { page } from '$app/state';
 
 	import clsx from 'clsx';
+	import { onMount } from 'svelte';
+	import { Tween } from 'svelte/motion';
 	import { MediaQuery } from 'svelte/reactivity';
 	import { fade } from 'svelte/transition';
 	import { Marker } from 'svelte-maplibre';
@@ -14,8 +16,6 @@
 	import Spinner from '../ui/spinner/spinner.svelte';
 
 	import MapLocationGroup from './map-location-group.svelte';
-	import { Tween } from 'svelte/motion';
-	import { onMount } from 'svelte';
 	import MapStationMarker from './map-station-marker.svelte';
 
 	let {

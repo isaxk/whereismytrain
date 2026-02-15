@@ -1,25 +1,11 @@
 <script lang="ts">
-	import { Bus } from 'lucide-svelte';
-	import ChangeNotifier from '../ui/change-notifier.svelte';
-	import type { CallingPoint, Operator, SavedTrainServiceInfo, TrainService } from '$lib/types';
 	import dayjs from 'dayjs';
+	import { Bus } from 'lucide-svelte';
 	import { onMount } from 'svelte';
 
-	// let {
-	// 	showDate = false,
-	// 	focus,
-	// 	filter,
-	// 	service,
-	// 	duration = null,
-	// 	remaining = null
-	// }: {
-	// 	showDate?: boolean;
-	// 	focus: CallingPoint;
-	// 	filter: CallingPoint;
-	// 	service: TrainService;
-	// 	duration: string | null;
-	// 	remaining: string | null;
-	// } = $props();
+	import type { CallingPoint, Operator, SavedTrainServiceInfo, TrainService } from '$lib/types';
+
+	import ChangeNotifier from '../ui/change-notifier.svelte';
 
 	let {
 		planDep,
@@ -104,7 +90,7 @@
 	<div class="flex min-w-12 justify-end">
 		<ChangeNotifier value={rtDep} class="flex w-max flex-col items-end text-sm">
 			{#if isCancelled}
-				<div class="text-base/4 text-danger">{planDepTime}</div>
+				<div class="text-sm/4 text-danger line-through">{planDepTime}</div>
 			{:else if delay === null}
 				<div class="text-sm/3">{planDepTime}</div>
 				{#if departed}
@@ -201,7 +187,7 @@
 	<div class="flex min-w-12 justify-end">
 		<ChangeNotifier value={filterDelay} class="flex w-max flex-col items-end text-sm">
 			{#if isCancelledAtFilter}
-				<div class="text-sm text-danger">{planArrTime}</div>
+				<div class="text-sm text-danger line-through">{planArrTime}</div>
 			{:else if filterDelay === null}
 				<div class="text-base/4">{planArrTime}</div>
 				<div class="text-xs/3 text-warning">Delayed</div>

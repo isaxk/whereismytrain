@@ -3,6 +3,7 @@
 	import { page } from '$app/state';
 
 	import { CircleAlert } from 'lucide-svelte';
+	import { onMount } from 'svelte';
 	import { Tween } from 'svelte/motion';
 	import { LineLayer, GeoJSON } from 'svelte-maplibre';
 
@@ -11,7 +12,6 @@
 	import MapTrainIndication from './map-train-indication.svelte';
 
 	import type { Feature } from 'geojson';
-	import { onMount } from 'svelte';
 	let {
 		href,
 		crs,
