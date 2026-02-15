@@ -1,11 +1,15 @@
 <script lang="ts">
-	import Input from '../ui/input/input.svelte';
-	import AllStations from '$lib/data/stations.json';
-	import Fuse from 'fuse.js';
-	import format from 'format-fuse.js';
 	import { browser } from '$app/environment';
-	import Highlight from '../search/highlight.svelte';
+
+	import format from 'format-fuse.js';
+	import Fuse from 'fuse.js';
 	import { tick } from 'svelte';
+
+	import AllStations from '$lib/data/stations.json';
+
+
+	import Highlight from '../search/highlight.svelte';
+	import Input from '../ui/input/input.svelte';
 
 	let {
 		value = $bindable(null),

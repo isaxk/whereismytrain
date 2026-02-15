@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
 	import { goto, preloadCode } from '$app/navigation';
+	import { page } from '$app/state';
 
 	import SearchIcon from '@lucide/svelte/icons/search';
 	import dayjs from 'dayjs';
@@ -23,10 +24,9 @@
 	import Label from '../ui/label/label.svelte';
 	import Switch from '../ui/switch/switch.svelte';
 
+	import ItinerarySearch from './itinerary-search.svelte';
 	import PinnedBoardItem from './pinned-board-item.svelte';
 	import Popular from './popular.svelte';
-	import ItinerarySearch from './itinerary-search.svelte';
-	import { page } from '$app/state';
 
 	const { send, receive } = t;
 

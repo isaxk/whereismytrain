@@ -3,6 +3,7 @@ import { error as kitError, json } from '@sveltejs/kit';
 import { fetchService } from '$lib/shared/service.js';
 
 import { API_COMPATIBLE_VERSION } from '../../../../_shared';
+
 import { ACCESS_TOKEN } from '$env/static/private';
 
 export const GET = async ({ params, request }) => {

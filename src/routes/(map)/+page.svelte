@@ -1,4 +1,6 @@
 <script lang="ts">
+	import dayjs from 'dayjs';
+	import relativeTime from 'dayjs/plugin/relativeTime';
 	import {
 		AlertTriangle,
 		Bug,
@@ -17,8 +19,6 @@
 	import { flip } from 'svelte/animate';
 	import { fly } from 'svelte/transition';
 
-	import relativeTime from 'dayjs/plugin/relativeTime';
-
 	import Install from '$lib/components/home/install.svelte';
 	import SavedTrain from '$lib/components/home/saved-train.svelte';
 	import TrainSearch from '$lib/components/home/train-search.svelte';
@@ -30,7 +30,6 @@
 	import { pwa, saved } from '$lib/state/saved.svelte';
 	import { refreshing, servicesSub } from '$lib/state/services-subscriber.svelte';
 	import { iOS } from '$lib/utils.js';
-	import dayjs from 'dayjs';
 
 	dayjs.extend(relativeTime);
 
@@ -134,7 +133,7 @@
 
 	<TrainSearch />
 </div>
-<div class="flex flex-col">
+<div class="flex flex-col py-4">
 	{#if saved.value.length === 0}
 		<div class="flex flex-col items-center justify-center gap-1 p-4 pt-10 text-muted-foreground">
 			<div class="font-semibold">No trains added yet</div>

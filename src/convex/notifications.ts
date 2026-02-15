@@ -1,7 +1,10 @@
-import { fetchService, parseSavedInfo } from '$lib/shared/service';
 import { v } from 'convex/values';
-import { internal } from './_generated/api';
+import dayjs from 'dayjs';
 
+import { fetchService, parseSavedInfo } from '$lib/shared/service';
+import type { SavedTrainServiceInfo } from '$lib/types';
+
+import { internal } from './_generated/api';
 import {
 	action,
 	internalAction,
@@ -9,9 +12,8 @@ import {
 	internalQuery,
 	mutation
 } from './_generated/server';
-import type { SavedTrainServiceInfo } from '$lib/types';
+
 import type { Doc, Id } from './_generated/dataModel';
-import dayjs from 'dayjs';
 
 export const createSubscription = internalMutation({
 	args: {
@@ -23,8 +25,7 @@ export const createSubscription = internalMutation({
 		const result = await ctx.db.insert('subscriptions', {
 			fcmToken: args.fcmToken,
 			...args.data,
-			serviceId: args.serviceId,
-			updated: new Date().toISOString()
+			serviceId: args.serviceId
 		});
 		return result;
 	}
@@ -59,7 +60,7 @@ export const registerSubscription = action({
 export const getAllSubscriptions = internalQuery({
 	args: {},
 	handler: async (ctx) => {
-		const subscriptions: any[] = await ctx.db.query('subscriptions').collect();
+		const subscriptions: Doc<'subscriptions'>[] = await ctx.db.query('subscriptions').collect();
 		return subscriptions;
 	}
 });
@@ -83,6 +84,36 @@ export const refresh = internalAction({
 
 		await Promise.all(
 			subscriptions.map(async (sub) => {
+				const timeUntilDeparture = dayjs(sub.planDep).diff(dayjs(), 'minutes', true);
+				const timeUntilArrival = dayjs(sub.planArr).diff(dayjs(), 'minutes', true);
+				const timeSinceLastUpdate = dayjs().diff(dayjs(sub.refreshedAt), 'minutes', true);
+
+				let shouldRefresh = true;
+
+				if (sub.arrived) {
+					shouldRefresh = false;
+				}
+
+				if (sub.departed) {
+					if (timeUntilArrival > 15 && timeSinceLastUpdate < 5) {
+						shouldRefresh = false;
+					} else if (timeUntilArrival > 6 && timeSinceLastUpdate < 2) {
+						shouldRefresh = false;
+					}
+				} else {
+					if (timeUntilDeparture > 120 && timeSinceLastUpdate < 20) {
+						shouldRefresh = false;
+					} else if (timeUntilDeparture > 60 && timeSinceLastUpdate < 12) {
+						shouldRefresh = false;
+					} else if (timeUntilDeparture > 30 && timeSinceLastUpdate < 6) {
+						shouldRefresh = false;
+					} else if (timeUntilDeparture > 15 && timeSinceLastUpdate < 3) {
+						shouldRefresh = false;
+					}
+				}
+
+				if (!shouldRefresh) return;
+
 				// console.log(sub);
 				let newSub = services.get(sub.serviceId) ?? null;
 				if (!newSub) {
@@ -237,42 +268,29 @@ export const deregisterSubscription = mutation({
 	args: {
 		subscriptionId: v.id('subscriptions')
 	},
-	handler: async (ctx, args): Promise<void> => {
-		await ctx.db.delete('subscriptions', args.subscriptionId);
+  handler: async (ctx, args): Promise<void> => {
+    try {
+      await ctx.db.delete('subscriptions', args.subscriptionId);
+    }
+    catch (error) {
+      console.error('Error deregistering subscription:', error);
+    }
+		
 	}
 });
 
-// async function sendPush(
-// 	fcmToken: string,
-// 	title: string,
-// 	description: string,
-// 	data: SavedTrainServiceInfo
-// ) {
-// 	console.log('fcmToken', fcmToken);
+export const deleteOld = internalMutation({
+	args: {},
+	handler: async (ctx) => {
+		const subscriptions = await ctx.db
+			.query('subscriptions')
+			.withIndex('by_arrived', (q) => q.eq('arrived', true))
+			.collect();
 
-// 	const accessToken = await getAccessToken();
-
-// 	const projectId = process.env.FIREBASE_PROJECT_ID;
-// 	if (!projectId) throw new Error('Missing FIREBASE_PROJECT_ID');
-
-// 	const res = await fetch('https://fcm.googleapis.com/v1/projects/${projectId}/messages:send', {
-// 		method: 'POST',
-// 		headers: {
-// 			Authorization: `Bearer ${accessToken}`,
-// 			'Content-Type': 'application/json',
-// 			ttl: '10' // seconds
-// 		},
-// 		body: JSON.stringify({
-// 			to: fcmToken,
-// 			data: {
-// 				title: title,
-// 				body: description,
-// 				service: data
-// 			}
-// 		})
-// 	});
-
-// 	if (!res.ok) {
-// 		throw new Error(await res.text());
-// 	}
-// }
+		await Promise.all(
+			subscriptions.map(async (sub) => {
+				await ctx.db.delete('subscriptions', sub._id);
+			})
+		);
+	}
+});

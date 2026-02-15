@@ -1,15 +1,18 @@
 <script lang="ts">
-	import BoardItemComponent from '$lib/components/board/board-item.svelte';
-	import type { Board, BoardItem, TrainService, CallingPoint } from '$lib/types';
-	import dayjs from 'dayjs';
-	import { API_COMPATIBLE_VERSION } from '../../../../../api/_shared';
-	import Button from '$lib/components/ui/button/button.svelte';
 	import ArrowLeft from '@lucide/svelte/icons/arrow-left';
+	import dayjs from 'dayjs';
+	import { GitCompareArrowsIcon } from 'lucide-svelte';
+
+	import Tubeicon from '$lib/assets/tubeicon.svelte';
+	import BoardItemComponent from '$lib/components/board/board-item.svelte';
+	import Button from '$lib/components/ui/button/button.svelte';
 	import Spinner from '$lib/components/ui/spinner/spinner.svelte';
 	import { londonTerminals } from '$lib/data/favourites';
-	import Tubeicon from '$lib/assets/tubeicon.svelte';
+	import type { Board, BoardItem, TrainService, CallingPoint } from '$lib/types';
 	import { dayjsFromHHmm } from '$lib/utils';
-	import { GitCompareArrowsIcon } from 'lucide-svelte';
+
+	import { API_COMPATIBLE_VERSION } from '../../../../../api/_shared';
+
 
 	let {
 		legIndex = 0,

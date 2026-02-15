@@ -1,18 +1,21 @@
 <script lang="ts">
-	import Button from '$lib/components/ui/button/button.svelte';
-	import ArrowLeft from '@lucide/svelte/icons/arrow-left';
-	import Leg from './leg.svelte';
-	import type { CallingPoint, TrainService } from '$lib/types/index.js';
-	import TrainDiagram from '$lib/components/itinerary/train-diagram.svelte';
-	import { CircleAlert, GitCompareArrowsIcon } from 'lucide-svelte';
-	import Finished from './finished.svelte';
-	import { dayjsFromHHmm } from '$lib/utils.js';
 	import { goto } from '$app/navigation';
-	import * as Item from '$lib/components/ui/item';
+
+	import ArrowLeft from '@lucide/svelte/icons/arrow-left';
 	import ChevronRight from '@lucide/svelte/icons/chevron-right';
-	import Tubeicon from '$lib/assets/tubeicon.svelte';
+	import { CircleAlert, GitCompareArrowsIcon } from 'lucide-svelte';
 	import { flip } from 'svelte/animate';
 	import { fade } from 'svelte/transition';
+
+	import Tubeicon from '$lib/assets/tubeicon.svelte';
+	import TrainDiagram from '$lib/components/itinerary/train-diagram.svelte';
+	import Button from '$lib/components/ui/button/button.svelte';
+	import * as Item from '$lib/components/ui/item';
+	import type { CallingPoint, TrainService } from '$lib/types/index.js';
+	import { dayjsFromHHmm } from '$lib/utils.js';
+
+	import Finished from './finished.svelte';
+	import Leg from './leg.svelte';
 
 	let { data } = $props();
 

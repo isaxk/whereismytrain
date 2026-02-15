@@ -1,5 +1,10 @@
 <script lang="ts">
 	import { page } from '$app/state';
+
+	import clsx from 'clsx';
+	import { fade } from 'svelte/transition';
+	import { Marker } from 'svelte-maplibre';
+
 	import { highlightedStation, paneHeight } from '$lib/state/map.svelte';
 	import { refreshing } from '$lib/state/services-subscriber.svelte';
 	import type {
@@ -10,9 +15,8 @@
 		ServiceLocation,
 		ServiceLocationWithCoords
 	} from '$lib/types';
-	import clsx from 'clsx';
-	import { Marker } from 'svelte-maplibre';
-	import { fade } from 'svelte/transition';
+
+
 	import TrainIconByCategory from '../train/train-icon-by-category.svelte';
 	import Spinner from '../ui/spinner/spinner.svelte';
 
