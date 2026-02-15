@@ -154,23 +154,13 @@ export function setupForegroundMessageHandler() {
 			page.url.pathname !== '/' &&
 			page.data.id !== JSON.parse(payload.data?.service ?? 'null')?.service_id
 		) {
-			// toast(NotificationComponent, {
-			// 	componentProps: {
-			// 		title: payload.notification?.title ?? '',
-			// 		service: payload.data?.service ?? '{}',
-			// 		alertType:
-			// 			(payload.data?.alertType as
-			// 				| 'delay'
-			// 				| 'cancelled'
-			// 				| 'platform'
-			// 				| 'departed'
-			// 				| 'filter-cancelled'
-			// 				| 'filter-delay'
-			// 				| 'reminder'
-			// 				| '') ?? ''
-			// 	},
-			// 	duration: 5000
-			// });
+			toast.custom(NotificationComponent, {
+				componentProps: {
+					title: payload.notification?.title ?? '',
+					data: JSON.parse(payload.data?.service ?? '{}')
+				},
+				duration: 4000
+			});
 		}
 	});
 }
