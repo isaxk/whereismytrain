@@ -112,8 +112,8 @@
 	{#if connection.status === 'ok'}
 		<div class="relative h-5">
 			<div class="absolute -top-8.5 right-0 left-0 flex min-h-24 items-center">
-				<div class="w-12"></div>
-				<div class="flex h-20 w-10 flex-col items-center justify-center gap-0.5">
+				<div class="w-12 min-w-12"></div>
+				<div class="flex h-20 w-10 min-w-10 flex-col items-center justify-center gap-0.5">
 					<div class="w-px grow rounded-full bg-muted-foreground"></div>
 					{#if acrossLondon}
 						<div class="h-6 w-6 p-1">
@@ -145,8 +145,8 @@
 					}
 				]}
 			>
-				<div class="w-12"></div>
-				<div class={['flex h-20 w-10 flex-col items-center justify-center gap-0.5']}>
+				<div class="w-12 min-w-12"></div>
+				<div class={['flex h-20 w-10 min-w-10 flex-col items-center justify-center gap-0.5']}>
 					<div
 						class={[
 							'w-px grow rounded-full',
