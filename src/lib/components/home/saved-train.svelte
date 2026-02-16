@@ -5,36 +5,25 @@
 	import { onDestroy, onMount, untrack } from 'svelte';
 	import { fly } from 'svelte/transition';
 
-	import tube from '$lib/assets/tube.svg';
-	import Tubeicon from '$lib/assets/tubeicon.svelte';
-	import * as Popover from '$lib/components/ui/popover/index.js';
-	import { londonTerminals } from '$lib/data/favourites';
-	import { unsubscribeToTrain } from '$lib/notifications';
 	import { parseSavedInfo } from '$lib/shared/service';
 	import { getSavedTrainData, saved, setSavedTrainData } from '$lib/state/saved.svelte';
 	import { refreshing, servicesSub } from '$lib/state/services-subscriber.svelte';
 	import { explicitEffect } from '$lib/state/utils.svelte';
 	import type { SavedTrain, SavedTrainServiceInfo } from '$lib/types';
-	import { dayjsFromHHmm } from '$lib/utils';
 
-	import { api } from '../../../convex/_generated/api';
 	import TrainDiagram from '../itinerary/train-diagram.svelte';
 	import AlternativeProvider from '../providers/alternative-provider.svelte';
 	import SubscriptionProvider from '../providers/subscription-provider.svelte';
 	import AlertCard from '../ui/alert-card.svelte';
 	import Button, { buttonVariants } from '../ui/button/button.svelte';
-	import ChangeNotifier from '../ui/change-notifier.svelte';
 	import * as Dialog from '../ui/dialog';
 	import * as DropdownMenu from '../ui/dropdown-menu';
 	import Spinner from '../ui/spinner/spinner.svelte';
 
 	import AlternativeDisplay from './alternative-display.svelte';
-	import AlternativeConnection from './alternative-provider.svelte';
 	import Connection from './connection.svelte';
 
 	let { data, index }: { data: SavedTrain; index: number } = $props();
-
-	const convex = useConvexClient();
 
 	let service: SavedTrainServiceInfo | null = $state(data.service);
 	let serviceId = $state(data.service_id);
@@ -42,8 +31,6 @@
 	let showMissedDialog = $state(false);
 
 	const refreshed = $derived.by(() => {
-		// console.log(now - data.lastRefreshed);
-		// console.log('diff', now.diff(dayjs(data.lastRefreshed), 's'));
 		if (service && service?.refreshedAt && now.diff(dayjs(service.refreshedAt), 's') > 25) {
 			return false;
 		}

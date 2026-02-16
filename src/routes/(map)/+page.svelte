@@ -13,7 +13,8 @@
 		TriangleAlert,
 		CircleAlert,
 		WifiOff,
-		CloudAlert
+		CloudAlert,
+		Bell
 	} from 'lucide-svelte';
 	import { onMount } from 'svelte';
 	import { flip } from 'svelte/animate';
@@ -135,10 +136,72 @@
 </div>
 <div class="flex flex-col py-4">
 	{#if saved.value.length === 0}
-		<div class="flex flex-col items-center justify-center gap-1 p-4 pt-10 text-muted-foreground">
+		<div class="flex flex-col items-center justify-center gap-1 p-4 py-5 text-muted-foreground">
 			<div class="font-semibold">No trains added yet</div>
-			<div class="text-sm">Tap the search bar above to find trains</div>
+			<div class="max-w-xs text-center text-sm">
+				Tap the search bar above to find trains, and tap the <Bell size={16} class="inline" /> to add
+				them here
+			</div>
 		</div>
+		<!-- {#if !pwa.value}
+			<div class="flex flex-col gap-10 p-4 py-5">
+				<div class="relative">
+					<img src="/promo/tracktrain.png" class="w-[90%] rounded-lg dark:opacity-90" alt="" />
+					<div
+						class="absolute right-0 -bottom-5 rounded-lg border border-border bg-background px-4 py-2 text-lg font-medium drop-shadow-xs"
+					>
+						Track the progress of your train...
+					</div>
+				</div>
+				<div class="relative mt-4">
+					<img src="/promo/notifications.jpeg" class="ml-auto w-[85%] rounded-lg" alt="" />
+					<div
+						class="absolute -top-5 left-0 rounded-lg border border-border bg-background px-4 py-2 text-lg font-medium drop-shadow-xs"
+					>
+						with notifications to stay in the know
+					</div>
+				</div>
+				<div class="relative">
+					<img src="/promo/busy.png" class="mb-4 w-[80%] rounded-lg dark:opacity-90" alt="" />
+					<div
+						class="absolute right-0 -bottom-7 rounded-lg border border-border bg-background px-4 py-2 text-lg font-medium drop-shadow-xs"
+					>
+						See where you can get a seat... <div class="text-right text-xs text-muted-foreground">
+							(select operators and services only)
+						</div>
+					</div>
+				</div>
+				<div class="relative mt-6 flex h-72">
+					<img
+						src="/promo/platforms.png"
+						class="absolute right-0 bottom-0 mb-4 w-2/3 rounded-sm border border-border drop-shadow-xs dark:opacity-90"
+						alt=""
+					/>
+					<img
+						src="/promo/noplatforms.png"
+						class="absolute top-10 left-0 mb-4 w-2/3 rounded-lg border border-border drop-shadow-xs"
+						alt=""
+					/>
+					<div
+						class="absolute -top-5 left-0 rounded-lg border border-border bg-background px-4 py-2 text-lg font-medium drop-shadow-xs"
+					>
+						and platforms before everyone else
+					</div>
+				</div>
+				<div class="relative mt-4 flex h-72">
+					<img
+						src="/promo/connections.png"
+						class="w-[90%] rounded-sm border border-border object-cover drop-shadow-xs dark:opacity-90"
+						alt=""
+					/>
+					<div
+						class="absolute -top-5 right-0 rounded-lg border border-border bg-background px-4 py-2 text-lg font-medium drop-shadow-xs"
+					>
+						Manage your connections with ease
+					</div>
+				</div>
+			</div>
+		{/if} -->
 	{:else}
 		{#each saved.value as item, index (item.id)}
 			<div
