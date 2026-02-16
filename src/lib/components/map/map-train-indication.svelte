@@ -29,13 +29,13 @@
 	zIndex={isFormedFromTrain ? 0 : 2000}
 	opacity={page.data.crs && page.data.id !== rid ? 0.2 : 1}
 >
-	<div class="relative rounded-full bg-background">
+	<div class="relative overflow-hidden rounded-full bg-background">
 		<div
 			style:border-color={color}
 			style:color
 			style:opacity
 			class={[
-				'relative z-20 flex flex-col items-center justify-center rounded-full border-2 bg-white',
+				'relative flex flex-col items-center justify-center rounded-full border-2 bg-white',
 				isFormedFromTrain ? 'h-8 w-8 opacity-20' : 'h-9 w-9 opacity-100'
 			]}
 		>
@@ -48,7 +48,7 @@
 						<Spinner class="size-20 scale-120" />
 					</div>
 				{/if}
-				<div class={['transition-all', refreshing ? 'scale-60' : 'scale-100']}>
+				<div class={['rounded-full transition-all', refreshing ? 'scale-60' : 'scale-100']}>
 					<TrainIconByCategory {category} size={showDestination || isFormedFromTrain ? 14 : 18} />
 				</div>
 			</div>
