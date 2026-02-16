@@ -99,7 +99,7 @@
 				</div>
 				<div
 					class={[
-						'relative flex grow flex-col items-center justify-center pb-0.5',
+						'relative flex grow -translate-y-px flex-col items-center justify-center rounded-full',
 						isOfFormedFrom ? 'h-2 min-h-2 opacity-50' : 'h-5 min-h-5'
 					]}
 				>
