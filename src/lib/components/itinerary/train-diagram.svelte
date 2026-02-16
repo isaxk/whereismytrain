@@ -143,7 +143,7 @@
 				{operator.name}
 			</div>
 
-			<ChangeNotifier value={isCancelled}>
+			<ChangeNotifier value="{isCancelled}-{destination}">
 				{#if isCancelled}
 					<div class="text-xs/3 font-medium text-danger">Cancelled</div>
 				{:else}
@@ -162,7 +162,7 @@
 	<div class="flex h-5 w-10 flex-col items-center justify-center">
 		<div class="w-1.5 grow" style:background={operator.color}></div>
 	</div>
-	<ChangeNotifier value="{duration}-{arrived}-{departed}" class="w-max text-xs">
+	<ChangeNotifier value="{arrived}-{departed}" class="w-max text-xs">
 		<div class="w-max text-xs">
 			{#if arrived}
 				Arrived
@@ -187,7 +187,7 @@
 	<div class="flex min-w-12 justify-end">
 		<ChangeNotifier value={rtArrTime} class="flex w-max flex-col items-end text-sm">
 			{#if isCancelledAtFilter}
-				<div class="text-sm text-danger line-through">{planArrTime}</div>
+				<div class="text-sm/3 text-danger line-through">{planArrTime}</div>
 			{:else if filterDelay === null}
 				<div class="text-base/4">{planArrTime}</div>
 				<div class="text-xs/3 text-warning">Delayed</div>
