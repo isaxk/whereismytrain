@@ -57,12 +57,6 @@
 
 	$effect(() => {
 		untrack(() => {
-			// // console.log(
-			// 	// 'page.data.time',
-			// 	// page.data.time,
-			// 	'details.requestedTime',
-			// 	details?.requestedTime
-			// );
 			if (
 				details &&
 				(page.data.crs !== details.crs ||
@@ -88,15 +82,6 @@
 
 		const date = dayjs().add(offset, 'minute');
 
-		// console.log(
-		// 	'offset',
-		// 	offset,
-		// 	'date',
-		// 	date.format('YYYY-MM-DD HH:mm'),
-		// 	'dayjs()',
-		// 	dayjs().format('YYYY-MM-DD HH:mm')
-		// );
-
 		if (offset === 0) {
 			url.searchParams.delete('time');
 			url.searchParams.delete('tomorrow');
@@ -118,7 +103,6 @@
 			const last = services[services.length - 1];
 			if (!last.rawTime || !first.rawTime) return offsetUrl(details.offset + 60);
 			const diff = dayjs(last.rawTime).diff(dayjs(first.rawTime), 'minute');
-			// console.log('later', 'diff+details.offset', diff + details.offset);
 			return offsetUrl(details.offset + diff);
 		} else {
 			return '#';
@@ -132,7 +116,6 @@
 			const last = services[services.length - 1];
 			if (!last.rawTime || !first.rawTime) return offsetUrl(details.offset - 20);
 			const diff = dayjs(last.rawTime).diff(dayjs(first.rawTime), 'minute');
-			// console.log('earlier', 'details.offset-diff', details.offset - diff);
 			return offsetUrl(details.offset - diff);
 		} else {
 			return '#';
@@ -241,7 +224,7 @@
 									{:else}
 										<div class="p-4">
 											<div class="text-lg font-medium">No direct services found</div>
-											{#if Math.abs(details?.offset) > 120}
+											{#if Math.abs(details?.offset ?? 0) > 120}
 												<div class="text-xs">
 													Looking for a replacement bus? Unfortunately we cannot get info for these
 													more than 2 hours in advance.
@@ -250,7 +233,7 @@
 													<div class="py-2 text-xs">
 														<div class="text-xs font-medium">If your journey includes changes:</div>
 														<ul class="list-disc pl-4">
-															<li>
+															<!-- <li>
 																and you already know your route, <a
 																	class="underline"
 																	href={details.requestedTime
@@ -258,7 +241,7 @@
 																		: `/?open=itinerary&withFrom=${details?.crs}&withTo=${details?.filterCrs}`}
 																	>add your itinerary</a
 																>
-															</li>
+															</li> -->
 															<li>
 																otherwise <a class="underline" href="/"
 																	>use the national rail journey planner</a

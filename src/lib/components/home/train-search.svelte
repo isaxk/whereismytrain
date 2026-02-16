@@ -50,6 +50,7 @@
 	// let fromFocused = $state(false);
 	let toFocused = $state(false);
 	let minuteFocused = $state(false);
+	let hourFocused = $state(false);
 	let opened = $state(false);
 
 	const fuzzySearch = $derived(
@@ -196,7 +197,10 @@
 							if (toFormatted.length > 0) {
 								to = toResults[0].item.crsCode;
 								toQ = toResults[0].item.crsCode;
+							} else {
+								toQ = '*';
 							}
+
 							hourInput?.select();
 						} else if (fromFormatted.length > 0 && !from) {
 							from = fromResults[0].item.crsCode;
@@ -239,8 +243,11 @@
 										// fromFocused = false;
 									}}
 									autocorrect="off"
-									placeholder={[opened ? 'Search for a station...' : 'Find trains...']}
-									class={['px-0', from && fromQ === from ? 'w-14 max-w-14 font-semibold' : '']}
+									placeholder={['Search for a station...']}
+									class={[
+										'px-0',
+										from && fromQ === from ? 'w-12 max-w-12 font-semibold' : 'text-sm'
+									]}
 								/>
 								<div class={[from ? 'opacity-100' : 'hidden ']}>
 									<ChevronRight size={20} />
@@ -249,7 +256,7 @@
 									class={[
 										'px-0',
 										from ? 'opacity-100' : 'hidden ',
-										to && toQ === to ? ' font-semibold' : ''
+										to && toQ === to ? ' font-semibold' : 'text-sm'
 									]}
 									bind:ref={toInput}
 									bind:value={toQ}
@@ -270,7 +277,7 @@
 									}}
 									autocorrect="off"
 									onblur={() => (toFocused = false)}
-									placeholder="(optional)"
+									placeholder="going to..."
 								/>
 								<div class={[from ? 'opacity-100' : 'hidden ']}>
 									<Clock size={18} />
@@ -303,6 +310,8 @@
 											toInput?.select();
 										}
 									}}
+									onfocus={() => (minuteFocused = true)}
+									onblur={() => (minuteFocused = false)}
 									bind:ref={hourInput}
 									maxlength="2"
 									placeholder="hh"
@@ -372,7 +381,19 @@
 											</div>
 										</button>
 									{/each}
-								{:else}
+								{:else if !hourFocused && !minuteFocused}
+									<button
+										type="button"
+										onclick={() => {
+											to = null;
+											toQ = '*';
+											hourInput?.select();
+										}}
+										class="flex h-10 w-full items-center border-b border-border px-2 text-left last:border-none"
+									>
+										<div class="w-12 text-lg font-semibold">*</div>
+										<div class="text-sm">All Destinations</div>
+									</button>
 									<Popular crs={from}>
 										{#snippet children(name, crs)}
 											<button

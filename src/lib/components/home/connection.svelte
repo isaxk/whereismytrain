@@ -28,7 +28,11 @@
 
 		const maxTime = acrossLondon ? 180 : 90;
 
-		if ((schDiff && schDiff < maxTime) || (originalDiff && originalDiff < maxTime)) return true;
+		if (
+			((schDiff && schDiff < maxTime) || (originalDiff && originalDiff < maxTime)) &&
+			(originalDiff ?? schDiff ?? 0) > 1
+		)
+			return true;
 		return false;
 	}
 

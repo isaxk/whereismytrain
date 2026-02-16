@@ -170,14 +170,26 @@ export const refresh = internalAction({
 							description = description.replace('LLL', ' ');
 						}
 					} else if (newSub.filterDelay !== sub.filterDelay) {
-						if (newSub.filterDelay === null) {
-							title = `🟡 Exp. arrival Delayed`;
-						} else if (newSub.filterDelay <= -1) {
-							title = `🟡 Exp. arrival ${dayjs(newSub.rtArr).format('HH:mm')} (${-newSub.filterDelay}m early)`;
-						} else if (newSub.filterDelay < 1) {
-							title = `🟢 Arrival back on time (${dayjs(newSub.rtArr).format('HH:mm')})`;
+						if (newSub.to === newSub.destination) {
+							if (newSub.filterDelay === null) {
+								title = `🟡 Exp. arrival Delayed`;
+							} else if (newSub.filterDelay <= -1) {
+								title = `🟡 Exp. arrival ${dayjs(newSub.rtArr).format('HH:mm')} (${-newSub.filterDelay}m early)`;
+							} else if (newSub.filterDelay < 1) {
+								title = `🟢 Arrival back on time (${dayjs(newSub.rtArr).format('HH:mm')})`;
+							} else {
+								title = `🟡 Exp. arrival ${dayjs(newSub.rtArr).format('HH:mm')} (${newSub.filterDelay}m late)`;
+							}
 						} else {
-							title = `🟡 Exp. arrival ${dayjs(newSub.rtArr).format('HH:mm')} (${newSub.filterDelay}m late)`;
+							if (newSub.filterDelay === null) {
+								title = `🟡 Exp. Delayed at ${newSub.to}`;
+							} else if (newSub.filterDelay <= -1) {
+								title = `🟡 Exp. ${dayjs(newSub.rtArr).format('HH:mm')} (${-newSub.filterDelay}m early) at ${newSub.to}`;
+							} else if (newSub.filterDelay < 1) {
+								title = `🟢 Exp. On time (${dayjs(newSub.rtArr).format('HH:mm')}) at ${newSub.to}`;
+							} else {
+								title = `🟡 Exp. ${dayjs(newSub.rtArr).format('HH:mm')} (${newSub.filterDelay}m late) at ${newSub.to}`;
+							}
 						}
 					}
 				} else if (newSub.isCancelled && !sub.isCancelled) {
@@ -268,14 +280,12 @@ export const deregisterSubscription = mutation({
 	args: {
 		subscriptionId: v.id('subscriptions')
 	},
-  handler: async (ctx, args): Promise<void> => {
-    try {
-      await ctx.db.delete('subscriptions', args.subscriptionId);
-    }
-    catch (error) {
-      console.error('Error deregistering subscription:', error);
-    }
-		
+	handler: async (ctx, args): Promise<void> => {
+		try {
+			await ctx.db.delete('subscriptions', args.subscriptionId);
+		} catch (error) {
+			console.error('Error deregistering subscription:', error);
+		}
 	}
 });
 
