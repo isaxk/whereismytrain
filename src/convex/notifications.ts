@@ -1,10 +1,11 @@
+import { Crons } from '@convex-dev/crons';
 import { v } from 'convex/values';
 import dayjs from 'dayjs';
 
 import { fetchService, parseSavedInfo } from '$lib/shared/service';
 import type { SavedTrainServiceInfo } from '$lib/types';
 
-import { internal } from './_generated/api';
+import { components, internal } from './_generated/api';
 import {
 	action,
 	internalAction,
@@ -14,6 +15,8 @@ import {
 } from './_generated/server';
 
 import type { Doc, Id } from './_generated/dataModel';
+
+const crons = new Crons(components.crons);
 
 export const createSubscription = internalMutation({
 	args: {
@@ -30,6 +33,8 @@ export const createSubscription = internalMutation({
 		return result;
 	}
 });
+
+const REFRESHER_CRON_NAME = 'refresher-cron';
 
 export const registerSubscription = action({
 	args: {
@@ -53,6 +58,30 @@ export const registerSubscription = action({
 			data: parsed,
 			serviceId: args.serviceId
 		});
+
+		let existingCron = null;
+
+		try {
+			existingCron = await crons.get(ctx, { name: REFRESHER_CRON_NAME });
+		} catch (error) {
+			console.error('Error getting refresher cron:', error);
+		}
+
+		console.log('existing refresher cron:', existingCron);
+
+		if (existingCron === null) {
+			await crons.register(
+				ctx,
+				{
+					kind: 'interval',
+					ms: 30 * 1000
+				},
+				internal.notifications.refresh,
+				{},
+				REFRESHER_CRON_NAME
+			);
+		}
+
 		return result;
 	}
 });
@@ -210,7 +239,6 @@ export const refresh = internalAction({
 				}
 
 				if (title) {
-					console.log(title, description);
 					await ctx.runAction(internal.fcm.sendFCM, {
 						fcmToken: sub.fcmToken,
 						title,
@@ -286,6 +314,11 @@ export const deregisterSubscription = mutation({
 		} catch (error) {
 			console.error('Error deregistering subscription:', error);
 		}
+
+		if ((await ctx.db.query('subscriptions').collect()).length === 0) {
+			console.log('No subscriptions left, deleting cron');
+			await crons.delete(ctx, { name: REFRESHER_CRON_NAME });
+		}
 	}
 });
 
@@ -302,5 +335,10 @@ export const deleteOld = internalMutation({
 				await ctx.db.delete('subscriptions', sub._id);
 			})
 		);
+
+		if ((await ctx.db.query('subscriptions').collect()).length === 0) {
+			console.log('No subscriptions left, deleting cron');
+			await crons.delete(ctx, { name: REFRESHER_CRON_NAME });
+		}
 	}
 });

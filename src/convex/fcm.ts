@@ -63,6 +63,8 @@ export const sendFCM = internalAction({
 		const projectId = process.env.FIREBASE_PROJECT_ID;
 		if (!projectId) throw new Error('Missing FIREBASE_PROJECT_ID');
 
+		console.log(args.title, args.description);
+
 		const res = await fetch(`https://fcm.googleapis.com/v1/projects/${projectId}/messages:send`, {
 			method: 'POST',
 			headers: {
