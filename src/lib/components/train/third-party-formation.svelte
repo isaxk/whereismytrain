@@ -16,6 +16,7 @@
 		} else {
 			const response = await fetch(`/api/formation/${op}/${uid}/${sdd}/${crs}`);
 			const data = await response.json();
+			console.log(data);
 			return data.length > 0 ? data : null;
 		}
 	}

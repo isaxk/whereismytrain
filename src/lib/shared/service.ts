@@ -474,11 +474,11 @@ function parseCallingPoint(
 	let delay = null;
 	let arrivalDelay = null;
 
-	const rta = item.ata || item.eta ? dayjs(item.ata ?? item.eta) : null;
-	const rtd = item.atd || item.etd ? dayjs(item.atd ?? item.etd) : null;
+	const rta = item.ata || item.eta ? dayjs(item.ata ?? item.eta).set('second', 0) : null;
+	const rtd = item.atd || item.etd ? dayjs(item.atd ?? item.etd).set('second', 0) : null;
 
-	const pta = item.sta ? dayjs(item.sta) : null;
-	const ptd = item.std ? dayjs(item.std) : null;
+	const pta = item.sta ? dayjs(item.sta).set('second', 0) : null;
+	const ptd = item.std ? dayjs(item.std).set('second', 0) : null;
 
 	if (rtd && ptd) {
 		delay = rtd.diff(ptd, 'minutes');
