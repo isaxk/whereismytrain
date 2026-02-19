@@ -88,7 +88,7 @@
 
 <div class="flex items-center">
 	<div class="flex min-w-12 justify-end">
-		<ChangeNotifier value={rtDepTime} class="flex w-max flex-col items-end text-sm">
+		<ChangeNotifier value={delay} class="flex w-max flex-col items-end text-sm">
 			{#if isCancelled}
 				<div class="text-sm/4 text-danger line-through">{planDepTime}</div>
 			{:else if delay === null}
@@ -185,7 +185,7 @@
 </div>
 <div class="flex h-12 items-center">
 	<div class="flex min-w-12 justify-end">
-		<ChangeNotifier value={rtArrTime} class="flex w-max flex-col items-end text-sm">
+		<ChangeNotifier value={filterDelay} class="flex w-max flex-col items-end text-sm">
 			{#if isCancelledAtFilter}
 				<div class="text-sm/3 text-danger line-through">{planArrTime}</div>
 			{:else if filterDelay === null}

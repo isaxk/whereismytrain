@@ -29,7 +29,7 @@
 	zIndex={isFormedFromTrain ? 0 : 2000}
 	opacity={page.data.crs && page.data.id !== rid ? 0.2 : 1}
 >
-	<div class="relative overflow-hidden rounded-full bg-background">
+	<div class="relative rounded-full bg-background">
 		<div
 			style:border-color={color}
 			style:color

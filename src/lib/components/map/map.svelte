@@ -26,6 +26,8 @@
 	import { easeToIfChanged, getBbox, setBounds } from './map-utils';
 
 	import type { Feature } from 'geojson';
+	import SavedMapService from './saved-map-service.svelte';
+	import { saved } from '$lib/state/saved.svelte';
 
 	const lg = new MediaQuery('(min-width: 1024px)');
 
@@ -56,10 +58,14 @@
 		// 		.flat()
 		// 		.map((l) => l.coords);
 		// } else
+		//
+		console.log('mapData', mapData);
 		if (mapData?.type === 'board' && page.data.crs) {
 			boundsData = mapData.to ? [mapData?.from, mapData?.to] : [mapData?.from];
 		} else if (mapData?.type === 'itinerary') {
 			boundsData = mapData.stops.map((stop) => [stop.long, stop.lat]);
+		} else if (!mapData) {
+			boundsData = [];
 		}
 	});
 
@@ -88,7 +94,7 @@
 						zoom: 7,
 						padding: { top: 20 + safeAreaTop, left: 20, right: 20, bottom: paneHeight.current }
 					},
-					`${page.data.crs}-${paneHeight.current}`
+					`${boundsData[0]}-${paneHeight.current}`
 				);
 				return;
 			}
@@ -108,7 +114,7 @@
 				);
 			}
 		},
-		() => [mapFocusLine]
+		() => [mapFocusLine, paneHeight.current]
 	);
 
 	onMount(() => {
@@ -128,15 +134,35 @@
 	let filteredStations = $derived.by(() => {
 		const favs = favourites.map((crs) => StationsJSON.find((station) => station.crsCode === crs));
 		const list = StationsJSON.filter((station) => bounds?.contains([station.long, station.lat]));
-		const sorted = list.toSorted((a, b) => {
+		let sorted = list.toSorted((a, b) => {
 			if (favourites.includes(a.crsCode)) return -1;
 			if (favourites.includes(b.crsCode) && !favourites.includes(a.crsCode)) return 1;
 			return 0;
 		});
+
+		sorted = sorted
+			.filter((station) =>
+				saved.value.some((s) => s.focusCrs === station.crsCode || s.filterCrs === station.crsCode)
+			)
+			.concat(
+				sorted.filter(
+					(station) =>
+						!saved.value.some(
+							(s) => s.focusCrs === station.crsCode || s.filterCrs === station.crsCode
+						)
+				)
+			);
+
 		if ((map?.getZoom() ?? 0) > 8) {
 			return sorted.slice(0, 125);
 		} else {
-			return favs;
+			return saved.value.length > 0
+				? sorted.filter((station) =>
+						saved.value.some(
+							(s) => s.focusCrs === station.crsCode || s.filterCrs === station.crsCode
+						)
+					)
+				: favs;
 		}
 	});
 
@@ -243,26 +269,35 @@
 		{#each filteredStations as station, i ((station?.crsCode ?? Date.now().toString()) + i)}
 			{#if station}
 				<Marker
-					class="rounded-full bg-background"
-					zIndex={favourites.includes(station.crsCode) ? 1000 : 100}
+					class="rounded-full"
+					zIndex={favourites.includes(station.crsCode) ||
+					saved.value.some((s) => s.focusCrs === station.crsCode || s.filterCrs === station.crsCode)
+						? 1000
+						: 0}
 					lngLat={[station.long, station.lat]}
 					onclick={() => {
-						page.data.crs = station.crsCode;
 						goto('/board/' + station.crsCode);
 					}}
 				>
 					<div
 						class={[
-							'flex h-7 w-7 items-center justify-center rounded-full  text-[10px] text-white ',
-							page.data.crs
-								? 'bg-neutral-900 opacity-20 dark:bg-neutral-700'
-								: 'bg-zinc-700 opacity-100 dark:bg-zinc-600'
+							'flex h-7 w-7 items-center justify-center rounded-full  text-[10px] text-white dark:text-black',
+							saved.value.length > 0
+								? saved.value.some(
+										(s) => s.focusCrs === station.crsCode || s.filterCrs === station.crsCode
+									)
+									? 'bg-black dark:bg-white'
+									: 'bg-neutral-700'
+								: 'bg-neutral-700'
 						]}
 					>
 						{station.crsCode}
 					</div>
 				</Marker>
 			{/if}
+		{/each}
+		{#each saved.value as item (item.id)}
+			<SavedMapService filter={item.filterCrs} rid={item.service_id} crs={item.focusCrs} />
 		{/each}
 	{/if}
 </MapLibre>

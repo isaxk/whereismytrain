@@ -156,7 +156,7 @@
 			page.data.crs = crs;
 			goto(href);
 		}}
-		layout={{ 'line-cap': 'round', 'line-join': 'round' }}
+		layout={{ 'line-cap': 'round', 'line-join': 'miter' }}
 		paint={{
 			'line-width': 6.5,
 			'line-color': color,

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { refreshing, servicesSub } from '$lib/state/services-subscriber.svelte';
 	import type { ServiceMapData, TrainService } from '$lib/types';
+	import { API_COMPATIBLE_VERSION } from '../../../routes/api/_shared';
 
 	import MapService from './map-service.svelte';
 
@@ -17,28 +18,29 @@
 
 	let refreshingMap = $state(false);
 
-	function refresh() {
-		getServiceData().then(async (data) => {
-			serviceData = data;
-			refreshingMap = true;
-			const response = await fetch(`/api/mapdata`, {
-				method: 'POST',
-				body: JSON.stringify({ locations: data.locations, formedFrom: data.formedFrom }),
-				headers: {
-					'Content-Type': 'application/json'
-				}
-			});
-			const resData = await response.json();
-			mapData = resData;
-			refreshingMap = false;
-		});
-	}
+	// function refresh() {
+	// 	getServiceData().then(async (data) => {
+	// 		serviceData = data;
+	// 		refreshingMap = true;
+	// 		const response = await fetch(`/api/mapdata`, {
+	// 			method: 'POST',
+	// 			body: JSON.stringify({ locations: data.locations, formedFrom: data.formedFrom }),
+	// 			headers: {
+	// 				'Content-Type': 'application/json',
+	// 				'api-version': API_COMPATIBLE_VERSION
+	// 			}
+	// 		});
+	// 		const resData = await response.json();
+	// 		mapData = resData;
+	// 		refreshingMap = false;
+	// 	});
+	// }
 
 	let unsubscribe: () => void;
 
 	$effect(() => {
 		unsubscribe?.();
-		refresh();
+		// refresh();
 		unsubscribe = servicesSub.subscribe(rid, crs, filter, async (s) => {
 			serviceData = s;
 			// console.log('map-service', rid, crs, filter);

@@ -30,17 +30,31 @@ export const load = async ({ params, fetch, url }) => {
 		}
 	}
 
-	return {
-		crs: crs.toUpperCase(),
-		to: to?.toUpperCase() ?? null,
-		board: getBoard(),
-		time: time == 'null' ? null : time,
-		tomorrow,
-		map: (async () => ({
+	const board = fetch(
+		`/api/board/${crs.toUpperCase()}/${to ?? 'null'}/${time ?? 'null'}/${tomorrow ? 'true' : 'false'}`,
+		{
+			headers: {
+				'api-version': API_COMPATIBLE_VERSION
+			}
+		}
+	).then(async (response) => {
+		if (!response.ok) {
+			const data = await response.json();
+			throw new Error(data.message);
+		} else {
+			const data = await response.json();
+			return data;
+		}
+	});
+
+	async function mapData() {
+		const data: Board = await board;
+
+		return {
 			type: 'board',
 			from: [
-				AllStationsJSON.find((s) => s.crsCode === crs)?.long,
-				AllStationsJSON.find((s) => s.crsCode === crs)?.lat
+				AllStationsJSON.find((s) => s.crsCode === data.details.crs)?.long,
+				AllStationsJSON.find((s) => s.crsCode === data.details.crs)?.lat
 			],
 			to: to
 				? [
@@ -48,6 +62,15 @@ export const load = async ({ params, fetch, url }) => {
 						AllStationsJSON.find((s) => s.crsCode === to)?.lat
 					]
 				: null
-		}))()
+		};
+	}
+
+	return {
+		crs: crs.toUpperCase(),
+		to: to?.toUpperCase() ?? null,
+		board,
+		time: time == 'null' ? null : time,
+		tomorrow,
+		map: mapData()
 	};
 };
