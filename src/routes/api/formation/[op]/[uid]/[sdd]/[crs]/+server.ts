@@ -16,6 +16,7 @@ export const GET: RequestHandler = async ({ params }) => {
 		);
 		if (response.ok) {
 			const gwFormation = await response.json();
+			console.log(gwFormation);
 			const portion = gwFormation.Portions.find((p: any) => p.StationsCrsCodes.includes(crs));
 			let carriages: any[] = [];
 			if (portion) {

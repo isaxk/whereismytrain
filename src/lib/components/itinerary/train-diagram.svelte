@@ -1,11 +1,12 @@
 <script lang="ts">
 	import dayjs from 'dayjs';
-	import { Bus } from 'lucide-svelte';
+	import { Bus, ClockAlert } from 'lucide-svelte';
 	import { onMount } from 'svelte';
 
 	import type { CallingPoint, Operator, SavedTrainServiceInfo, TrainService } from '$lib/types';
 
 	import ChangeNotifier from '../ui/change-notifier.svelte';
+	import Check from '@lucide/svelte/icons/check';
 
 	let {
 		planDep,
@@ -98,10 +99,9 @@
 				{:else}
 					<div class="text-xs/3 text-warning">Delayed</div>
 				{/if}
-			{:else if delay < 1}
-				<div class="text-good">
-					{planDepTime}
-				</div>
+			{:else if planDepTime !== rtDepTime}
+				<div class="text-xs/4">{planDepTime}</div>
+				<div class="text-sm/3 text-warning">{rtDepTime}</div>
 			{:else}
 				<div class="text-xs/4">{planDepTime}</div>
 				<div class="text-sm/3 text-warning">{rtDepTime}</div>
@@ -163,11 +163,55 @@
 		<div class="w-1.5 grow" style:background={operator.color}></div>
 	</div>
 	<ChangeNotifier value="{arrived}-{departed}" class="w-max text-xs">
-		<div class="w-max text-xs">
+		<div class="flex w-max items-center gap-1 pb-0.5 text-xs">
 			{#if arrived}
+				{#if filterDelay === 0}
+					<Check size={14} />
+				{:else}
+					<ClockAlert size={14} />
+				{/if}
 				Arrived
+				{#if filterDelay !== null}
+					{#if filterDelay < 0}
+						{-filterDelay}m early
+					{:else if filterDelay < 1}
+						on time
+					{:else}
+						{filterDelay}m late
+					{/if}
+				{/if}
 			{:else if departed}
+				{#if delay === 0}
+					<Check size={14} />
+				{:else}
+					<ClockAlert size={14} />
+				{/if}
+
 				Departed
+				{#if delay !== null}
+					{#if delay < 0}
+						{-delay}m early
+					{:else if delay < 1}
+						on time
+					{:else}
+						{delay}m late
+					{/if}
+				{/if}
+			{:else if delay !== null}
+				{#if delay === 0}
+					<Check size={14} />
+				{:else}
+					<ClockAlert size={14} />
+				{/if}
+
+				Expected
+				{#if delay < 0}
+					{-delay}m early
+				{:else if delay < 1}
+					on time
+				{:else}
+					{delay}m late
+				{/if}
 			{/if}
 		</div>
 		<div class="w-max text-xs">
@@ -178,7 +222,7 @@
 					<span class="text-foreground">{remaining}</span> / {duration} remaining
 				</div>
 			{:else}
-				{duration}
+				<div class="text-[10px] text-muted-foreground">{duration}</div>
 			{/if}
 		</div>
 	</ChangeNotifier>
@@ -191,13 +235,11 @@
 			{:else if filterDelay === null}
 				<div class="text-base/4">{planArrTime}</div>
 				<div class="text-xs/3 text-warning">Delayed</div>
-			{:else if filterDelay < 1}
-				<div class="text-sm text-good">
-					{planArrTime}
-				</div>
-			{:else}
+			{:else if planArrTime !== rtArrTime}
 				<div class="text-xs/4">{planArrTime}</div>
 				<div class="text-sm/3 text-warning">{rtArrTime}</div>
+			{:else}
+				<div class="text-sm/3 text-good">{planArrTime}</div>
 			{/if}
 		</ChangeNotifier>
 	</div>
