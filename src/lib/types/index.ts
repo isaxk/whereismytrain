@@ -202,6 +202,10 @@ export type ServiceLocationWithCoords = ServiceLocation & {
 	coords: [number, number];
 };
 
+export type ServiceLocationWithGeometry = ServiceLocationWithCoords & {
+	geometry: [number, number][];
+};
+
 export type MapDataLocationGroup = {
 	lineLocations: ServiceLocationWithCoords[];
 	trainPosition: [number, number] | null;

@@ -15,6 +15,7 @@ import { calculateBearing, parseServiceId } from '$lib/utils';
 import type { RequestHandler } from './$types';
 
 import { ACCESS_TOKEN, SUPABASE_ANON_KEY, SUPABASE_URL } from '$env/static/private';
+import { smoothPathByTiploc } from '$lib/utils/line';
 
 const nullTime = '0001-01-01T00:00:00';
 
@@ -160,13 +161,18 @@ export const POST: RequestHandler = async ({ request }) => {
 			if (item.etd === nullTime) item.etd = null;
 			if (item.sta === nullTime) item.sta = null;
 			if (item.std === nullTime) item.std = null;
+
+			const coords = tiplocsData.find((tiploc) => item.tiploc && tiploc.tiploc === item.tiploc)
+				?.coords ??
+				tiplocsData.find((tiploc) => tiploc.crs === item.crs)?.coords ?? [0, 0];
+
 			return {
 				...item,
-				coords: tiplocsData.find((tiploc) => item.tiploc && tiploc.tiploc === item.tiploc)
-					?.coords ??
-					tiplocsData.find((tiploc) => tiploc.crs === item.crs)?.coords ?? [0, 0]
+				coords
 			};
 		});
+
+		const smoothPath = smoothPathByTiploc(groupWithCoords, 10);
 
 		// let coords: null | [number, number] = null;
 		// let bearing: number | null = null;
@@ -194,7 +200,7 @@ export const POST: RequestHandler = async ({ request }) => {
 				: { coords: null, bearing: null };
 
 		return {
-			lineLocations: groupWithCoords,
+			lineLocations: smoothPath,
 			trainPosition: coords,
 			trainBearing: bearing,
 			isFormedFromTrain: false,
