@@ -103,8 +103,7 @@
 				<div class="text-xs/4">{planDepTime}</div>
 				<div class="text-sm/3 text-warning">{rtDepTime}</div>
 			{:else}
-				<div class="text-xs/4">{planDepTime}</div>
-				<div class="text-sm/3 text-warning">{rtDepTime}</div>
+				<div class="text-sm/3 text-good">{planDepTime}</div>
 			{/if}
 		</ChangeNotifier>
 	</div>
