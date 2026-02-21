@@ -3,18 +3,21 @@ import { json } from '@sveltejs/kit';
 import dayjs from 'dayjs';
 import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
+import * as turf from '@turf/turf';
 
 import { type ServiceLocation as APIServiceLocation } from '$lib/types/api';
 import type {
 	MapDataLocationGroup,
 	ServiceLocation,
-	ServiceLocationWithCoords
+	ServiceLocationWithCoords,
+	ServiceLocationWithGeometry
 } from '$lib/types/index.js';
 import { calculateBearing, parseServiceId } from '$lib/utils';
 
 import type { RequestHandler } from './$types';
 
 import { ACCESS_TOKEN, SUPABASE_ANON_KEY, SUPABASE_URL } from '$env/static/private';
+import { smoothPathByTiploc } from '$lib/utils/line';
 
 const nullTime = '0001-01-01T00:00:00';
 
@@ -160,11 +163,14 @@ export const POST: RequestHandler = async ({ request }) => {
 			if (item.etd === nullTime) item.etd = null;
 			if (item.sta === nullTime) item.sta = null;
 			if (item.std === nullTime) item.std = null;
+
+			const coords = tiplocsData.find((tiploc) => item.tiploc && tiploc.tiploc === item.tiploc)
+				?.coords ??
+				tiplocsData.find((tiploc) => tiploc.crs === item.crs)?.coords ?? [0, 0];
+
 			return {
 				...item,
-				coords: tiplocsData.find((tiploc) => item.tiploc && tiploc.tiploc === item.tiploc)
-					?.coords ??
-					tiplocsData.find((tiploc) => tiploc.crs === item.crs)?.coords ?? [0, 0]
+				coords
 			};
 		});
 
