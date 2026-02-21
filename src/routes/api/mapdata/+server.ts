@@ -3,12 +3,14 @@ import { json } from '@sveltejs/kit';
 import dayjs from 'dayjs';
 import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
+import * as turf from '@turf/turf';
 
 import { type ServiceLocation as APIServiceLocation } from '$lib/types/api';
 import type {
 	MapDataLocationGroup,
 	ServiceLocation,
-	ServiceLocationWithCoords
+	ServiceLocationWithCoords,
+	ServiceLocationWithGeometry
 } from '$lib/types/index.js';
 import { calculateBearing, parseServiceId } from '$lib/utils';
 
@@ -172,8 +174,6 @@ export const POST: RequestHandler = async ({ request }) => {
 			};
 		});
 
-		const smoothPath = smoothPathByTiploc(groupWithCoords, 10);
-
 		// let coords: null | [number, number] = null;
 		// let bearing: number | null = null;
 
@@ -200,7 +200,7 @@ export const POST: RequestHandler = async ({ request }) => {
 				: { coords: null, bearing: null };
 
 		return {
-			lineLocations: smoothPath,
+			lineLocations: groupWithCoords,
 			trainPosition: coords,
 			trainBearing: bearing,
 			isFormedFromTrain: false,

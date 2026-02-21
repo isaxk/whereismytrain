@@ -1,10 +1,10 @@
 // utils/line.ts
 // --------------------------------------------------
 // Railway line utilities
-// - Centripetal Catmull–Rom interpolation
-// - Exact point interpolation (TIPLOC-safe)
-// - Distance-based positioning
-// - Geometry grouped by TIPLOC just passed
+// - Smooth centripetal Catmull–Rom spline
+// - Exact TIPLOC interpolation
+// - Exclusive TIPLOC segments
+// - Distance-based train positioning
 // --------------------------------------------------
 
 import type { ServiceLocationWithCoords, ServiceLocationWithGeometry } from '$lib/types';
@@ -12,8 +12,8 @@ import type { ServiceLocationWithCoords, ServiceLocationWithGeometry } from '$li
 /* ---------- Types ---------- */
 
 export type Point = {
-	x: number; // projected longitude / x
-	y: number; // projected latitude / y
+	x: number; // projected x / lon
+	y: number; // projected y / lat
 };
 
 export type TiplocPoint = {
@@ -32,9 +32,7 @@ export type TiplocGeometry = {
 
 /* ---------- Core helpers ---------- */
 
-/**
- * Linear interpolation
- */
+/** Linear interpolation */
 export function lerp(a: Point, b: Point, t: number): Point {
 	return {
 		x: a.x + (b.x - a.x) * t,
@@ -42,10 +40,7 @@ export function lerp(a: Point, b: Point, t: number): Point {
 	};
 }
 
-/**
- * Centripetal parameterisation
- * (prevents overshoot with uneven spacing)
- */
+/** Centripetal parameterisation */
 function tj(ti: number, pi: Point, pj: Point): number {
 	const dx = pj.x - pi.x;
 	const dy = pj.y - pi.y;
@@ -54,10 +49,6 @@ function tj(ti: number, pi: Point, pj: Point): number {
 
 /* ---------- Catmull–Rom spline ---------- */
 
-/**
- * Generate interpolated points between p1 → p2
- * p0 and p3 are context points
- */
 function catmullRomSegment(p0: Point, p1: Point, p2: Point, p3: Point, samples: number): Point[] {
 	const t0 = 0;
 	const t1 = tj(t0, p0, p1);
@@ -67,7 +58,7 @@ function catmullRomSegment(p0: Point, p1: Point, p2: Point, p3: Point, samples: 
 	const points: Point[] = [];
 
 	for (let i = 0; i < samples; i++) {
-		const alpha = (i + 0.5) / samples; // < 1
+		const alpha = (i + 0.5) / samples; // stay within [t1, t2)
 		const t = t1 + alpha * (t2 - t1);
 
 		const A1 = lerp(p0, p1, (t - t0) / (t1 - t0));
@@ -84,11 +75,11 @@ function catmullRomSegment(p0: Point, p1: Point, p2: Point, p3: Point, samples: 
 	return points;
 }
 
-/* ---------- Flat smooth path ---------- */
+/* ---------- Full smooth path ---------- */
 
 /**
- * Create a smooth interpolating path
- * Passes through every input point exactly
+ * Generates a single smooth path through all points
+ * Handles start/end points via mirrored phantom points
  */
 export function smoothPath(points: Point[], samplesPerSegment = 20): Point[] {
 	if (points.length < 2) return points;
@@ -96,26 +87,33 @@ export function smoothPath(points: Point[], samplesPerSegment = 20): Point[] {
 	const result: Point[] = [];
 
 	for (let i = 0; i < points.length - 1; i++) {
-		const p0 = i === 0 ? points[0] : points[i - 1];
 		const p1 = points[i];
 		const p2 = points[i + 1];
-		const p3 = i + 2 >= points.length ? points[points.length - 1] : points[i + 2];
+
+		const p0 =
+			i === 0
+				? { x: p1.x + (p1.x - p2.x), y: p1.y + (p1.y - p2.y) } // mirror first
+				: points[i - 1];
+
+		const p3 =
+			i + 2 >= points.length
+				? { x: p2.x + (p2.x - p1.x), y: p2.y + (p2.y - p1.y) } // mirror last
+				: points[i + 2];
 
 		const segment = catmullRomSegment(p0, p1, p2, p3, samplesPerSegment);
-
 		result.push(...segment);
 	}
 
-	// Ensure last point is exact
-	result.push(points[points.length - 1]);
+	// Ensure first and last points are exact
+	result.unshift({ x: points[0].x, y: points[0].y });
+	result.push({ x: points[points.length - 1].x, y: points[points.length - 1].y });
+
 	return result;
 }
 
 /* ---------- Distance utilities ---------- */
 
-/**
- * Compute cumulative distances along a path
- */
+/** Cumulative distance along a path */
 export function cumulativeDistances(path: Point[]): number[] {
 	const distances: number[] = [0];
 
@@ -128,35 +126,81 @@ export function cumulativeDistances(path: Point[]): number[] {
 	return distances;
 }
 
-/**
- * Interpolate a point at a given distance along a path
- */
-export function pointAtDistance(path: Point[], distances: number[], target: number): Point {
-	if (path.length === 0) {
-		throw new Error('Empty path');
+function findTIPLOCIndices(fullPath: Point[], tiplocs: ServiceLocationWithCoords[]): number[] {
+	const indices: number[] = [];
+	let start = 0;
+
+	for (const t of tiplocs) {
+		let bestIdx = start;
+		let minDist = Infinity;
+
+		for (let i = start; i < fullPath.length; i++) {
+			const fp = fullPath[i];
+			const d = Math.hypot(fp.x - t.coords[0], fp.y - t.coords[1]);
+			if (d < minDist) {
+				minDist = d;
+				bestIdx = i;
+			}
+		}
+
+		indices.push(bestIdx);
+		start = bestIdx; // ensure strictly increasing
 	}
 
+	return indices;
+}
+
+/** Interpolate a point at a given distance along a path */
+export function pointAtDistance(path: Point[], distances: number[], target: number): Point {
 	if (target <= 0) return path[0];
-	if (target >= distances[distances.length - 1]) {
-		return path[path.length - 1];
-	}
+	if (target >= distances.at(-1)!) return path.at(-1)!;
 
 	for (let i = 1; i < distances.length; i++) {
 		if (distances[i] >= target) {
 			const t = (target - distances[i - 1]) / (distances[i] - distances[i - 1]);
-
 			return lerp(path[i - 1], path[i], t);
 		}
 	}
 
-	return path[path.length - 1];
+	return path.at(-1)!;
 }
 
-/* ---------- TIPLOC-grouped geometry ---------- */
+function projectPointToPath(path: Point[], distances: number[], target: Point): number {
+	let bestDist = 0;
+	let minSq = Infinity;
+
+	for (let i = 1; i < path.length; i++) {
+		const a = path[i - 1];
+		const b = path[i];
+
+		const dx = b.x - a.x;
+		const dy = b.y - a.y;
+		const lenSq = dx * dx + dy * dy;
+		if (lenSq === 0) continue;
+
+		const t = ((target.x - a.x) * dx + (target.y - a.y) * dy) / lenSq;
+
+		const clamped = Math.max(0, Math.min(1, t));
+
+		const px = a.x + clamped * dx;
+		const py = a.y + clamped * dy;
+
+		const sq = (px - target.x) ** 2 + (py - target.y) ** 2;
+
+		if (sq < minSq) {
+			minSq = sq;
+			bestDist = distances[i - 1] + Math.hypot(px - a.x, py - a.y);
+		}
+	}
+
+	return bestDist;
+}
+
+/* ---------- TIPLOC-segmented geometry ---------- */
 
 /**
- * Smooth a TIPLOC path and group geometry by
- * the TIPLOC that has just been passed
+ * Generate TIPLOC segments with **exclusive geometry**
+ * Each segment contains only points between this TIPLOC and the next TIPLOC
  */
 export function smoothPathByTiploc(
 	points: ServiceLocationWithCoords[],
@@ -164,45 +208,42 @@ export function smoothPathByTiploc(
 ): ServiceLocationWithGeometry[] {
 	if (points.length < 2) return [];
 
-	const result: ServiceLocationWithGeometry[] = [];
+	const basePoints: Point[] = points.map((p) => ({
+		x: p.coords[0],
+		y: p.coords[1]
+	}));
+
+	const fullPath = smoothPath(basePoints, samplesPerSegment);
+	const distances = cumulativeDistances(fullPath);
+
+	// Project each TIPLOC onto the path
+	const tiplocDistances = points.map((p) =>
+		projectPointToPath(fullPath, distances, { x: p.coords[0], y: p.coords[1] })
+	);
+
+	const segments: ServiceLocationWithGeometry[] = [];
 
 	for (let i = 0; i < points.length - 1; i++) {
-		const p1 = points[i];
-		const p2 = points[i + 1];
+		const startDist = tiplocDistances[i];
+		const endDist = tiplocDistances[i + 1];
 
-		// Phantom points for endpoints
-		const p0 =
-			i === 0
-				? [
-						p1.coords[0] + (p1.coords[0] - p2.coords[0]),
-						p1.coords[1] + (p1.coords[1] - p2.coords[1])
-					] // mirror
-				: points[i - 1].coords;
+		// Middle points strictly between A and B
+		const middle = fullPath
+			.map((p, idx) => ({ p, d: distances[idx] }))
+			.filter((pt) => pt.d > startDist && pt.d < endDist)
+			.map((pt) => [pt.p.x, pt.p.y] as [number, number]);
 
-		const p3 =
-			i + 2 >= points.length
-				? [
-						p2.coords[0] + (p2.coords[0] - p1.coords[0]),
-						p2.coords[1] + (p2.coords[1] - p1.coords[1])
-					] // mirror
-				: points[i + 2].coords;
+		// Exact endpoints
+		const startPoint: [number, number] = [points[i].coords[0], points[i].coords[1]];
 
-		const segment = catmullRomSegment(
-			{ x: p0[0], y: p0[1] },
-			{ x: p1.coords[0], y: p1.coords[1] },
-			{ x: p2.coords[0], y: p2.coords[1] },
-			{ x: p3[0], y: p3[1] },
-			samplesPerSegment
-		);
+		const endInterp = pointAtDistance(fullPath, distances, endDist);
+		const endPoint: [number, number] = [endInterp.x, endInterp.y];
 
-		// Ensure the segment starts exactly at the TIPLOC
-		segment.unshift({ x: p1.coords[0], y: p1.coords[1] });
-
-		result.push({
-			...p1,
-			geometry: segment.map((p) => [p.x, p.y])
+		segments.push({
+			...points[i],
+			geometry: [startPoint, ...middle, endPoint]
 		});
 	}
 
-	return result;
+	return segments;
 }

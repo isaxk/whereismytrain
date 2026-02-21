@@ -42,6 +42,8 @@
 		routeCancelled?: boolean;
 	} = $props();
 
+	console.log(data);
+
 	const coordinates = $derived(data.lineLocations.map((l) => l.coords));
 
 	const unCancelled = $derived(
@@ -94,7 +96,7 @@
 		},
 		geometry: {
 			type: 'LineString',
-			coordinates: data.lineLocations.map((p) => p.geometry).flat()
+			coordinates: data.lineLocations.map((p) => p.coords)
 		}
 	});
 
@@ -105,7 +107,7 @@
 		},
 		geometry: {
 			type: 'LineString',
-			coordinates: unCancelled.map((p) => p.geometry).flat()
+			coordinates: unCancelled.map((p) => p.coords)
 		}
 	});
 
@@ -116,7 +118,7 @@
 		},
 		geometry: {
 			type: 'LineString',
-			coordinates: primaryCoordinates.map((p) => p.geometry).flat()
+			coordinates: primaryCoordinates.map((p) => p.coords)
 		}
 	});
 

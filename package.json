@@ -55,6 +55,7 @@
 		"@supabase/supabase-js": "^2.84.0",
 		"@sveltejs/adapter-auto": "^7.0.0",
 		"@turf/bbox": "^7.3.0",
+		"@turf/turf": "^7.3.4",
 		"@types/geojson": "^7946.0.16",
 		"@types/maplibre-gl": "^1.14.0",
 		"@vercel/analytics": "^1.6.1",
