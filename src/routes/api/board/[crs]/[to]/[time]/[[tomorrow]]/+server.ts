@@ -159,7 +159,7 @@ export const GET: RequestHandler = async ({ params, request }) => {
 		const services = (data.trainServices ?? [])
 			.concat(data.busServices ?? [])
 			.toSorted((a, b) => dayjs(a.std).diff(dayjs(b.std)))
-			.map((s) => parseBoardItem(s));
+			.map((s) => parseBoardItem(s, to));
 
 		const nrccMessages: Notice[] = (data.nrccMessages ?? []).map((m) => ({
 			...m,
