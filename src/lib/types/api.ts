@@ -318,26 +318,26 @@ export interface ServiceItemWithLocations {
 	filterLocationOperational?: boolean;
 	isOperationalCall?: boolean;
 	/** @format date-time */
-	sta?: string;
+	sta?: string | null;
 	staSpecified?: boolean;
 	/** @format date-time */
-	ata?: string;
+	ata?: string | null;
 	ataSpecified?: boolean;
 	/** @format date-time */
-	eta?: string;
+	eta?: string | null;
 	etaSpecified?: boolean;
 	arrivalType?: 'Forecast' | 'Actual' | 'NoLog' | 'Delayed';
 	arrivalTypeSpecified?: boolean;
 	arrivalSource?: string;
 	arrivalSourceInstance?: string;
 	/** @format date-time */
-	std?: string;
+	std?: string | null;
 	stdSpecified?: boolean;
 	/** @format date-time */
-	atd?: string;
+	atd?: string | null;
 	atdSpecified?: boolean;
 	/** @format date-time */
-	etd?: string;
+	etd?: string | null;
 	etdSpecified?: boolean;
 	departureType?: 'Forecast' | 'Actual' | 'NoLog' | 'Delayed';
 	departureTypeSpecified?: boolean;
