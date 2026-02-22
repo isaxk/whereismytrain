@@ -42,8 +42,8 @@ function parseBoardItem(item: ServiceItemWithLocations, filter): BoardItem {
 			dep: item.atd || item.etd ? dayjs(item.atd ?? item.etd).format('HH:mm') : null
 		},
 		plan: {
-			arr: item.sta ? dayjs(item.sta).format('HH:mm') : null,
-			dep: item.std ? dayjs(item.std).format('HH:mm') : null
+			arr: item.sta && item.sta !== NULL_TIME ? dayjs(item.sta).format('HH:mm') : null,
+			dep: item.std && item.std !== NULL_TIME ? dayjs(item.std).format('HH:mm') : null
 		}
 	};
 
