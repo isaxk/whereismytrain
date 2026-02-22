@@ -4,7 +4,7 @@ import { fetchService } from '$lib/shared/service.js';
 
 import { API_COMPATIBLE_VERSION } from '../../../../_shared';
 
-import { ACCESS_TOKEN } from '$env/static/private';
+import { ACCESS_TOKEN, SERVICE_DETAILS_TOKEN } from '$env/static/private';
 
 export const GET = async ({ params, request }) => {
 	const { id, crs, to } = params;
@@ -14,7 +14,7 @@ export const GET = async ({ params, request }) => {
 	}
 
 	try {
-		const data = await fetchService(id, crs, to ?? null, ACCESS_TOKEN);
+		const data = await fetchService(id, crs, to ?? null, SERVICE_DETAILS_TOKEN);
 		return json(data);
 	} catch (error: unknown) {
 		console.error('error.message', (error as Error).message);

@@ -33,18 +33,26 @@ export async function fetchService(
 	to: string | null,
 	token: string
 ): Promise<TrainService> {
+	console.log(token);
 	const response = await fetch(
-		`https://huxley2.azurewebsites.net/service/${id}?access_token=${token}`
+		`https://api1.raildata.org.uk/1010-query-services-and-service-details1_0/LDBSVWS/api/20220120/GetServiceDetailsByRID/${id}`,
+		{
+			headers: {
+				'x-apikey': token
+			}
+		}
 	);
 
 	if (!response.ok) {
+		const data: ServiceDetails = await response.json();
+		console.log(data);
 		throw new Error(
 			'Failed to fetch service. This usually means it does not (or no longer) exists in the National Rail database.'
 		);
 	}
 
 	const data: ServiceDetails = await response.json();
-	// console.log(data);
+	console.log(data);
 	const locations: ServiceLocation[][] = [(data.locations ?? []).map(parseLocation)];
 	const rawCallingPoints: APIServiceLocation[] = (data.locations ?? []).filter(
 		(l) => !l.isPass && l.crs
