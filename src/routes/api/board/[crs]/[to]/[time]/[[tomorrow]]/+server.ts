@@ -51,11 +51,18 @@ function parseBoardItem(item: ServiceItemWithLocations, filter): BoardItem {
 		?.flat()
 		.find((location) => location.crs === filter);
 
+	if (filterLocation?.ata === NULL_TIME) filterLocation.ata = null;
+	if (filterLocation?.atd === NULL_TIME) filterLocation.atd = null;
+	if (filterLocation?.eta === NULL_TIME) filterLocation.eta = null;
+	if (filterLocation?.etd === NULL_TIME) filterLocation.etd = null;
+	if (filterLocation?.sta === NULL_TIME) filterLocation.sta = null;
+	if (filterLocation?.std === NULL_TIME) filterLocation.std = null;
+
 	const filterTimes = filterLocation
 		? {
 				rt:
-					(filterLocation?.ata && filterLocation.ata !== NULL_TIME) ||
-					(filterLocation.eta && filterLocation.eta !== NULL_TIME)
+					(filterLocation?.ata && filterLocation.ataSpecified) ||
+					(filterLocation.eta && filterLocation.etaSpecified)
 						? dayjs(filterLocation.ata ?? filterLocation.eta).format('HH:mm')
 						: null,
 				plan:
