@@ -42,7 +42,7 @@ function parseBoardItem(item: ServiceItemWithLocations, filter): BoardItem {
 			dep: item.atd || item.etd ? dayjs(item.atd ?? item.etd).format('HH:mm') : null
 		},
 		plan: {
-			arr: item.sta && item.sta !== NULL_TIME ? dayjs(item.sta).format('HH:mm') : null,
+			arr: item.sta ? dayjs(item.sta).format('HH:mm') : null,
 			dep: item.std && item.std !== NULL_TIME ? dayjs(item.std).format('HH:mm') : null
 		}
 	};
@@ -54,10 +54,14 @@ function parseBoardItem(item: ServiceItemWithLocations, filter): BoardItem {
 	const filterTimes = filterLocation
 		? {
 				rt:
-					filterLocation?.ata || filterLocation.eta
+					(filterLocation?.ata && filterLocation.ata !== NULL_TIME) ||
+					(filterLocation.eta && filterLocation.eta !== NULL_TIME)
 						? dayjs(filterLocation.ata ?? filterLocation.eta).format('HH:mm')
 						: null,
-				plan: filterLocation?.sta ? dayjs(filterLocation.sta).format('HH:mm') : null
+				plan:
+					filterLocation?.sta && filterLocation.sta !== NULL_TIME
+						? dayjs(filterLocation.sta).format('HH:mm')
+						: null
 			}
 		: null;
 
