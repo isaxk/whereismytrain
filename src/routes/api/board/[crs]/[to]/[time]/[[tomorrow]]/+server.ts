@@ -133,7 +133,7 @@ export const GET: RequestHandler = async ({ params, request }) => {
 	const offset = time && time != 'null' ? date.diff(dayjs(), 'minute') : 0;
 	console.log('offset', offset);
 
-	let shouldUseRailData = false;
+	let shouldUseRailData = true;
 	if (Math.abs(offset) > 119) {
 		shouldUseRailData = true;
 	}

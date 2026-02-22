@@ -48,7 +48,7 @@ export const registerSubscription = action({
 			args.serviceId,
 			args.focusCrs,
 			args.filterCrs,
-			process.env.ACCESS_TOKEN!
+			process.env.SERVICE_DETAILS_TOKEN!
 		);
 
 		const parsed = parseSavedInfo(data);
@@ -150,7 +150,7 @@ export const refresh = internalAction({
 						sub.serviceId,
 						sub.crs,
 						sub.filter,
-						process.env.ACCESS_TOKEN!
+						process.env.SERVICE_DETAILS_TOKEN!
 					);
 					newSub = parseSavedInfo(response) ?? null;
 					if (newSub) {
