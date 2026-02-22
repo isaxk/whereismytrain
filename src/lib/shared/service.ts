@@ -656,7 +656,12 @@ function parseCallingPoint(
 
 async function fetchAssocService(rid: string, token: string) {
 	const response = await fetch(
-		`https://huxley2.azurewebsites.net/service/${rid}?access_token=${token}`
+		`https://api1.raildata.org.uk/1010-query-services-and-service-details1_0/LDBSVWS/api/20220120/GetServiceDetailsByRID/${id}`,
+		{
+			headers: {
+				'x-apikey': token
+			}
+		}
 	);
 	const data = await response.json();
 	if (data?.locations) {

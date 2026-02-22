@@ -16,7 +16,12 @@ import { calculateBearing, parseServiceId } from '$lib/utils';
 
 import type { RequestHandler } from './$types';
 
-import { ACCESS_TOKEN, SUPABASE_ANON_KEY, SUPABASE_URL } from '$env/static/private';
+import {
+	ACCESS_TOKEN,
+	SERVICE_DETAILS_TOKEN,
+	SUPABASE_ANON_KEY,
+	SUPABASE_URL
+} from '$env/static/private';
 import { smoothPathByTiploc } from '$lib/utils/line';
 
 const nullTime = '0001-01-01T00:00:00';
@@ -33,7 +38,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 async function fetchAssocService(rid: string) {
 	const response = await fetch(
-		`https://huxley2.azurewebsites.net/service/${rid}?access_token=${ACCESS_TOKEN}`
+		`https://huxley2.azurewebsites.net/service/${rid}?access_token=${SERVICE_DETAILS_TOKEN}`
 	);
 	const data = await response.json();
 	if (data?.locations) {
