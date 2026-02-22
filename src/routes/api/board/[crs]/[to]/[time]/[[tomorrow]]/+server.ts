@@ -3,16 +3,102 @@ import dayjs from 'dayjs';
 import tz from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
 
-import { Category, Severity, type Board, type Notice } from '$lib/types';
-import type { StationBoard } from '$lib/types/api';
+import { Category, Severity, type Board, type BoardItem, type Notice } from '$lib/types';
+import type { ServiceItemWithLocations, StationBoard } from '$lib/types/api';
 import { dayjsFromHHmm } from '$lib/utils';
 
-import { API_COMPATIBLE_VERSION, parseBoardItem } from '../../../../../_shared';
+import { API_COMPATIBLE_VERSION, NULL_TIME } from '../../../../../_shared';
 
 import { ACCESS_TOKEN } from '$env/static/private';
+import { operatorList } from '$lib/data/operators';
 
 dayjs.extend(utc);
 dayjs.extend(tz);
+
+function parseBoardItem(item: ServiceItemWithLocations, filter): BoardItem {
+	if (item.ata === NULL_TIME) item.ata = null;
+	if (item.atd === NULL_TIME) item.atd = null;
+	if (item.eta === NULL_TIME) item.eta = null;
+	if (item.etd === NULL_TIME) item.etd = null;
+	if (item.sta === NULL_TIME) item.sta = null;
+	if (item.std === NULL_TIME) item.std = null;
+
+	let delay = null;
+
+	// const rta = item.ata || item.eta ? dayjs(item.ata ?? item.eta) : null;
+	const rtd = item.atd || item.etd ? dayjs(item.atd ?? item.etd) : null;
+	// const pta = item.sta ? dayjs(item.sta) : null;
+	const ptd = item.std ? dayjs(item.std) : null;
+
+	item.rid = `${item.rid}`;
+
+	if (rtd && ptd) {
+		delay = rtd.diff(ptd, 'minutes');
+	}
+
+	const times = {
+		rt: {
+			arr: item.ata || item.eta ? dayjs(item.ata ?? item.eta).format('HH:mm') : null,
+			dep: item.atd || item.etd ? dayjs(item.atd ?? item.etd).format('HH:mm') : null
+		},
+		plan: {
+			arr: item.sta ? dayjs(item.sta).format('HH:mm') : null,
+			dep: item.std ? dayjs(item.std).format('HH:mm') : null
+		}
+	};
+
+	const filterLocation = item.subsequentLocations
+		?.flat()
+		.find((location) => location.crs === filter);
+
+	const filterTimes = filterLocation
+		? {
+				rt:
+					filterLocation?.ata || filterLocation.eta
+						? dayjs(filterLocation.ata ?? filterLocation.eta).format('HH:mm')
+						: null,
+				plan: filterLocation?.sta ? dayjs(filterLocation.sta).format('HH:mm') : null
+			}
+		: null;
+
+	// if (item.operatorCode === 'LO') {
+	// 	item.operatorCode = findOvergroundLine(item.uid);
+	// }
+
+	return {
+		rid: item.rid,
+		uid: item.uid!,
+		sdd: item.sdd!,
+		destination:
+			item.destination?.map((d) => ({
+				crs: d.crs,
+				name: d.locationName,
+				via: d.via
+			})) ?? [],
+		origin:
+			item.origin?.map((o) => ({
+				crs: o.crs,
+				name: o.locationName,
+				via: o.via
+			})) ?? [],
+		times,
+		rawTime: item.std!,
+		departed: (item.atdSpecified && item.atd !== NULL_TIME) ?? false,
+		delay,
+		platform: item.platform ?? null,
+		operator: {
+			id: item.operatorCode ?? null,
+			name: operatorList[item.operatorCode!]?.name ?? item.operator ?? 'Unknown',
+			color: operatorList[item.operatorCode!]?.bg ?? '#000000'
+		},
+		filterArrTimes: filterTimes,
+		isCancelled: item.isCancelled ?? false,
+		isFilterCancelled: item.filterLocationCancelled ?? false,
+		position: item.isCancelled ? 'Cancelled' : null,
+		delayReason: null,
+		cancelReason: null
+	};
+}
 
 export const GET: RequestHandler = async ({ params, request }) => {
 	const { crs, to, time, tomorrow: tomorrowParam } = params;
@@ -41,16 +127,16 @@ export const GET: RequestHandler = async ({ params, request }) => {
 		shouldUseRailData = true;
 	}
 
-	let url = `https://huxley2.azurewebsites.net/staffdepartures/${crs}/20?timeOffset=${offset}&timeWindow=120&access_token=${ACCESS_TOKEN}`;
+	let url = `https://huxley2.azurewebsites.net/staffdepartures/${crs}/?timeOffset=${offset}&timeWindow=120&access_token=${ACCESS_TOKEN}&expand=true`;
 	if (shouldUseRailData) {
 		const urlObj = new URL(
-			`https://api1.raildata.org.uk/1010-live-departure-board---staff-version1_0/LDBSVWS/api/20220120/GetDepartureBoardByCRS/${crs}/${date.format('YYYYMMDDTHHmmss')}?numRows=20`
+			`https://api1.raildata.org.uk/1010-live-departure-board---staff-version1_0/LDBSVWS/api/20220120/GetDepBoardWithDetails/${crs}/${date.format('YYYYMMDDTHHmmss')}?numRows=20`
 		);
 		if (to && to != 'null') urlObj.searchParams.append('filterCRS', to);
 		url = urlObj.toString();
 	} else {
 		if (to != 'null') {
-			url = `https://huxley2.azurewebsites.net/staffdepartures/${crs}/to/${to}/20?timeOffset=${offset}&timeWindow=120&access_token=${ACCESS_TOKEN}`;
+			url = `https://huxley2.azurewebsites.net/staffdepartures/${crs}/to/${to}?timeOffset=${offset}&timeWindow=120&access_token=${ACCESS_TOKEN}&expand=true`;
 		}
 	}
 
@@ -73,7 +159,7 @@ export const GET: RequestHandler = async ({ params, request }) => {
 		const services = (data.trainServices ?? [])
 			.concat(data.busServices ?? [])
 			.toSorted((a, b) => dayjs(a.std).diff(dayjs(b.std)))
-			.map((s) => parseBoardItem(s));
+			.map((s) => parseBoardItem(s, to));
 
 		const nrccMessages: Notice[] = (data.nrccMessages ?? []).map((m) => ({
 			...m,
