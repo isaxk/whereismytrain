@@ -13,6 +13,7 @@
 	import Popular from '../home/popular.svelte';
 
 	import Highlight from './highlight.svelte';
+	import { page } from '$app/state';
 
 	let {
 		trigger,
@@ -39,6 +40,14 @@
 		onSelect?: (crs: string) => void;
 	} = $props();
 
+	let stations = $state([]);
+
+	$effect(() => {
+		page.data.stations.then((d) => {
+			stations = d.map((station) => ({ stationName: station.Value, crsCode: station.crs }));
+		});
+	});
+
 	let active = $state(false);
 	let value = $state('');
 	let elm: HTMLInputElement | undefined = $state();
@@ -61,7 +70,7 @@
 	}
 
 	const fuzzySearch = $derived(
-		new Fuse(AllStations, {
+		new Fuse(stations, {
 			keys: ['stationName', 'crsCode'],
 			includeMatches: true,
 			includeScore: true

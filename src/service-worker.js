@@ -44,7 +44,7 @@ self.addEventListener('fetch', (event) => {
 	if (url.pathname.endsWith('/__data.json')) skipCache = true;
 
 	// Never cache API routes
-	if (url.pathname.startsWith('/api/')) skipCache = true;
+	if (url.pathname.startsWith('/api/') && url.pathname !== '/api/stations') skipCache = true;
 
 	if (skipCache) return;
 

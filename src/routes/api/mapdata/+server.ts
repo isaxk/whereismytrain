@@ -128,7 +128,7 @@ function parseLocation(l: APIServiceLocation): ServiceLocation {
 		tiploc: l.tiploc!,
 		name: l.locationName ?? '',
 		platform: l.platform ?? null,
-		isCallingPoint: l.crs !== undefined && !l.isPass,
+		isCallingPoint: !l.isPass,
 		eta: (l.eta ?? null) === nullTime ? null : (l.eta ?? null),
 		etd: (l.etd ?? null) === nullTime ? null : (l.etd ?? null),
 		ata: (l.ata ?? null) === nullTime ? null : (l.ata ?? null),
