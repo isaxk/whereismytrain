@@ -33,7 +33,7 @@ export async function fetchService(
 	to: string | null,
 	token: string
 ): Promise<TrainService> {
-	console.log(token);
+	console.log('token', token);
 	const response = await fetch(
 		`https://api1.raildata.org.uk/1010-query-services-and-service-details1_0/LDBSVWS/api/20220120/GetServiceDetailsByRID/${id}`,
 		{
@@ -54,9 +54,7 @@ export async function fetchService(
 	const data: ServiceDetails = await response.json();
 	console.log(data);
 	const locations: ServiceLocation[][] = [(data.locations ?? []).map(parseLocation)];
-	const rawCallingPoints: APIServiceLocation[] = (data.locations ?? []).filter(
-		(l) => !l.isPass && l.crs
-	);
+	const rawCallingPoints: APIServiceLocation[] = (data.locations ?? []).filter((l) => !l.isPass);
 
 	let callingPoints: WorkingCallingPoint[] = [];
 
@@ -90,7 +88,7 @@ export async function fetchService(
 			// locations.push(assocParsedLocations);
 
 			const assocRawCallingPoints: WorkingCallingPoint[] = (assocService.locations ?? []).filter(
-				(l) => !l.isPass && l.crs
+				(l) => !l.isPass
 			);
 			// destination.push(assocRawCallingPoints[assocRawCallingPoints.length - 1]);
 
@@ -206,7 +204,7 @@ export async function fetchService(
 
 					// filter for calling points
 					const assocRawCallingPoints: APIServiceLocation[] = assocLocations.filter(
-						(l: APIServiceLocation) => !l.isPass && l.crs
+						(l: APIServiceLocation) => !l.isPass
 					);
 
 					if (i === 0) {
@@ -453,7 +451,7 @@ function parseLocation(l: APIServiceLocation): ServiceLocation {
 		platform: l.platform ?? null,
 		isCancelled: l.isCancelled ?? false,
 		tiploc: l.tiploc!,
-		isCallingPoint: l.crs !== undefined && !l.isPass,
+		isCallingPoint: !l.isPass,
 		eta: l.eta ?? null,
 		etd: l.etd ?? null,
 		ata: l.ata ?? null,

@@ -87,6 +87,7 @@
 			if (!map || !boundsData || boundsData.length === 0) return;
 
 			if (boundsData.length === 1) {
+				console.log(boundsData);
 				easeToIfChanged(
 					map,
 					{

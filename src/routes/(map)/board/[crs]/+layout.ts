@@ -50,19 +50,20 @@ export const load = async ({ params, fetch, url }) => {
 	async function mapData() {
 		const data: Board = await board;
 
-		return {
-			type: 'board',
-			from: [
-				AllStationsJSON.find((s) => s.crsCode === data.details.crs)?.long,
-				AllStationsJSON.find((s) => s.crsCode === data.details.crs)?.lat
-			],
-			to: to
-				? [
-						AllStationsJSON.find((s) => s.crsCode === to)?.long,
-						AllStationsJSON.find((s) => s.crsCode === to)?.lat
-					]
-				: null
-		};
+		const station = AllStationsJSON.find((s) => s.crsCode === data.details.crs);
+
+		return station
+			? {
+					type: 'board',
+					from: [station?.long, station?.lat],
+					to: to
+						? [
+								AllStationsJSON.find((s) => s.crsCode === to)?.long,
+								AllStationsJSON.find((s) => s.crsCode === to)?.lat
+							]
+						: null
+				}
+			: null;
 	}
 
 	return {

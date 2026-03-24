@@ -7,14 +7,13 @@
 	import dayjs from 'dayjs';
 	import format from 'format-fuse.js';
 	import Fuse from 'fuse.js';
-	import { ChevronRight, Clock, X } from 'lucide-svelte';
+	import { ChevronRight, Clock, CloudOff, X } from 'lucide-svelte';
 	import { onMount, tick } from 'svelte';
 	import { flip } from 'svelte/animate';
 	import { fly, scale } from 'svelte/transition';
 
 	import * as InputGroup from '$lib/components/ui/input-group/index.js';
 	import * as Tabs from '$lib/components/ui/tabs/index.js';
-	import AllStations from '$lib/data/stations.json';
 	import { paneHeight } from '$lib/state/map.svelte';
 	import { pinned } from '$lib/state/saved.svelte';
 	import { dayjsFromHHmm, t } from '$lib/utils';
@@ -31,6 +30,15 @@
 	const { send, receive } = t;
 
 	const ENABLE_ITINERARY_SEARCH = false;
+
+	let stations: { stationName: string; crsCode: string }[] = $state([]);
+
+	$effect(() => {
+		page.data.stations.then((res) => {
+			console.log(res);
+			stations = res.map((station) => ({ stationName: station.Value, crsCode: station.crs }));
+		});
+	});
 
 	let from: string | null = $state(null);
 	let to: string | null | undefined = $state(undefined);
@@ -54,7 +62,7 @@
 	let opened = $state(false);
 
 	const fuzzySearch = $derived(
-		new Fuse(AllStations, {
+		new Fuse(stations, {
 			keys: ['stationName', 'crsCode'],
 			includeMatches: true,
 			includeScore: true

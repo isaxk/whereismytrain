@@ -4,6 +4,7 @@
 
 	import { injectAnalytics } from '@vercel/analytics/sveltekit';
 	import { onMount } from 'svelte';
+
 	let { children } = $props();
 
 	onMount(() => {
