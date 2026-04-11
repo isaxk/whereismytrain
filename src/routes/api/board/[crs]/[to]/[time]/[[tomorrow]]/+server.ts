@@ -127,7 +127,9 @@ export const GET: RequestHandler = async ({ params, request }) => {
 	// console.log('tomorrow', tomorrow);
 
 	const date =
-		time && time != 'null' ? dayjsFromHHmm(time, false).add(tomorrow ? 24 : 0, 'hour') : dayjs();
+		time && time != 'null'
+			? dayjsFromHHmm(time, false).add(tomorrow ? 24 : 0, 'hour')
+			: dayjs.tz(undefined, 'Europe/London');
 	// console.log(date.toString());
 
 	const offset = time && time != 'null' ? date.diff(dayjs(), 'minute') : 0;

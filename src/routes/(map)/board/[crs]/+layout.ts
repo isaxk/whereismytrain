@@ -11,25 +11,6 @@ export const load = async ({ params, fetch, url }) => {
 	const time = search.get('time');
 	const tomorrow = search.get('tomorrow') == 'true';
 
-	async function getBoard(): Promise<Board> {
-		const response = await fetch(
-			`/api/board/${crs.toUpperCase()}/${to ?? 'null'}/${time ?? 'null'}/${tomorrow ? 'true' : 'false'}`,
-			{
-				headers: {
-					'api-version': API_COMPATIBLE_VERSION
-				}
-			}
-		);
-
-		if (!response.ok) {
-			const data = await response.json();
-			throw new Error(data.message);
-		} else {
-			const data = await response.json();
-			return data;
-		}
-	}
-
 	const board = fetch(
 		`/api/board/${crs.toUpperCase()}/${to ?? 'null'}/${time ?? 'null'}/${tomorrow ? 'true' : 'false'}`,
 		{
