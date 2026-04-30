@@ -168,6 +168,11 @@ export const refresh = internalAction({
 					if (newSub.destination !== sub.destination) {
 						description += ` will now terminate at ${newSub.destination}`;
 					}
+				} else if (!newSub.isCancelledAtFilter && sub.isCancelledAtFilter && !newSub.isCancelled) {
+					title = `🟢 No longer cancelled to ${sub.to}`;
+					if (newSub.destination !== sub.destination) {
+						description += ` will now terminate at ${newSub.destination}`;
+					}
 				} else if (newSub.departed) {
 					if (!sub.departed) {
 						if (newSub.delay === null) {
@@ -223,6 +228,17 @@ export const refresh = internalAction({
 					}
 				} else if (newSub.isCancelled && !sub.isCancelled) {
 					title = `❌ Cancelled`;
+				} else if (!newSub.isCancelled && sub.isCancelled) {
+					title = `🟢 Uncancelled!`;
+					if (newSub.delay === null) {
+						title = `🟢 No longer cancelled! - Exp. Delayed`;
+					} else if (newSub.delay <= -1) {
+						title = `🟢 No longer cancelled! - Exp. ${dayjs(newSub.rtDep).format('HH:mm')} (${-newSub.delay}m early)`;
+					} else if (newSub.delay < 1) {
+						title = `🟢 No longer cancelled! - Exp. On time`;
+					} else {
+						title = `🟢 No longer cancelled! - Exp. ${dayjs(newSub.rtDep).format('HH:mm')} (${newSub.delay}m late)`;
+					}
 				} else if (newSub.delay !== sub.delay) {
 					if (newSub.delay === null) {
 						title = `🟡 Delayed`;
