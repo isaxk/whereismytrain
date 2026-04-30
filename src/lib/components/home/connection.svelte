@@ -1,6 +1,6 @@
 <script lang="ts">
 	import dayjs from 'dayjs';
-	import { GitCompareArrowsIcon } from 'lucide-svelte';
+	import { GitCompareArrowsIcon, SearchIcon } from 'lucide-svelte';
 
 	import Tubeicon from '$lib/assets/tubeicon.svelte';
 	import { londonTerminals } from '$lib/data/favourites';
@@ -107,7 +107,8 @@
 			status,
 			originalDiff: originalDiff ? Math.round(originalDiff) : null,
 			schDiff: schDiff ? Math.round(schDiff) : null,
-			rtDiff: rtDiff ? Math.round(rtDiff) : null
+			rtDiff: rtDiff ? Math.round(rtDiff) : null,
+			isCancelled: connectingService.isCancelled
 		};
 	});
 
@@ -198,12 +199,12 @@
 						{connection.rtDiff ?? connection.schDiff}m to change {#if acrossLondon}via Underground{/if}
 					{/if}
 				</div>
-				{#if connection.status === 'impossible' || connection.status === 'alternative'}
+				{#if (connection.status === 'impossible' || connection.status === 'alternative') && !connection.isCancelled}
 					<Button
 						href="/board/{connectingService.crs}?to={connectingService.filter}&time={dayjs(
 							rtArr ?? planArr
 						).format('HHmm')}"
-						variant="secondary">Alternatives</Button
+						variant="secondary"><SearchIcon size={18} /> Search Alternatives</Button
 					>
 					<!-- <Popover.Root bind:open={popoverOpen}>
 						<Popover.Trigger class={[buttonVariants({ variant: 'secondary', size: 'sm' }), 'z-10']}

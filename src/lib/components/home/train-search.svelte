@@ -362,7 +362,7 @@
 							</InputGroup.Root>
 						</div>
 						{#if from}
-							<Button {href} size="lg" class="px-4 py-5 text-sm" variant="default">Go</Button>
+							<Button {href} size="lg" class="px-4 py-[19px] text-sm" variant="default">Go</Button>
 						{/if}
 					</div>
 					<Button type="submit" class="hidden"></Button>

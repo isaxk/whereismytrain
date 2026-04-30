@@ -1,7 +1,14 @@
 <script lang="ts">
 	import { useConvexClient } from 'convex-svelte';
 	import dayjs from 'dayjs';
-	import { EllipsisVertical, Trash, TriangleAlertIcon, X } from 'lucide-svelte';
+	import {
+		AlertTriangle,
+		EllipsisVertical,
+		SearchIcon,
+		Trash,
+		TriangleAlertIcon,
+		X
+	} from 'lucide-svelte';
 	import { onDestroy, onMount, untrack } from 'svelte';
 	import { fly } from 'svelte/transition';
 
@@ -22,6 +29,7 @@
 
 	import AlternativeDisplay from './alternative-display.svelte';
 	import Connection from './connection.svelte';
+	import Search from '../search/search.svelte';
 
 	let { data, index }: { data: SavedTrain; index: number } = $props();
 
@@ -160,16 +168,19 @@
 						</AlertCard>
 					</div>
 				{/if} -->
-				<div class="absolute top-22 right-0 flex items-center gap-2">
+				<div class="absolute top-14 right-0 flex flex-col items-end gap-2">
 					{#if service.isCancelled || service.isCancelledAtFilter}
 						<Button
+							variant="secondary"
 							class=""
 							href="/board/{data.focusCrs}?to={data.filterCrs}&time={dayjs(service.planDep).format(
 								'HHmm'
 							)}"
 						>
-							Find alternatives
+							<SearchIcon size={18} /> Alternatives
 						</Button>
+					{:else}
+						<div class="h-6"></div>
 					{/if}
 					<DropdownMenu.Root>
 						<DropdownMenu.Trigger class={[buttonVariants({ variant: 'outline', size: 'icon' })]}>
