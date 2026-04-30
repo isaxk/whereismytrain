@@ -18,11 +18,13 @@
 		crs,
 		filter,
 		children,
+
 		serviceData = null
 	}: {
 		serviceId: string;
 		crs: string;
 		filter: string | null;
+
 		children: Snippet<
 			[
 				{
@@ -44,6 +46,15 @@
 	const savedItem = $derived(saved.value.find((item) => item.service_id === serviceId));
 	const notificationsFailed = $derived(
 		savedItem !== undefined && savedItem.subscriptionId === null
+	);
+
+	const existingOnRoute = $derived(
+		saved.value.find(
+			(item) =>
+				item.focusCrs === crs &&
+				item.filterCrs === filter &&
+				dayjs(item.date).isSame(dayjs(serviceData?.date), 'day')
+		) ?? null
 	);
 
 	async function fetchServiceData(id: string, from: string, to: string) {
@@ -123,6 +134,8 @@
 			return;
 		}
 
+		console.log('Switching from', fromId);
+
 		if (saved.value[existing]?.subscriptionId) {
 			convex
 				.mutation(api.notifications.deregisterSubscription, {
@@ -192,6 +205,7 @@
 		await handleSubscribe(filterOverride);
 		loading = false;
 	},
+	existingOnRoute,
 	onUnsubscribe: handleUnsubscribe,
 	onSwitchFrom: async (fromId: string) => {
 		loading = true;

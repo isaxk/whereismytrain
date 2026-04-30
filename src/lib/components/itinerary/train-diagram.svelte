@@ -134,25 +134,6 @@
 				{/if}
 			</ChangeNotifier>
 		</div>
-		<div class="flex w-full items-center gap-1 truncate text-xs/4 text-muted-foreground">
-			<div
-				class="h-max w-max rounded-sm px-1.5 py-0.5 text-[10px]/3 text-white"
-				style:background={operator.color}
-			>
-				{operator.name}
-			</div>
-
-			<ChangeNotifier value="{isCancelled}-{destination}">
-				{#if isCancelled}
-					<div class="text-xs/3 font-medium text-danger">Cancelled</div>
-				{:else}
-					<div class="min-w-0 grow truncate">
-						to
-						{destination}
-					</div>
-				{/if}
-			</ChangeNotifier>
-		</div>
 	</div>
 </div>
 
@@ -161,8 +142,8 @@
 	<div class="flex h-5 w-10 flex-col items-center justify-center">
 		<div class="w-1.5 grow" style:background={operator.color}></div>
 	</div>
-	<ChangeNotifier value="{arrived}-{departed}" class="w-max text-xs">
-		<div class="flex w-max items-center gap-1 pb-0.5 text-xs">
+	<div class="-mt-1 w-max text-xs">
+		<!-- <div class="flex w-max items-center gap-1 pb-0.5 text-xs">
 			{#if arrived}
 				{#if filterDelay === 0}
 					<Check size={14} />
@@ -212,8 +193,27 @@
 					{delay}m late
 				{/if}
 			{/if}
+		</div> -->
+		<div class="truncate text-xs/4 text-muted-foreground">
+			<div
+				class="h-max w-max rounded-sm px-1.5 py-0.5 text-[10px]/3 text-white"
+				style:background={operator.color}
+			>
+				{operator.name}
+			</div>
+
+			<ChangeNotifier value="{isCancelled}-{destination}">
+				{#if isCancelled}
+					<div class="text-xs/3 font-medium text-danger">Cancelled</div>
+				{:else}
+					<div class="min-w-0 grow truncate">
+						to
+						{destination}
+					</div>
+				{/if}
+			</ChangeNotifier>
 		</div>
-		<div class="w-max text-xs">
+		<!-- <div class="w-max text-xs">
 			{#if arrived}
 				<div class="text-[10px] text-muted-foreground">{duration}</div>
 			{:else if departed}
@@ -223,8 +223,8 @@
 			{:else}
 				<div class="text-[10px] text-muted-foreground">{duration}</div>
 			{/if}
-		</div>
-	</ChangeNotifier>
+		</div> -->
+	</div>
 </div>
 <div class="flex h-12 items-center">
 	<div class="flex min-w-12 justify-end">

@@ -12,6 +12,7 @@
 	import * as Popover from '../ui/popover';
 
 	import AlternativeDisplay from './alternative-display.svelte';
+	import Button from '../ui/button/button.svelte';
 
 	let { crs, planArr, rtArr, originalArr } = $props();
 
@@ -198,7 +199,13 @@
 					{/if}
 				</div>
 				{#if connection.status === 'impossible' || connection.status === 'alternative'}
-					<Popover.Root bind:open={popoverOpen}>
+					<Button
+						href="/board/{connectingService.crs}?to={connectingService.filter}&time={dayjs(
+							rtArr ?? planArr
+						).format('HHmm')}"
+						variant="secondary">Alternatives</Button
+					>
+					<!-- <Popover.Root bind:open={popoverOpen}>
 						<Popover.Trigger class={[buttonVariants({ variant: 'secondary', size: 'sm' }), 'z-10']}
 							>Find alternative
 						</Popover.Trigger>
@@ -258,7 +265,7 @@
 								{/snippet}
 							</AlternativeProvider>
 						</Popover.Content>
-					</Popover.Root>
+					</Popover.Root> -->
 				{/if}
 			</div>
 		</div>

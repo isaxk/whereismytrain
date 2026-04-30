@@ -147,127 +147,105 @@
 					{/if}
 				</div>
 
-				{#if service.isCancelled || service.isCancelledAtFilter}
+				<!-- {#if service.isCancelled || service.isCancelledAtFilter}
 					<div class="z-100">
-						<AlternativeProvider
-							allowance={5}
-							existingRid={data.service_id}
-							from={data.focusCrs}
-							to={data.filterCrs}
-							time={dayjs(service.planDep).format('HH:mm')}
-						>
-							{#snippet children({ item, serviceId })}
-								{#if item && serviceId}
-									<SubscriptionProvider {serviceId} crs={data.focusCrs} filter={data.filterCrs}>
-										{#snippet children({ loading, onSwitchFrom })}
-											<AlertCard status="major" class="z-[1000] -mt-4 font-normal" Icon={X}>
-												<div class="flex items-center gap-2">
-													<div class="grow">
-														<div class="font-semibold">
-															This service was cancelled, but an alternative was found.
-														</div>
-														<div class="py-0.5 font-normal underline">
-															{item.times.plan.dep} to {item.destination
-																?.map((d) => d.name)
-																.join(', ')}
-															(Exp.
-															{item.times.rt.dep})
-														</div>
-														<div class="py-0.5 text-[10px] text-muted-foreground">
-															<div>Please check your ticket is valid on this service.</div>
-														</div>
-													</div>
+						<AlertCard status="major" class="z-[1000] -mt-4 font-normal" Icon={X}>
+							<div class="flex items-center gap-2">
+								<div class="grow">
+									<div class="text-sm font-semibold">Your service was cancelled</div>
+								</div>
 
-													<div class="">
-														<Button class="w-20" onclick={() => onSwitchFrom(data.id)}>
-															{#if loading}
-																<Spinner />
-															{:else}
-																Switch
-															{/if}</Button
-														>
-													</div>
-												</div>
-											</AlertCard>
-										{/snippet}
-									</SubscriptionProvider>
-								{/if}
-							{/snippet}
-						</AlternativeProvider>
+								<div class=""></div>
+							</div>
+						</AlertCard>
 					</div>
-				{/if}
-				<DropdownMenu.Root>
-					<DropdownMenu.Trigger
-						class={[
-							'absolute top-22 right-0',
-							buttonVariants({ variant: 'outline', size: 'icon' })
-						]}
-					>
-						<EllipsisVertical />
-					</DropdownMenu.Trigger>
-					<DropdownMenu.Content align="end">
-						<DropdownMenu.Item onclick={() => (showMissedDialog = true)}>
-							<TriangleAlertIcon /> Missed, what now?
-						</DropdownMenu.Item>
-
-						<DropdownMenu.Item onclick={onUnsubscribe} variant="destructive"
-							><Trash /> Remove</DropdownMenu.Item
+				{/if} -->
+				<div class="absolute top-22 right-0 flex items-center gap-2">
+					{#if service.isCancelled || service.isCancelledAtFilter}
+						<Button
+							class=""
+							href="/board/{data.focusCrs}?to={data.filterCrs}&time={dayjs(service.planDep).format(
+								'HHmm'
+							)}"
 						>
-					</DropdownMenu.Content>
-				</DropdownMenu.Root>
-				<Dialog.Root bind:open={showMissedDialog}>
-					<Dialog.Content>
-						<Dialog.Title>Missed train, what now?</Dialog.Title>
-						<Dialog.Description>
-							If you have an "Advance" ticket, you will need to buy a new ticket. However, if this
-							is a connecting train you will be entitled to take the next train (this includes split
-							tickets). Most other tickets will be valid on the next train(s).
-						</Dialog.Description>
-						<div class="h-56">
-							<AlternativeProvider
-								time={dayjs(data.service.planDep).format('HH:mm')}
-								allowance={10}
-								from={data.focusCrs}
-								to={data.filterCrs}
-								existingRid={data.service_id}
+							Find alternatives
+						</Button>
+					{/if}
+					<DropdownMenu.Root>
+						<DropdownMenu.Trigger class={[buttonVariants({ variant: 'outline', size: 'icon' })]}>
+							<EllipsisVertical />
+						</DropdownMenu.Trigger>
+						<DropdownMenu.Content align="end">
+							<!-- <DropdownMenu.Item onclick={() => (showMissedDialog = true)}></DropdownMenu.Item> -->
+							<a
+								href="/board/{data.focusCrs}?to={data.filterCrs}&time={dayjs(data.service.planDep)
+									.add(10, 'minutes')
+									.format('HHmm')}"
 							>
-								{#snippet children({ loading, failed, item, serviceId })}
-									{#if item && serviceId}
-										<SubscriptionProvider {serviceId} crs={data.focusCrs} filter={data.filterCrs}>
-											{#snippet children({ loading, onSwitchFrom })}
-												<AlternativeDisplay
-													state="complete"
-													switching={loading}
-													outline
-													from={data.focusCrs}
-													to={data.filterCrs}
-													time={dayjs(data.service.planDep).add(10, 'minutes').format('HHmm')}
-													service={item}
-													showDescription={false}
-													onSwitch={() => {
-														onSwitchFrom(data.id).then(() => {
-															showMissedDialog = false;
-														});
-													}}
-												></AlternativeDisplay>
-											{/snippet}
-										</SubscriptionProvider>
-									{:else}
-										<AlternativeDisplay
-											outline
-											showDescription
-											from={data.focusCrs}
-											to={data.filterCrs}
-											time={dayjs(data.service.planDep).add(10, 'minutes').format('HHmm')}
-											state={failed ? 'failed' : 'loading'}
-										/>
-									{/if}
-								{/snippet}
-							</AlternativeProvider>
-						</div>
-					</Dialog.Content>
-				</Dialog.Root>
-				<!-- {/key} -->
+								<DropdownMenu.Item>
+									<TriangleAlertIcon /> Alternatives
+								</DropdownMenu.Item>
+							</a>
+
+							<DropdownMenu.Item onclick={onUnsubscribe} variant="destructive"
+								><Trash /> Remove</DropdownMenu.Item
+							>
+						</DropdownMenu.Content>
+					</DropdownMenu.Root>
+					<Dialog.Root bind:open={showMissedDialog}>
+						<Dialog.Content>
+							<Dialog.Title>Missed train, what now?</Dialog.Title>
+							<Dialog.Description>
+								If you have an "Advance" ticket, you will need to buy a new ticket. However, if this
+								is a connecting train you will be entitled to take the next train (this includes
+								split tickets). Most other tickets will be valid on the next train(s).
+							</Dialog.Description>
+							<div class="h-56">
+								<AlternativeProvider
+									time={dayjs(data.service.planDep).format('HH:mm')}
+									allowance={10}
+									from={data.focusCrs}
+									to={data.filterCrs}
+									existingRid={data.service_id}
+								>
+									{#snippet children({ loading, failed, item, serviceId })}
+										{#if item && serviceId}
+											<SubscriptionProvider {serviceId} crs={data.focusCrs} filter={data.filterCrs}>
+												{#snippet children({ loading, onSwitchFrom })}
+													<AlternativeDisplay
+														state="complete"
+														switching={loading}
+														outline
+														from={data.focusCrs}
+														to={data.filterCrs}
+														time={dayjs(data.service.planDep).add(10, 'minutes').format('HHmm')}
+														service={item}
+														showDescription={false}
+														onSwitch={() => {
+															onSwitchFrom(data.id).then(() => {
+																showMissedDialog = false;
+															});
+														}}
+													></AlternativeDisplay>
+												{/snippet}
+											</SubscriptionProvider>
+										{:else}
+											<AlternativeDisplay
+												outline
+												showDescription
+												from={data.focusCrs}
+												to={data.filterCrs}
+												time={dayjs(data.service.planDep).add(10, 'minutes').format('HHmm')}
+												state={failed ? 'failed' : 'loading'}
+											/>
+										{/if}
+									{/snippet}
+								</AlternativeProvider>
+							</div>
+						</Dialog.Content>
+					</Dialog.Root>
+					<!-- {/key} -->
+				</div>
 			</div>
 		{/if}
 	{/snippet}
