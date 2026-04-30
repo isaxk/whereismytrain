@@ -136,7 +136,7 @@ export const refresh = internalAction({
 						shouldRefresh = false;
 					} else if (timeUntilDeparture > 30 && timeSinceLastUpdate < 6) {
 						shouldRefresh = false;
-					} else if (timeUntilDeparture > 15 && timeSinceLastUpdate < 3) {
+					} else if (timeUntilDeparture > 15 && timeSinceLastUpdate < 2) {
 						shouldRefresh = false;
 					}
 				}

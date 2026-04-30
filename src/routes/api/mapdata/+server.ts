@@ -50,6 +50,7 @@ async function fetchAssocService(rid: string) {
 
 async function getTiplocs(
 	tiplocs: string[],
+	type: 'bus' | 'train',
 	crs: string[]
 ): Promise<
 	{
@@ -141,8 +142,13 @@ function parseLocation(l: APIServiceLocation): ServiceLocation {
 export const POST: RequestHandler = async ({ request }) => {
 	const {
 		locations,
-		formedFrom = null
-	}: { locations: [ServiceLocation[]]; formedFrom?: string | null } = await request.json();
+		formedFrom = null,
+		type = 'train'
+	}: {
+		locations: [ServiceLocation[]];
+		formedFrom?: string | null;
+		type?: 'bus' | 'train';
+	} = await request.json();
 
 	const tiplocs: string[] = [];
 	const crs: string[] = [];
@@ -158,7 +164,7 @@ export const POST: RequestHandler = async ({ request }) => {
 
 	// console.log('formedFrom', formedFrom);
 
-	const tiplocsData = await getTiplocs(tiplocs, crs);
+	const tiplocsData = await getTiplocs(tiplocs, type, crs);
 	// console.log(tiplocsData);
 	const parsedLocations: MapDataLocationGroup[] = locations.map((group) => {
 		const groupWithCoords: ServiceLocationWithCoords[] = group.map((item) => {
@@ -225,7 +231,11 @@ export const POST: RequestHandler = async ({ request }) => {
 		if (data && data.locations) {
 			const parsed: ServiceLocation[] = data.locations.map(parseLocation);
 			const tiplocs = parsed.map((item) => item.tiploc);
-			const tiplocsData = await getTiplocs(tiplocs, []);
+			const tiplocsData = await getTiplocs(
+				tiplocs,
+				['BR', 'BS'].includes(data.category) ? 'bus' : 'train',
+				[]
+			);
 
 			const groupWithCoords: ServiceLocationWithCoords[] = parsed.map((item) => {
 				return {
