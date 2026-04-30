@@ -7,6 +7,7 @@
 
 	import ChangeNotifier from '../ui/change-notifier.svelte';
 	import Check from '@lucide/svelte/icons/check';
+	import X from '@lucide/svelte/icons/x';
 
 	let {
 		planDep,
@@ -194,25 +195,28 @@
 				{/if}
 			{/if}
 		</div> -->
-		<div class="truncate text-xs/4 text-muted-foreground">
-			<div
-				class="h-max w-max rounded-sm px-1.5 py-0.5 text-[10px]/3 text-white"
-				style:background={operator.color}
-			>
-				{operator.name}
-			</div>
+		<ChangeNotifier
+			value="{isCancelled}-{destination}"
+			class="-mt-1 truncate text-xs/4 text-muted-foreground"
+		>
+			{#if isCancelled}
+				<div class="flex items-center gap-1 text-sm/5 font-medium text-danger">
+					<X size={18} /> Cancelled
+				</div>
+			{:else}
+				<div
+					class="h-max w-max rounded-sm px-1.5 py-0.5 text-[10px]/3 text-white"
+					style:background={operator.color}
+				>
+					{operator.name}
+				</div>
 
-			<ChangeNotifier value="{isCancelled}-{destination}">
-				{#if isCancelled}
-					<div class="text-xs/3 font-medium text-danger">Cancelled</div>
-				{:else}
-					<div class="min-w-0 grow truncate">
-						to
-						{destination}
-					</div>
-				{/if}
-			</ChangeNotifier>
-		</div>
+				<div class="min-w-0 grow truncate">
+					to
+					{destination}
+				</div>
+			{/if}
+		</ChangeNotifier>
 		<!-- <div class="w-max text-xs">
 			{#if arrived}
 				<div class="text-[10px] text-muted-foreground">{duration}</div>
