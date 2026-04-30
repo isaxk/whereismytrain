@@ -199,18 +199,17 @@
 			value="{isCancelled}-{destination}"
 			class="-mt-1 truncate text-xs/4 text-muted-foreground"
 		>
+			<div
+				class="h-max w-max rounded-sm px-1.5 py-0.5 text-[10px]/3 text-white"
+				style:background={operator.color}
+			>
+				{operator.name}
+			</div>
 			{#if isCancelled}
-				<div class="flex items-center gap-1 text-sm/5 font-medium text-danger">
-					<X size={18} /> Cancelled
+				<div class="flex items-center gap-1 text-xs/4 font-medium text-danger">
+					<X size={16} /> Cancelled
 				</div>
 			{:else}
-				<div
-					class="h-max w-max rounded-sm px-1.5 py-0.5 text-[10px]/3 text-white"
-					style:background={operator.color}
-				>
-					{operator.name}
-				</div>
-
 				<div class="min-w-0 grow truncate">
 					to
 					{destination}

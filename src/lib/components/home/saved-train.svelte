@@ -168,7 +168,7 @@
 						</AlertCard>
 					</div>
 				{/if} -->
-				<div class="absolute top-22 right-0 flex items-center gap-2">
+				<div class="absolute top-14 right-0 flex flex-col items-end gap-2">
 					{#if service.isCancelled || service.isCancelledAtFilter}
 						<Button
 							variant="secondary"
@@ -179,6 +179,8 @@
 						>
 							<SearchIcon size={18} /> Alternatives
 						</Button>
+					{:else}
+						<div class="h-6"></div>
 					{/if}
 					<DropdownMenu.Root>
 						<DropdownMenu.Trigger class={[buttonVariants({ variant: 'outline', size: 'icon' })]}>
