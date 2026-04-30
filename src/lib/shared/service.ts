@@ -52,7 +52,7 @@ export async function fetchService(
 	}
 
 	const data: ServiceDetails = await response.json();
-	console.log(data);
+	// console.log(data);
 	const locations: ServiceLocation[][] = [(data.locations ?? []).map(parseLocation)];
 	const rawCallingPoints: APIServiceLocation[] = (data.locations ?? []).filter((l) => !l.isPass);
 
@@ -69,16 +69,19 @@ export async function fetchService(
 		const nextAssoc = hasNextAssoc.associations?.find(
 			(l: Association) => l.category === 4 || l.category === 'next'
 		);
-		formedFrom = nextAssoc?.rid ?? null;
+		// formedFrom = nextAssoc?.rid ?? null;
 	}
 
 	let destination: APIServiceLocation[] = [];
 
 	// Division logic
+	//
 
-	if (rawCallingPoints[rawCallingPoints.length - 1].associations?.some((l) => l.category === 0)) {
+	if (
+		rawCallingPoints[rawCallingPoints.length - 1].associations?.some((l) => l.category === 'join')
+	) {
 		const rid = rawCallingPoints?.[rawCallingPoints.length - 1].associations?.find(
-			(l) => l.category === 0
+			(l) => l.category === 'join'
 		)?.rid;
 
 		const assocService: ServiceDetails | null = rid ? await fetchAssocService(rid, token) : null;
@@ -148,10 +151,7 @@ export async function fetchService(
 	else {
 		for (const [i, entry] of rawCallingPoints.entries()) {
 			let cp = entry;
-			if (
-				cp.associations?.some((l) => l.category === 1 || l.category === 0) &&
-				(i > focusIndex || i === 0)
-			) {
+			if (cp.associations?.some((l) => l.category === 'divide') && (i > focusIndex || i === 0)) {
 				destination = [
 					rawCallingPoints.findLast(
 						(l) => !l.isCancelled || rawCallingPoints[focusIndex + 1].isCancelled
@@ -159,7 +159,7 @@ export async function fetchService(
 				];
 
 				// get associations
-				const associations = cp.associations.filter((l) => l.category === 1 || l.category === 0);
+				const associations = cp.associations.filter((l) => l.category === 'divide');
 
 				console.log('assocs', associations);
 
@@ -226,7 +226,7 @@ export async function fetchService(
 					} else {
 						// add to destination array
 						//
-						if (category === 1) {
+						if (category === 'divide') {
 							destination.push(
 								assocRawCallingPoints.findLast(
 									(l) => !l.isCancelled || rawCallingPoints[focusIndex + 1].isCancelled
@@ -241,10 +241,10 @@ export async function fetchService(
 								ataSpecified: j === 0 ? cp.atdSpecified && !cpj.atdSpecified : cpj.ataSpecified,
 								ata: j === 0 ? (cp.atdSpecified && !cpj.atdSpecified ? cp.ata : null) : cpj.ata,
 								inDivision: true,
-								startDivide: j === 0 && category === 1, // and specify where the division starts and ends
-								startJoin: j === 0 && category === 0,
-								endDivide: j === assocRawCallingPoints.length - 1 && category === 1,
-								endJoin: j === assocRawCallingPoints.length - 1 && category === 0
+								startDivide: j === 0 && category === 'divide',
+								startJoin: false,
+								endDivide: j === assocRawCallingPoints.length - 1 && category === 'divide',
+								endJoin: false
 							});
 						});
 						locations.push(parsedAssoc);
@@ -653,8 +653,9 @@ function parseCallingPoint(
 }
 
 async function fetchAssocService(rid: string, token: string) {
+	console.log(`Fetching associated service for rid: ${rid}`);
 	const response = await fetch(
-		`https://api1.raildata.org.uk/1010-query-services-and-service-details1_0/LDBSVWS/api/20220120/GetServiceDetailsByRID/${id}`,
+		`https://api1.raildata.org.uk/1010-query-services-and-service-details1_0/LDBSVWS/api/20220120/GetServiceDetailsByRID/${rid}`,
 		{
 			headers: {
 				'x-apikey': token
