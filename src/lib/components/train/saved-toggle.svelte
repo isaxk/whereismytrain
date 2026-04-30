@@ -1,15 +1,17 @@
 <script lang="ts">
 	import { useConvexClient } from 'convex-svelte';
 	import dayjs from 'dayjs';
-	import { Bell, BellOff, BellRing, BookmarkIcon, X } from 'lucide-svelte';
+	import { Bell, BellOff, BellRing, BookmarkIcon, GitCompareArrowsIcon, X } from 'lucide-svelte';
 
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
+	import * as AlertDialog from '$lib/components/ui/alert-dialog/index.js';
+
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 	import { getFCMToken, unsubscribeToTrain } from '$lib/notifications';
 	import { parseSavedInfo } from '$lib/shared/service';
 	import { localStore, pwa, saved, setSavedTrainData } from '$lib/state/saved.svelte';
 	import type { TrainService, SavedTrain as SavedTrainType } from '$lib/types';
-	import { iOS } from '$lib/utils';
+	import { cn, iOS } from '$lib/utils';
 
 	import { api } from '../../../convex/_generated/api';
 	import Install from '../home/install.svelte';
@@ -42,6 +44,8 @@
 	const firstAfterCallingPointCrs = $derived.by(() => afterCallingPoints[0]?.crs);
 
 	const promptDismissed = localStore<boolean>('saved-prompt-dismissed', false);
+
+	let alertOpen = $state(false);
 </script>
 
 {#if !pwa.value && iOS()}
@@ -56,7 +60,15 @@
 	</Install>
 {:else}
 	<SubscriptionProvider serviceId={rid} {crs} {filter} serviceData={service}>
-		{#snippet children({ subscribed, loading, notificationsFailed, onUnsubscribe, onSubscribe })}
+		{#snippet children({
+			subscribed,
+			loading,
+			notificationsFailed,
+			existingOnRoute,
+			onUnsubscribe,
+			onSwitchFrom,
+			onSubscribe
+		})}
 			{#if subscribed}
 				<Button
 					size="icon"
@@ -84,39 +96,43 @@
 						<button onclick={() => {}}><X size={14} /></button>
 					</div>
 				{/if}
+			{:else if existingOnRoute}
+				<AlertDialog.Root bind:open={alertOpen}>
+					<AlertDialog.Trigger
+						class={cn(
+							buttonVariants({ variant: 'outline' }),
+							'relative w-8 bg-input/30 hover:bg-input/50'
+						)}
+					>
+						<GitCompareArrowsIcon />
+					</AlertDialog.Trigger>
+					<AlertDialog.Content>
+						<AlertDialog.Header>
+							<AlertDialog.Title>Replace existing train?</AlertDialog.Title>
+							<AlertDialog.Description
+								>You already have a train saved for this route on this date. Do you want to replace
+								it?</AlertDialog.Description
+							>
+						</AlertDialog.Header>
+						<AlertDialog.Footer>
+							<AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
+							<AlertDialog.Action
+								class="sm:w-20"
+								onclick={async () => {
+									await onSwitchFrom(existingOnRoute.id);
+									alertOpen = false;
+								}}
+							>
+								{#if loading}
+									<Spinner class="size-4" />
+								{:else}
+									Replace
+								{/if}
+							</AlertDialog.Action>
+						</AlertDialog.Footer>
+					</AlertDialog.Content>
+				</AlertDialog.Root>
 			{:else if filter || (afterCallingPoints.length === 1 && firstAfterCallingPointCrs)}
-				<!-- {#if existingOnRoute}
-					<Dialog.Root>
-						<Dialog.Trigger
-							class={[
-								buttonVariants({ variant: 'outline', size: 'icon' }),
-								'bg-input/30 hover:bg-input/50'
-							]}
-						>
-							{#if loading}
-								<Spinner class="size-6" />
-							{:else}
-								<Bell />
-							{/if}
-						</Dialog.Trigger>
-						<Dialog.Content class="bg-background">
-							<Dialog.Title class="text-lg font-semibold">Replace train?</Dialog.Title>
-							<Dialog.Description class="text-sm text-muted-foreground">
-								You already have a saved train for this route today.
-							</Dialog.Description>
-							<Dialog.Footer>
-								<Dialog.Close
-									onclick={() => saveAndReplace(filter ?? firstAfterCallingPointCrs!)}
-									class={buttonVariants({ variant: 'default' })}>Replace</Dialog.Close
-								>
-								<Dialog.Close
-									onclick={() => save(filter ?? firstAfterCallingPointCrs!)}
-									class={buttonVariants({ variant: 'secondary' })}>Add too</Dialog.Close
-								>
-							</Dialog.Footer>
-						</Dialog.Content>
-					</Dialog.Root>
-				{:else} -->
 				<Button
 					size="icon"
 					variant="outline"
