@@ -25,7 +25,8 @@
 		filter,
 		to = null,
 		focus,
-		routeCancelled = false
+		routeCancelled = false,
+		showTrain = true
 	}: {
 		href: string;
 		crs: string;
@@ -40,6 +41,7 @@
 		to?: string | null;
 		focus?: string | null;
 		routeCancelled?: boolean;
+		showTrain?: boolean;
 	} = $props();
 
 	console.log(data);
@@ -220,7 +222,7 @@
 			</div>
 		</div>
 	{/if}
-	{#if data.trainPosition}
+	{#if data.trainPosition && showTrain}
 		<MapTrainIndication
 			{category}
 			opacity={!to || data.lineLocations.some((l) => l.crs === to && l.crs !== null)
