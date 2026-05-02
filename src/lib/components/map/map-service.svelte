@@ -80,7 +80,6 @@
 					{rid}
 					focus={crs}
 					{refreshing}
-					showTrain={page.data.id === rid || !serviceData.filter.arrived}
 					category={serviceData.category}
 					filter={group.lineLocations.some((l) => l.crs === filter)
 						? filter

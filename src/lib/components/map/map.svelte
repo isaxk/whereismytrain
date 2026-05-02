@@ -154,14 +154,16 @@
 				)
 			);
 
-		if (saved.value.length > 0)
-			return sorted.filter((station) =>
-				saved.value.some((s) => s.focusCrs === station.crsCode || s.filterCrs === station.crsCode)
-			);
-		else if ((map?.getZoom() ?? 0) > 8) {
+		if ((map?.getZoom() ?? 0) > 8) {
 			return sorted.slice(0, 125);
 		} else {
-			return favs;
+			return saved.value.length > 0
+				? sorted.filter((station) =>
+						saved.value.some(
+							(s) => s.focusCrs === station.crsCode || s.filterCrs === station.crsCode
+						)
+					)
+				: favs;
 		}
 	});
 

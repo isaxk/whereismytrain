@@ -1,14 +1,9 @@
 import { Crons } from '@convex-dev/crons';
 import { v } from 'convex/values';
 import dayjs from 'dayjs';
-import timezone from 'dayjs/plugin/timezone';
-import utc from 'dayjs/plugin/utc';
 
 import { fetchService, parseSavedInfo } from '$lib/shared/service';
 import type { SavedTrainServiceInfo } from '$lib/types';
-
-dayjs.extend(utc);
-dayjs.extend(timezone);
 
 import { components, internal } from './_generated/api';
 import {
@@ -118,22 +113,9 @@ export const refresh = internalAction({
 
 		await Promise.all(
 			subscriptions.map(async (sub) => {
-				const timeUntilDeparture = dayjs
-					.tz(sub.planDep, 'Europe/London')
-					.diff(dayjs(), 'minutes', true);
-				const timeUntilArrival = dayjs
-					.tz(sub.planArr, 'Europe/London')
-					.diff(dayjs(), 'minutes', true);
+				const timeUntilDeparture = dayjs(sub.planDep).diff(dayjs(), 'minutes', true);
+				const timeUntilArrival = dayjs(sub.planArr).diff(dayjs(), 'minutes', true);
 				const timeSinceLastUpdate = dayjs().diff(dayjs(sub.refreshedAt), 'minutes', true);
-
-				console.log(
-					'timeUntilDeparture',
-					timeUntilDeparture,
-					'timeUntilArrival',
-					timeUntilArrival,
-					'timeSinceLastUpdate',
-					timeSinceLastUpdate
-				);
 
 				let shouldRefresh = true;
 
