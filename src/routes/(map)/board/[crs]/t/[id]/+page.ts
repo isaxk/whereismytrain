@@ -30,12 +30,16 @@ export const load = async ({ params, fetch, url }) => {
 		});
 
 	async function mapData(): Promise<ServiceMapData> {
-		const { locations, formedFrom } = await service;
+		const { locations, formedFrom, category } = await service;
 
 		// console.log('service data loaded');
 
 		const mapDataResponse = await fetch(`/api/mapdata`, {
-			body: JSON.stringify({ locations: locations, formedFrom: formedFrom }),
+			body: JSON.stringify({
+				locations: locations,
+				type: category === 'bus' ? 'bus' : 'train',
+				formedFrom: formedFrom
+			}),
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'

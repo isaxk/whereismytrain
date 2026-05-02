@@ -96,7 +96,7 @@ function parseBoardItem(item: ServiceItemWithLocations, filter): BoardItem {
 		rawTime: item.std!,
 		departed: (item.atdSpecified && item.atd !== NULL_TIME) ?? false,
 		delay,
-		platform: item.platform ?? null,
+		platform: item.category === 'BR' || item.category === 'BS' ? 'BUS' : (item.platform ?? null),
 		operator: {
 			id: item.operatorCode ?? null,
 			name: operatorList[item.operatorCode!]?.name ?? item.operator ?? 'Unknown',
@@ -135,7 +135,7 @@ export const GET: RequestHandler = async ({ params, request }) => {
 	const offset = time && time != 'null' ? date.diff(dayjs(), 'minute') : 0;
 	console.log('offset', offset);
 
-	let shouldUseRailData = true;
+	let shouldUseRailData = false;
 	if (Math.abs(offset) > 119) {
 		shouldUseRailData = true;
 	}
