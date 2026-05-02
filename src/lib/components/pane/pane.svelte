@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onNavigate } from '$app/navigation';
+	import { afterNavigate, onNavigate } from '$app/navigation';
 
 	import { CupertinoPane } from 'cupertino-pane';
 	import { MediaQuery } from 'svelte/reactivity';
@@ -66,14 +66,23 @@
 		}
 	});
 
+	let scrollTopElm: HTMLDivElement | undefined = $state();
+
 	onNavigate(({ to }) => {
 		if (to?.params?.id) {
 			pane?.moveToBreak('middle');
 			paneHeight.current = 500;
 		}
+
+		scrollTopElm?.scrollIntoView({ inline: 'start', block: 'start' });
+	});
+
+	afterNavigate(() => {
+		scrollTopElm?.scrollIntoView({ inline: 'start', block: 'start' });
 	});
 </script>
 
 <div bind:this={paneElm} class={['w-full rounded-t-2xl bg-background ']}>
+	<div bind:this={scrollTopElm}></div>
 	{@render children()}
 </div>
