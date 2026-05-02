@@ -77,12 +77,12 @@ try {
 
     const service = JSON.parse(payload.data.service);
     const newData = {
-      rtDep: service.estimated_departure ?? null,
+      rtDep: service.rtDep ?? null,
       delay: service.delay ?? null,
       departed: service.departed,
-      rtArr: service.estimated_arrival ?? null,
+      rtArr: service.rtArr ?? null,
       arrived: service.arrived,
-      filterDelay: service.filter_delay ?? null,
+      filterDelay: service.filterDelay ?? null,
       platform: service.platform ?? null,
       isCancelled: service.isCancelled,
       isCancelledAtFilter: service.isCancelledAtFilter,
