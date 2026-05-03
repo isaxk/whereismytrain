@@ -93,12 +93,21 @@ export function parseServiceId(rawid: string) {
 export function dayjsFromHHmm(hhmm: string, colon = true, tz?: string) {
 	if (colon) {
 		const [hh, mm] = hhmm.split(':').map(Number);
-		return dayjs().hour(hh).minute(mm).second(0).millisecond(0).tz(tz);
+		return tz
+			? dayjs.tz(undefined, tz).hour(hh).minute(mm).second(0).millisecond(0)
+			: dayjs().hour(hh).minute(mm).second(0).millisecond(0);
 	} else {
 		const hours = hhmm.substring(0, 2);
 		const minutes = hhmm.substring(2, 4);
 		// console.log(hours, minutes);
-		return dayjs().hour(parseInt(hours)).minute(parseInt(minutes)).second(0).millisecond(0).tz(tz);
+		return tz
+			? dayjs
+					.tz(undefined, tz)
+					.hour(parseInt(hours))
+					.minute(parseInt(minutes))
+					.second(0)
+					.millisecond(0)
+			: dayjs().hour(parseInt(hours)).minute(parseInt(minutes)).second(0).millisecond(0);
 	}
 }
 
