@@ -92,9 +92,9 @@ function calculateTrainPosition(
 	// console.log('nextCoords:', nextCoords);
 
 	if (nextDepartTime && nextCoords && lastDepartedCoords && lastDepartedTime) {
-		const lastTime = dayjs(lastDepartedTime, 'Europe/London').utc(false);
-		const now = dayjs();
-		const nextTime = dayjs(nextDepartTime, 'Europe/London').utc(false);
+		const lastTime = dayjs.tz(lastDepartedTime, 'Europe/London').utc(false);
+		const now = dayjs.tz(undefined, 'Europe/London').utc(false);
+		const nextTime = dayjs.tz(nextDepartTime, 'Europe/London').utc(false);
 		const timeElapsed = now.diff(lastTime, 'seconds');
 		const timeTotal = nextTime.diff(lastTime, 'seconds');
 		let progress = Math.min(0.95, Math.max(0.05, timeElapsed / timeTotal));
