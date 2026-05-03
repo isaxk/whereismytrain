@@ -79,6 +79,7 @@
 				<MapLocationGroup
 					{rid}
 					focus={crs}
+					title={serviceData.title}
 					{refreshing}
 					showTrain={page.data.id === rid || !serviceData.filter.arrived}
 					category={serviceData.category}

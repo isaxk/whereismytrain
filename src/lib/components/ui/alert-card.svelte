@@ -29,7 +29,7 @@
 				'border-yellow-500 bg-yellow-100 text-black dark:bg-yellow-600/30 dark:text-white':
 					status === 'minor',
 				'border-red-500 bg-red-100 text-black dark:bg-red-900 dark:text-white': status === 'major',
-				'border-white bg-black text-white': status === 'severe'
+				'border-white bg-black text-red-100': status === 'severe'
 			},
 			className
 		])

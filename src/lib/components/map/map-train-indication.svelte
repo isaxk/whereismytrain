@@ -7,6 +7,7 @@
 
 	import TrainIconByCategory from '../train/train-icon-by-category.svelte';
 	import Spinner from '../ui/spinner/spinner.svelte';
+	import { goto } from '$app/navigation';
 
 	let {
 		trainPosition,
@@ -17,7 +18,10 @@
 		rid,
 		showDestination,
 		category,
-		opacity = 100
+		title = null,
+		showTitle = false,
+		opacity = 100,
+		href = null
 	} = $props();
 
 	const coordsTween = Tween.of(() => trainPosition);
@@ -25,10 +29,24 @@
 
 <Marker
 	lngLat={coordsTween.current}
-	class="p-5 "
+	onclick={() => href && goto(href)}
+	class="relative p-5"
 	zIndex={isFormedFromTrain ? 0 : 2000}
 	opacity={page.data.crs && page.data.id !== rid ? 0.2 : 1}
 >
+	{#if title && showTitle}
+		<div
+			style:color
+			style:opacity
+			style:border-color={color}
+			class={[
+				'absolute left-1/2 box-border w-max -translate-x-1/2 rounded-sm border bg-background px-1 py-0 font-sans text-[11px]/4 font-medium text-nowrap drop-shadow backdrop-blur-sm transition-all',
+				trainBearing > 140 && trainBearing < 220 ? 'top-0' : 'bottom-0'
+			]}
+		>
+			{title}
+		</div>
+	{/if}
 	<div class="relative rounded-full bg-background">
 		<div
 			style:border-color={color}

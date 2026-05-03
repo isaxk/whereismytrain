@@ -174,20 +174,27 @@ export const GET: RequestHandler = async ({ params, request }) => {
 			.toSorted((a, b) => dayjs(a.std).diff(dayjs(b.std)))
 			.map((s) => parseBoardItem(s, to));
 
-		const nrccMessages: Notice[] = (data.nrccMessages ?? []).map((m) => ({
-			...m,
-			category: (typeof m.category === 'number'
-				? m.category
-				: Category[m.category as number]) as Category,
-			severity: (typeof m.severity === 'number'
-				? m.severity
-				: ((Severity as unknown as Record<string, number>)[m.severity as string] ?? 0)) as Severity,
-			xhtmlMessage:
-				m.xhtmlMessage?.replace(
-					/More information can be found in\s*<a href="([^"]+)">[^<]+<\/a>/,
-					'<a href="$1">More info</a>'
-				) ?? ''
-		}));
+		const nrccMessages: Notice[] = (data.nrccMessages ?? [])
+			.map((m) => ({
+				...m,
+				category: (typeof m.category === 'number'
+					? m.category
+					: Category[m.category as number]) as Category,
+
+				severity: (typeof m.severity === 'number'
+					? m.severity
+					: ((Severity as unknown as Record<string, number>)[m.severity as string] ??
+						0)) as Severity,
+
+				xhtmlMessage:
+					m.xhtmlMessage?.replace(
+						/More information can be found in\s*<a href="([^"]+)">[^<]+<\/a>/,
+						'<a href="$1">More info</a>'
+					) ?? ''
+			}))
+			.toSorted((a, b) => {
+				return b.severity - a.severity;
+			});
 
 		const board: Board = {
 			services,

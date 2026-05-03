@@ -26,7 +26,8 @@
 		to = null,
 		focus,
 		routeCancelled = false,
-		showTrain = true
+		showTrain = true,
+		title = null
 	}: {
 		href: string;
 		crs: string;
@@ -41,6 +42,7 @@
 		to?: string | null;
 		focus?: string | null;
 		routeCancelled?: boolean;
+		title?: string | null;
 		showTrain?: boolean;
 	} = $props();
 
@@ -225,6 +227,9 @@
 	{#if data.trainPosition && showTrain}
 		<MapTrainIndication
 			{category}
+			{title}
+			href={page.data.id === rid ? null : href}
+			showTitle={page.data.id === rid ? false : true}
 			opacity={!to || data.lineLocations.some((l) => l.crs === to && l.crs !== null)
 				? data.isFormedFromTrain
 					? 0.2

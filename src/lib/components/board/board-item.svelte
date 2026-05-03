@@ -94,7 +94,7 @@
 <a
 	{href}
 	class={cn([
-		'flex w-full flex-col justify-center rounded  text-left',
+		'flex w-full flex-col justify-center rounded text-left',
 		connection && connection.rtTime && connection.status === 'ok'
 			? 'h-28 gap-1'
 			: filter
@@ -118,7 +118,7 @@
 				</span>
 			{/if}
 		</div>
-		<div class="text-[11px]">
+		<div class="text-xs">
 			{#if isCancelled}
 				<ChangeNotifier changed={oldisCancelled !== isCancelled} class="font-medium text-danger"
 					><X size={14} /> Cancelled</ChangeNotifier
@@ -143,6 +143,7 @@
 					{:else}
 						Expected
 					{/if}
+
 					{rtDep}
 				</ChangeNotifier>
 			{:else}

@@ -28,6 +28,9 @@
 	import { mapData } from '$lib/state/map.svelte.js';
 	import { localStore } from '$lib/state/saved.svelte.js';
 	import { Category, Severity, type BoardDetails, type BoardItem } from '$lib/types/index.js';
+	import { Accordion } from 'bits-ui';
+	import { cn } from '$lib/utils.js';
+	import ChevronDown from '@lucide/svelte/icons/chevron-down';
 
 	let { data } = $props();
 
@@ -148,7 +151,80 @@
 					{#if error}
 						<AlertCard status="major">{error}</AlertCard>
 					{/if}
-					{#each details?.notices as notice, index (index)}
+					{#if details?.notices && details?.notices.length > 1}
+						<Accordion.Root type="single">
+							<Accordion.Item
+								class={cn([
+									'w-full overflow-hidden rounded-md border drop-shadow-xs data-[state=open]:border-foreground/20 data-[state=open]:bg-background data-[state=open]:text-foreground',
+									{
+										'border-blue-500 bg-blue-100 text-black dark:bg-blue-900 dark:text-white':
+											details.notices.some((n) => n.severity === Severity.info),
+										'border-yellow-500 bg-yellow-100 text-black dark:bg-yellow-600/30 dark:text-white':
+											details.notices.some((n) => n.severity === Severity.minor),
+										'border-red-500 bg-red-100 text-black dark:bg-red-900 dark:text-white':
+											details.notices.some((n) => n.severity === Severity.major),
+										'border-white bg-black text-red-100': details.notices.some(
+											(n) => n.severity === Severity.severe
+										)
+									}
+								])}
+							>
+								<Accordion.Trigger
+									class="group flex w-full items-center gap-2 border-foreground/20 px-3 py-2 text-sm font-medium data-[state=open]:border-b"
+									><CircleAlertIcon size={18} />
+									<div>
+										{#if details.notices.some((n) => n.severity === Severity.severe)}
+											Severe service disruption
+										{:else if details.notices.some((n) => n.severity === Severity.major)}
+											Major service disruption
+										{:else if details.notices.some((n) => n.severity === Severity.minor)}
+											Minor service disruption
+										{/if}
+
+										{#if details.notices.some((n) => n.severity !== Severity.info)}
+											<span class="inline font-normal">
+												({details.notices.length} notice{details.notices.length !== 1 ? 's' : ''})
+											</span>
+										{:else}
+											{details.notices.length} notice{details.notices.length !== 1 ? 's' : ''}
+										{/if}
+									</div>
+									<div class="grow"></div>
+
+									<div class="transition-all group-data-[state=open]:rotate-180">
+										<ChevronDown size={18} />
+									</div>
+								</Accordion.Trigger>
+								<Accordion.Content class="flex flex-col overflow-hidden">
+									{#each details?.notices as notice, index (index)}
+										<AlertCard
+											class="rounded-none border-0 border-foreground/10 not-last:border-b"
+											Icon={notice.category === Category.Connectingservice
+												? GitCompareArrowsIcon
+												: notice.category === Category.Station
+													? House
+													: CircleAlertIcon}
+											status={(Severity[notice.severity] ?? 'info') as
+												| 'info'
+												| 'minor'
+												| 'major'
+												| 'severe'}
+										>
+											<div
+												class={[
+													'prose text-sm dark:prose-invert prose-p:text-sm',
+													notice.severity === Severity.severe ? 'text-red-100 prose-invert' : ''
+												]}
+											>
+												{@html notice.xhtmlMessage}
+											</div>
+										</AlertCard>
+									{/each}
+								</Accordion.Content>
+							</Accordion.Item>
+						</Accordion.Root>
+					{:else if details?.notices.length === 1}
+						{@const notice = details.notices[0]}
 						<AlertCard
 							Icon={notice.category === Category.Connectingservice
 								? GitCompareArrowsIcon
@@ -161,11 +237,11 @@
 								| 'major'
 								| 'severe'}
 						>
-							<div class="prose text-xs dark:prose-invert prose-p:text-xs">
+							<div class="prose text-sm dark:prose-invert prose-p:text-sm">
 								{@html notice.xhtmlMessage}
 							</div>
 						</AlertCard>
-					{/each}
+					{/if}
 				</div>
 			{/if}
 
@@ -201,7 +277,7 @@
 									{#if services.length > 0}
 										{#each services as service (service.rid + service.rawTime)}
 											<div
-												class="border-b border-border px-4 transition-all odd:bg-muted/40"
+												class={['border-b border-border px-4 transition-all odd:bg-muted/30']}
 												animate:flip={{ duration: 200 }}
 												out:fly={{ duration: 200, x: -50 }}
 											>
