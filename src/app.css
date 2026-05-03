@@ -91,6 +91,8 @@
 }
 
 @theme inline {
+	--default-font-family: 'Inter', sans-serif;
+	--font-sans: var(--default-font-family);
 	--radius-sm: calc(var(--radius) - 4px);
 	--radius-md: calc(var(--radius) - 2px);
 	--radius-lg: var(--radius);
