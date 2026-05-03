@@ -128,7 +128,7 @@ export const GET: RequestHandler = async ({ params, request }) => {
 
 	const date =
 		time && time != 'null'
-			? dayjsFromHHmm(time, false).add(tomorrow ? 24 : 0, 'hour')
+			? dayjsFromHHmm(time, false, 'Europe/London').add(tomorrow ? 24 : 0, 'hour')
 			: dayjs.tz(undefined, 'Europe/London');
 	// console.log(date.toString());
 

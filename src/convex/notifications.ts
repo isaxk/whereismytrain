@@ -178,10 +178,60 @@ export const refresh = internalAction({
 					}
 				}
 
+				if (
+					newSub.destination !== sub.destination &&
+					!newSub.isCancelled &&
+					!newSub.isCancelledAtFilter
+				) {
+					const title = `🔄 New destination: ${newSub.destination}`;
+					let description = `${dayjs(newSub.planDep).format('HH:mm')} to ${sub.destination} • `;
+					if (newSub.delay === null) {
+						description += `Exp. Delayed`;
+					} else if (newSub.delay <= -1) {
+						description += `Exp. ${dayjs(newSub.rtDep).format('HH:mm')}`;
+					} else if (newSub.delay > 1) {
+						description += `Exp. ${dayjs(newSub.rtDep).format('HH:mm')}`;
+					} else {
+						description += `Exp. On time`;
+					}
+					if (newSub.destination !== newSub.to) {
+						description += `\nStill calling at ${newSub.to}`;
+					}
+					await ctx.runAction(internal.fcm.sendFCM, {
+						fcmToken: sub.fcmToken,
+						title,
+						description,
+						data: { ...sub, ...newSub },
+						tag: sub.serviceId + '-destination'
+					});
+				}
+
+				if (newSub.platform !== sub.platform) {
+					const title = `🔄 Changed to Platform ${newSub.platform}`;
+					let description = `${dayjs(newSub.planDep).format('HH:mm')} to ${newSub.destination} • `;
+					if (newSub.delay === null) {
+						description += `Exp. Delayed`;
+					} else if (newSub.delay <= -1) {
+						description += `Exp. ${dayjs(newSub.rtDep).format('HH:mm')}`;
+					} else if (newSub.delay > 1) {
+						description += `Exp. ${dayjs(newSub.rtDep).format('HH:mm')}`;
+					} else {
+						description += `Exp. On time`;
+					}
+					await ctx.runAction(internal.fcm.sendFCM, {
+						fcmToken: sub.fcmToken,
+						title,
+						description,
+						data: { ...sub, ...newSub },
+						tag: sub.serviceId + '-platform'
+					});
+				}
+
 				let title = null;
-				let description = `${dayjs(newSub.planDep).format('HH:mm')} to ${sub.destination}`;
+				let description = `${dayjs(newSub.planDep).format('HH:mm')} to ${newSub.destination}`;
 
 				if (newSub.isCancelledAtFilter && !sub.isCancelledAtFilter && !newSub.isCancelled) {
+					description = `${dayjs(newSub.planDep).format('HH:mm')} to ${sub.destination}`;
 					title = `❌ Cancelled to ${sub.to}`;
 					if (newSub.destination !== sub.destination) {
 						description += ` will now terminate at ${newSub.destination}`;
@@ -300,32 +350,6 @@ export const refresh = internalAction({
 						description,
 						data: { ...sub, ...newSub },
 						tag: sub.serviceId + '-platform'
-					});
-				}
-
-				if (
-					newSub.destination !== sub.destination &&
-					!newSub.isCancelled &&
-					!newSub.isCancelledAtFilter
-				) {
-					const title = `🔄 Destination changed to ${newSub.destination}`;
-					let description = `${dayjs(newSub.planDep).format('HH:mm')} to ${sub.destination} • `;
-					if (newSub.delay === null) {
-						description += `Exp. Delayed`;
-					} else if (newSub.delay <= -1) {
-						description += `Exp. ${dayjs(newSub.rtDep).format('HH:mm')}`;
-					} else if (newSub.delay > 1) {
-						description += `Exp. ${dayjs(newSub.rtDep).format('HH:mm')}`;
-					} else {
-						description += `Exp. On time`;
-					}
-					description += `\nStill calling at ${newSub.to}`;
-					await ctx.runAction(internal.fcm.sendFCM, {
-						fcmToken: sub.fcmToken,
-						title,
-						description,
-						data: { ...sub, ...newSub },
-						tag: sub.serviceId + '-destination'
 					});
 				}
 
