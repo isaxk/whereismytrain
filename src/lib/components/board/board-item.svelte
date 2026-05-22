@@ -133,12 +133,15 @@
 					><X size={14} /> Cancelled</ChangeNotifier
 				>
 			{:else if rtDep == planDep}
-				<ChangeNotifier changed={oldDeparted !== departed || oldRtDep !== rtDep} class="text-good">
+				<ChangeNotifier
+					changed={oldDeparted !== departed || oldRtDep !== rtDep}
+					class="flex items-center text-good"
+				>
 					{#if departed}
 						<Check size={14} />
 						Departed on time
 					{:else}
-						<Rss size={14} />
+						<Rss size={13} />
 						On time
 					{/if}
 				</ChangeNotifier>
