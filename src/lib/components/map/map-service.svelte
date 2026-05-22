@@ -8,7 +8,7 @@
 	import { fade } from 'svelte/transition';
 	import { Marker } from 'svelte-maplibre';
 
-	import { highlightedStation, paneHeight } from '$lib/state/map.svelte';
+	import { highlightedStation, paneHeight, showAllLocations } from '$lib/state/map.svelte';
 	import { explicitEffect } from '$lib/state/utils.svelte';
 	import type { Category, ServiceMapData, TrainService } from '$lib/types';
 
@@ -17,6 +17,7 @@
 
 	import MapLocationGroup from './map-location-group.svelte';
 	import MapStationMarker from './map-station-marker.svelte';
+	import dayjs from 'dayjs';
 
 	let {
 		serviceData,
@@ -104,6 +105,21 @@
 			{/each}
 		{/key}
 		{#if page.data.id === rid}
+			{#if showAllLocations.current}
+				{#each mapData.locations
+					.map((l) => l.lineLocations)
+					.flat()
+					.filter((l) => !l.isCallingPoint) as location, i (location.tiploc + i)}
+					<Marker class="rounded-full bg-white dark:bg-black" lngLat={location.coords}>
+						<div
+							style:background-color={serviceData.operator.color}
+							class="flex h-6 w-6 items-center justify-center rounded-full text-[8px] text-white opacity-40"
+						>
+							{dayjs(location.std).format('HH:mm')}
+						</div>
+					</Marker>
+				{/each}
+			{/if}
 			{#each serviceData.callingPoints as cp, i (cp.tiploc + i)}
 				<MapStationMarker
 					{cp}

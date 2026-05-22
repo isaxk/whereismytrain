@@ -75,6 +75,13 @@ function parseBoardItem(item: ServiceItemWithLocations, filter): BoardItem {
 	// if (item.operatorCode === 'LO') {
 	// 	item.operatorCode = findOvergroundLine(item.uid);
 	// }
+	//
+	if (
+		(item.origin?.[0].crs === 'LST' && item.destination?.[0].crs === 'SSD') ||
+		(item.origin?.[0].crs === 'SSD' && item.destination?.[0].crs === 'LST')
+	) {
+		item.operatorCode = 'SX';
+	}
 
 	return {
 		rid: item.rid,
@@ -181,10 +188,9 @@ export const GET: RequestHandler = async ({ params, request }) => {
 					? m.category
 					: Category[m.category as number]) as Category,
 
-				severity: (typeof m.severity === 'number'
-					? m.severity
-					: ((Severity as unknown as Record<string, number>)[m.severity as string] ??
-						0)) as Severity,
+				severity: (typeof m.severity === 'string'
+					? (Severity[m.severity.toLowerCase() as unknown as number] ?? 0)
+					: m.severity) as unknown as Severity,
 
 				xhtmlMessage:
 					m.xhtmlMessage?.replace(

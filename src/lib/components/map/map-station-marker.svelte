@@ -18,6 +18,7 @@
 
 	import TrainIconByCategory from '../train/train-icon-by-category.svelte';
 	import Spinner from '../ui/spinner/spinner.svelte';
+	import dayjs from 'dayjs';
 
 	let {
 		cp,
@@ -57,6 +58,27 @@
 			)?.isFormedFromTrain ??
 				false)
 	);
+
+	const time = $derived.by(() => {
+		if (
+			(['filter', 'post-destination', 'further'].includes(cp.order) &&
+				cp.times.plan.arr &&
+				!(cp.arrivalCancelled && !cp.departureCancelled)) ||
+			!cp.times.plan.dep ||
+			(!cp.arrivalCancelled && cp.departureCancelled)
+		) {
+			return {
+				plan: cp.times.plan.arr ? dayjs(cp.times.plan.arr).format('HH:mm') : null,
+				rt: cp.times.rt.arr ? dayjs(cp.times.rt.arr).format('HH:mm') : null,
+				delay: cp.arrivalDelay ?? null
+			};
+		}
+		return {
+			plan: cp.times.plan.dep ? dayjs(cp.times.plan.dep).format('HH:mm') : null,
+			rt: cp.times.rt.dep ? dayjs(cp.times.rt.dep).format('HH:mm') : null,
+			delay: cp.delay ?? null
+		};
+	});
 </script>
 
 {#if tiploc?.coords}
@@ -77,7 +99,7 @@
 			style:border-color={operator.color}
 			class={[
 				'flex flex-col items-center justify-center overflow-hidden rounded-full text-[10px]/3 text-white',
-				isTrainAtStation ? 'h-10 w-10 border-2' : 'h-7 w-7',
+				isTrainAtStation ? 'h-10 w-10 border-2' : 'h-9 w-9',
 				(cp.order === 'origin' ||
 					cp.order === 'previous' ||
 					cp.order === 'further' ||
@@ -118,8 +140,18 @@
 					{/if}
 				</div>
 			{:else}
-				<div class={['text-current', cp.isCancelled && 'text-red-200 line-through']}>
-					{cp.crs}
+				<div
+					class={[
+						'text-center font-sans text-current',
+						cp.isCancelled && 'text-red-200 line-through'
+					]}
+				>
+					<div class="font-medium">
+						{cp.crs}
+					</div>
+					<div class="text-[9px]/3 opacity-80">
+						{time.rt ?? time.plan}
+					</div>
 				</div>
 			{/if}
 		</div>

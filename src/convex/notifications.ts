@@ -21,6 +21,8 @@ import {
 
 import type { Doc, Id } from './_generated/dataModel';
 
+const FLUTTER_THRESHOLD = 3;
+
 const crons = new Crons(components.crons);
 
 export const createSubscription = internalMutation({
@@ -33,6 +35,8 @@ export const createSubscription = internalMutation({
 		const result = await ctx.db.insert('subscriptions', {
 			fcmToken: args.fcmToken,
 			...args.data,
+			lastNotifiedDelay: args.data.delay,
+			lastNotifiedFilterDelay: args.data.filterDelay,
 			serviceId: args.serviceId
 		});
 		return result;
@@ -114,7 +118,14 @@ export const refresh = internalAction({
 	handler: async (ctx): Promise<void> => {
 		const subscriptions = await ctx.runQuery(internal.notifications.getAllSubscriptions);
 
-		const services = new Map<string, SavedTrainServiceInfo>();
+		const services = new Map<
+			string,
+			| (SavedTrainServiceInfo & {
+					lastNotifiedDelay: number | null | undefined;
+					lastNotifiedFilterDelay: number | null | undefined;
+			  })
+			| null
+		>();
 
 		await Promise.all(
 			subscriptions.map(async (sub) => {
@@ -170,7 +181,10 @@ export const refresh = internalAction({
 						sub.filter,
 						process.env.SERVICE_DETAILS_TOKEN!
 					);
-					newSub = parseSavedInfo(response) ?? null;
+					const parsed = parseSavedInfo(response) ?? null;
+					newSub = parsed
+						? { ...parsed, lastNotifiedDelay: undefined, lastNotifiedFilterDelay: undefined }
+						: null;
 					if (newSub) {
 						services.set(sub.serviceId, newSub);
 					} else {
@@ -271,7 +285,13 @@ export const refresh = internalAction({
 						} else {
 							description = description.replace('LLL', ' ');
 						}
-					} else if (newSub.filterDelay !== sub.filterDelay) {
+					} else if (
+						newSub.filterDelay !== sub.filterDelay &&
+						(!sub.lastNotifiedFilterDelay ||
+							!newSub.filterDelay ||
+							Math.abs(sub.lastNotifiedFilterDelay - newSub.filterDelay) >= FLUTTER_THRESHOLD)
+					) {
+						newSub.lastNotifiedFilterDelay = newSub.filterDelay;
 						if (newSub.to === newSub.destination) {
 							if (newSub.filterDelay === null) {
 								title = `🟡 Exp. arrival Delayed`;
@@ -307,7 +327,12 @@ export const refresh = internalAction({
 					} else {
 						title = `🟢 No longer cancelled! - Exp. ${dayjs(newSub.rtDep).format('HH:mm')} (${newSub.delay}m late)`;
 					}
-				} else if (newSub.delay !== sub.delay) {
+				} else if (
+					newSub.delay !== sub.delay &&
+					(!sub.lastNotifiedDelay ||
+						!newSub.delay ||
+						Math.abs(sub.lastNotifiedDelay - newSub.delay) >= FLUTTER_THRESHOLD)
+				) {
 					if (newSub.delay === null) {
 						title = `🟡 Delayed`;
 					} else if (newSub.delay <= -1) {
@@ -320,6 +345,7 @@ export const refresh = internalAction({
 					if (newSub.platform) {
 						description += ` • Platform ${newSub.platform}`;
 					}
+					newSub.lastNotifiedDelay = newSub.delay;
 				}
 
 				if (title) {

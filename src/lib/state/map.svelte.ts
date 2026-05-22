@@ -29,3 +29,9 @@ export const highlightedStation: {
 } = $state({
 	current: null
 });
+
+export const showAllLocations: {
+	current: boolean;
+} = $state({
+	current: false
+});

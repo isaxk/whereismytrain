@@ -54,7 +54,11 @@ export async function fetchService(
 	const data: ServiceDetails = await response.json();
 	// console.log(data);
 	const locations: ServiceLocation[][] = [(data.locations ?? []).map(parseLocation)];
-	const rawCallingPoints: APIServiceLocation[] = (data.locations ?? []).filter((l) => !l.isPass);
+	const rawCallingPoints: APIServiceLocation[] = (data.locations ?? []).filter(
+		(l) =>
+			!l.isPass &&
+			l.activities?.split(' ').some((a) => ['T', 'U', 'D', 'TB', 'TF', 'R'].includes(a))
+	);
 
 	let callingPoints: WorkingCallingPoint[] = [];
 
@@ -160,8 +164,6 @@ export async function fetchService(
 
 				// get associations
 				const associations = cp.associations.filter((l) => l.category === 'divide');
-
-				console.log('assocs', associations);
 
 				// add the location before the division, with arr. info only
 				//
@@ -379,6 +381,10 @@ export async function fetchService(
 	// if (data.operatorCode == 'LO') {
 	// 	data.operatorCode = findOvergroundLine(data.uid);
 	// }
+	//
+	if (callingPoints.some((l) => l.crs === 'SSD') && callingPoints.some((l) => l.crs === 'LST')) {
+		data.operatorCode = 'SX';
+	}
 
 	let category: 'standard' | 'express' | 'sleeper' | 'bus' | 'metro' = 'standard';
 	if (data.category === 'XX' || data.category === 'XC') {
@@ -429,7 +435,7 @@ export async function fetchService(
 		sdd: data.sdd!,
 		date,
 		isToday: dayjs().isSame(date, 'day'),
-		reasonCode: (data.delayReason?.value ?? data.cancelReason?.value ?? null)?.toString() ?? ''
+		reasonCode: (data.delayReason?.Value ?? data.cancelReason?.Value ?? null)?.toString() ?? ''
 	};
 
 	return final;
@@ -627,29 +633,45 @@ function parseCallingPoint(
 		(loc, i) => (loc.atd || loc.ata) && i > (indexOnLocations ?? 100000)
 	);
 
-	return {
-		crs: item.crs!,
-		tiploc: item.tiploc!,
-		name: item.locationName ?? '',
-		times,
-		delay,
-		arrivalDelay,
-		rtDepDate: item.atd ?? item.etd ?? null,
-		departed: (item.atdSpecified === true && item.atd !== nullTime) || departedAfter === true,
-		arrived: item.ataSpecified === true && item.ata !== nullTime,
-		isCancelled: item.isCancelled ?? false,
-		departureCancelled,
-		arrivalCancelled,
-		inDivision: item.inDivision ?? false,
-		startDivide: item.startDivide ?? false,
-		endDivide: item.endDivide ?? false,
-		startJoin: item.startJoin ?? false,
-		endJoin: item.endJoin ?? false,
-		platform: item.platform ?? null,
-		order,
-		isOrigin: index === 0,
-		showTrain
-	};
+	const activities = item.activities?.split(' ') ?? [];
+
+	console.log(item.crs, activities);
+
+	let feature: 'request' | 'pickup' | 'setdown' | null = null;
+	if (activities.includes('R')) {
+		feature = 'request';
+	}
+	if (activities.includes('U')) {
+		feature = 'pickup';
+	}
+	if (activities.includes('D')) {
+		feature = 'setdown';
+	}
+	if (activities)
+		return {
+			crs: item.crs!,
+			tiploc: item.tiploc!,
+			name: item.locationName ?? '',
+			times,
+			delay,
+			arrivalDelay,
+			rtDepDate: item.atd ?? item.etd ?? null,
+			departed: (item.atdSpecified === true && item.atd !== nullTime) || departedAfter === true,
+			arrived: item.ataSpecified === true && item.ata !== nullTime,
+			isCancelled: item.isCancelled ?? false,
+			feature,
+			departureCancelled,
+			arrivalCancelled,
+			inDivision: item.inDivision ?? false,
+			startDivide: item.startDivide ?? false,
+			endDivide: item.endDivide ?? false,
+			startJoin: item.startJoin ?? false,
+			endJoin: item.endJoin ?? false,
+			platform: item.platform ?? null,
+			order,
+			isOrigin: index === 0,
+			showTrain
+		};
 }
 
 async function fetchAssocService(rid: string, token: string) {
