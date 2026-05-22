@@ -184,6 +184,11 @@ export const operatorList: Record<string, { name: string; bg: string; text: stri
 		bg: '#C52B31',
 		text: '#ffffff'
 	},
+	SX: {
+		name: 'Stansted Express',
+		bg: '#C52B31',
+		text: '#ffffff'
+	},
 	ME: {
 		name: 'MerseyRail',
 		bg: '#404745',

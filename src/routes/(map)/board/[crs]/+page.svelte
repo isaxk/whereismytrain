@@ -178,7 +178,7 @@
 										{:else if details.notices.some((n) => n.severity === Severity.major)}
 											Major service disruption
 										{:else if details.notices.some((n) => n.severity === Severity.minor)}
-											Minor service disruption
+											Service disruption
 										{/if}
 
 										{#if details.notices.some((n) => n.severity !== Severity.info)}

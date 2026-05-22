@@ -121,6 +121,7 @@ export type CallingPoint = {
 	delay: number | null;
 	arrivalDelay: number | null;
 	order: CallingPointOrder;
+	feature: 'request' | 'pickup' | 'setdown' | null;
 	isOrigin: boolean;
 	departed: boolean;
 	arrived: boolean;

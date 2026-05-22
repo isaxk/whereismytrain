@@ -19,11 +19,18 @@
 	import Button from '$lib/components/ui/button/button.svelte';
 	import Skeleton from '$lib/components/ui/skeleton.svelte';
 	import Spinner from '$lib/components/ui/spinner/spinner.svelte';
-	import { headerColor, highlightedStation, mapData } from '$lib/state/map.svelte.js';
+	import {
+		headerColor,
+		highlightedStation,
+		mapData,
+		showAllLocations
+	} from '$lib/state/map.svelte.js';
 	import { refreshing } from '$lib/state/services-subscriber.svelte';
 	import type { TrainService } from '$lib/types';
 
 	import type { PageData } from './$types';
+	import Time from '$lib/components/journey/time.svelte';
+	import { pushState } from '$app/navigation';
 
 	let { data }: { data: PageData } = $props();
 
@@ -207,23 +214,29 @@
 				destinations={serviceData.destination.map((d) => d.name)}
 			/>
 		{/if}
-		{#if detailedView}
-			<div class="px-4">
-				<Button variant="outline" onclick={() => (detailedView = false)}>
-					Back to simple view
-				</Button>
-			</div>
-			<DetailedView locations={locations.flat()} />
-		{:else}
-			<div class="flex flex-col px-4">
-				<div class="flex gap-4 px-2 pb-2 text-xs text-muted-foreground">
-					<div class="w-18">
-						<div class="w-10 text-right">Time</div>
-						<div class="grow"></div>
-					</div>
-					<div class="grow">Station</div>
-					<div>Platform</div>
+		<!-- <div class="px-4">
+			<Button
+				variant="outline"
+				onclick={() => (showAllLocations.current = !showAllLocations.current)}
+				>{#if showAllLocations.current}
+					Show only calling points
+				{:else}
+					Show all locations
+				{/if}</Button
+			>
+		</div> -->
+
+		<div class="flex flex-col px-4">
+			<div class="flex gap-4 px-2 pb-2 text-xs text-muted-foreground">
+				<div class="w-18">
+					<div class="w-10 text-right">Time</div>
+					<div class="grow"></div>
 				</div>
+				<div class="grow">Station</div>
+				<div>Platform</div>
+			</div>
+
+			{#if !showAllLocations.current}
 				{#each callingPoints as cp, i (cp.tiploc + cp.times.plan.dep + i)}
 					{#if !['previous', 'origin'].includes(cp.order) || showPrevious}
 						{@const next = callingPoints[i + 1]}
@@ -292,8 +305,43 @@
 						{/if}
 					{/if}
 				{/each}
-			</div>
-		{/if}
+			{:else}
+				{#each locations.flat() as location, i (location.tiploc + i)}
+					{#if location.isCallingPoint}
+						{@const cp = callingPoints.find((cp) => cp.tiploc === location.tiploc)}
+						{#if cp}
+							<CallingPointItem
+								cp={{ ...cp, inDivision: false }}
+								{operator}
+								{category}
+								index={i}
+								length={locations.flat().length}
+								pickupOnly={false}
+								setdownOnly={false}
+								showTrain={false}
+								showArrivalMark={false}
+								showDepartureMark={false}
+								hideDetails={false}
+							/>
+						{/if}
+					{:else}
+						<div class="flex h-7 items-center gap-2 px-2 font-light">
+							<div class="flex w-10 min-w-10 flex-col items-end justify-center opacity-70">
+								<Time small scheduled={location.std ?? ''} estimated={location.etd ?? null}></Time>
+							</div>
+							<div class="flex h-8 w-8 flex-col items-center">
+								<div style:background={operator.color} class="w-1.5 grow bg-black"></div>
+							</div>
+							<div
+								class={['text-xs italic', location.crs ? 'font-normal opacity-30' : 'opacity-30']}
+							>
+								{location.name}
+							</div>
+						</div>
+					{/if}
+				{/each}
+			{/if}
+		</div>
 	</div>
 {:else if error}
 	<div

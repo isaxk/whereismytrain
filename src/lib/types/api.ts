@@ -196,7 +196,7 @@ export interface ReasonCodeWithLocation {
 	tiploc?: string;
 	near?: boolean;
 	/** @format int32 */
-	value?: number;
+	Value?: number;
 }
 
 export interface BaseServiceItemDiversion {

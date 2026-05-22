@@ -2,7 +2,16 @@
 	import { preloadCode } from '$app/navigation';
 
 	import dayjs from 'dayjs';
-	import { ArrowDownRight, Bus, Check, ClockAlert, GitCompareArrowsIcon, X } from 'lucide-svelte';
+	import {
+		ArrowDownRight,
+		Bus,
+		Check,
+		ClockAlert,
+		GitCompareArrowsIcon,
+		Radio,
+		Rss,
+		X
+	} from 'lucide-svelte';
 
 	import { explicitEffect } from '$lib/state/utils.svelte';
 	import type { DestinationOrigin, Operator } from '$lib/types';
@@ -125,10 +134,11 @@
 				>
 			{:else if rtDep == planDep}
 				<ChangeNotifier changed={oldDeparted !== departed || oldRtDep !== rtDep} class="text-good">
-					<Check size={14} />
 					{#if departed}
+						<Check size={14} />
 						Departed on time
 					{:else}
+						<Rss size={14} />
 						On time
 					{/if}
 				</ChangeNotifier>

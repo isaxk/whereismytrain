@@ -1,6 +1,6 @@
 <script lang="ts">
 	import dayjs from 'dayjs';
-	import { ArrowDownRight, ArrowUpRight, X } from 'lucide-svelte';
+	import { ArrowDownRight, ArrowUpRight, Hand, X } from 'lucide-svelte';
 
 	import { highlightedStation } from '$lib/state/map.svelte';
 	import type { CallingPoint, Operator } from '$lib/types';
@@ -247,11 +247,16 @@
 	>
 		{cp.platform ?? '-'}
 		<div>
-			{#if pickupOnly}
+			{#if cp.feature === 'request'}
+				<div class="flex items-center gap-1 text-[10px]/3 text-muted-foreground">
+					<Hand size={12} />
+					request stop
+				</div>
+			{:else if cp.feature === 'pickup'}
 				<div class="flex items-center gap-1 text-[10px]/3 text-muted-foreground">
 					<ArrowUpRight size={12} /> boarding only
 				</div>
-			{:else if setdownOnly}
+			{:else if cp.feature === 'setdown'}
 				<div class="flex items-center gap-1 text-[10px]/3 text-muted-foreground">
 					<ArrowDownRight size={12} /> alighting only
 				</div>
