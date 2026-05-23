@@ -19,6 +19,7 @@
 	import Button, { buttonVariants } from '../ui/button/button.svelte';
 	import { Spinner } from '../ui/spinner/index';
 	import { PUBLIC_NOTIFICATIONS_ENABLED } from '$env/static/public';
+	import Check from '@lucide/svelte/icons/check';
 
 	const convex = useConvexClient();
 
@@ -45,6 +46,7 @@
 	const firstAfterCallingPointCrs = $derived.by(() => afterCallingPoints[0]?.crs);
 
 	const promptDismissed = localStore<boolean>('saved-prompt-dismissed', false);
+	let failedDismissed = $state(false);
 
 	let alertOpen = $state(false);
 </script>
@@ -81,20 +83,25 @@
 						<BellRing fill="currentColor" />
 					{:else}
 						<BookmarkIcon fill="currentColor" />
+
 						<div
 							class="absolute right-0 bottom-0 scale-60 rounded-full p-0.5"
 							style:background={service.operator.color}
 						>
-							<BellOff size={5} fill="currentColor" />
+							{#if PUBLIC_NOTIFICATIONS_ENABLED == 'true'}
+								<BellOff size={5} fill="currentColor" />
+							{:else}
+								<Check size={10} />
+							{/if}
 						</div>
 					{/if}
 				</Button>
-				{#if notificationsFailed && PUBLIC_NOTIFICATIONS_ENABLED}
+				{#if notificationsFailed && !failedDismissed && PUBLIC_NOTIFICATIONS_ENABLED == 'true'}
 					<div
 						class="absolute top-14 right-4 z-20 flex items-center gap-1 rounded border border-border bg-background px-1.5 py-0.5 text-xs text-foreground drop-shadow"
 					>
 						Failed to setup notifications
-						<button onclick={() => {}}><X size={14} /></button>
+						<button onclick={() => (failedDismissed = true)}><X size={14} /></button>
 					</div>
 				{/if}
 			{:else if existingOnRoute}
@@ -142,8 +149,10 @@
 				>
 					{#if loading}
 						<Spinner class="size-6" />
-					{:else}
+					{:else if PUBLIC_NOTIFICATIONS_ENABLED == 'true'}
 						<Bell />
+					{:else}
+						<BookmarkIcon />
 					{/if}
 				</Button>
 				<!-- {/if} -->
@@ -161,8 +170,10 @@
 						<Button size="icon" class="bg-input/30 hover:bg-input/50" variant="outline">
 							{#if loading}
 								<Spinner size="size-6" />
-							{:else}
+							{:else if PUBLIC_NOTIFICATIONS_ENABLED == 'true'}
 								<Bell />
+							{:else}
+								<BookmarkIcon />
 							{/if}
 						</Button>
 					</DropdownMenu.Trigger>
