@@ -12,6 +12,7 @@
 
 	import type { Id } from '../../../convex/_generated/dataModel';
 	import type { Snippet } from 'svelte';
+	import { PUBLIC_NOTIFICATIONS_ENABLED } from '$env/static/public';
 
 	let {
 		serviceId,
@@ -73,16 +74,20 @@
 	async function handleSubscribe(filterOverride: string | null) {
 		const filterCrs = filterOverride || filter;
 		if (!filterCrs) return;
-		const fcmToken = await getFCMToken();
+
 		let subscriptionId: string | null = null;
-		if (fcmToken) {
-			const result = await convex.action(api.notifications.registerSubscription, {
-				fcmToken,
-				serviceId,
-				focusCrs: crs,
-				filterCrs
-			});
-			subscriptionId = result;
+
+		if (PUBLIC_NOTIFICATIONS_ENABLED) {
+			const fcmToken = await getFCMToken();
+			if (fcmToken) {
+				const result = await convex.action(api.notifications.registerSubscription, {
+					fcmToken,
+					serviceId,
+					focusCrs: crs,
+					filterCrs
+				});
+				subscriptionId = result;
+			}
 		}
 
 		if (!serviceData) {

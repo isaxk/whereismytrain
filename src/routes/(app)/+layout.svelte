@@ -15,14 +15,20 @@
 	import { pwa } from '$lib/state/saved.svelte';
 	import { servicesSub } from '$lib/state/services-subscriber.svelte.js';
 
-	import { PUBLIC_CONVEX_URL, PUBLIC_MAP_ENABLED } from '$env/static/public';
+	import {
+		PUBLIC_CONVEX_URL,
+		PUBLIC_MAP_ENABLED,
+		PUBLIC_NOTIFICATIONS_ENABLED
+	} from '$env/static/public';
 
 	let { children, data } = $props();
 
 	const lg = new MediaQuery('(min-width: 1024px)');
 	let mounted = $state(false);
 
-	setupConvex(PUBLIC_CONVEX_URL);
+	if (PUBLIC_NOTIFICATIONS_ENABLED) {
+		setupConvex(PUBLIC_CONVEX_URL);
+	}
 
 	onMount(() => {
 		mounted = true;
