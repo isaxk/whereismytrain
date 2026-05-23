@@ -1,7 +1,7 @@
 import type { TrainService } from '$lib/types/index.js';
 import dayjs from 'dayjs';
 
-import { API_COMPATIBLE_VERSION } from '../../../../../api/_shared/index.js';
+import { API_COMPATIBLE_VERSION } from '../../../../api/_shared/index.js';
 
 export const ssr = true;
 

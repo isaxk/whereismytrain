@@ -1,3 +1,4 @@
+import { PUBLIC_MAP_ENABLED } from '$env/static/public';
 import AllStationsJSON from '$lib/data/stations.json';
 import type { Board } from '$lib/types';
 
@@ -53,6 +54,6 @@ export const load = async ({ params, fetch, url }) => {
 		board,
 		time: time == 'null' ? null : time,
 		tomorrow,
-		map: mapData()
+		map: PUBLIC_MAP_ENABLED == 'true' ? mapData() : null
 	};
 };

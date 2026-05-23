@@ -7,7 +7,7 @@
 	import * as AlertDialog from '$lib/components/ui/alert-dialog/index.js';
 
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
-	import { getFCMToken, unsubscribeToTrain } from '$lib/notifications';
+	import { getFCMToken } from '$lib/notifications';
 	import { parseSavedInfo } from '$lib/shared/service';
 	import { localStore, pwa, saved, setSavedTrainData } from '$lib/state/saved.svelte';
 	import type { TrainService, SavedTrain as SavedTrainType } from '$lib/types';
@@ -18,6 +18,7 @@
 	import SubscriptionProvider from '../providers/subscription-provider.svelte';
 	import Button, { buttonVariants } from '../ui/button/button.svelte';
 	import { Spinner } from '../ui/spinner/index';
+	import { PUBLIC_NOTIFICATIONS_ENABLED } from '$env/static/public';
 
 	const convex = useConvexClient();
 
@@ -88,7 +89,7 @@
 						</div>
 					{/if}
 				</Button>
-				{#if notificationsFailed}
+				{#if notificationsFailed && PUBLIC_NOTIFICATIONS_ENABLED}
 					<div
 						class="absolute top-14 right-4 z-20 flex items-center gap-1 rounded border border-border bg-background px-1.5 py-0.5 text-xs text-foreground drop-shadow"
 					>

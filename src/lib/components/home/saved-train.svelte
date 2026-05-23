@@ -19,7 +19,6 @@
 	import type { SavedTrain, SavedTrainServiceInfo } from '$lib/types';
 
 	import TrainDiagram from '../itinerary/train-diagram.svelte';
-	import AlternativeProvider from '../providers/alternative-provider.svelte';
 	import SubscriptionProvider from '../providers/subscription-provider.svelte';
 	import AlertCard from '../ui/alert-card.svelte';
 	import Button, { buttonVariants } from '../ui/button/button.svelte';
@@ -27,7 +26,6 @@
 	import * as DropdownMenu from '../ui/dropdown-menu';
 	import Spinner from '../ui/spinner/spinner.svelte';
 
-	import AlternativeDisplay from './alternative-display.svelte';
 	import Connection from './connection.svelte';
 	import Search from '../search/search.svelte';
 
@@ -203,7 +201,7 @@
 							>
 						</DropdownMenu.Content>
 					</DropdownMenu.Root>
-					<Dialog.Root bind:open={showMissedDialog}>
+					<!-- <Dialog.Root bind:open={showMissedDialog}>
 						<Dialog.Content>
 							<Dialog.Title>Missed train, what now?</Dialog.Title>
 							<Dialog.Description>
@@ -254,7 +252,7 @@
 								</AlternativeProvider>
 							</div>
 						</Dialog.Content>
-					</Dialog.Root>
+					</Dialog.Root> -->
 					<!-- {/key} -->
 				</div>
 			</div>

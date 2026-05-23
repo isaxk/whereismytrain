@@ -56,20 +56,6 @@ export async function getFCMToken() {
 	return token;
 }
 
-export async function unsubscribeToTrain(id: string) {
-	const body = {
-		subscriptionId: id
-	};
-	await fetch('https://pqwbjxgovvgpxmccjsdw.supabase.co/functions/v1/deregister', {
-		method: 'POST',
-		headers: {
-			'Content-Type': 'application/json',
-			Authorization: `Bearer ${env.PUBLIC_SUPABASE_ANON_KEY}`
-		},
-		body: JSON.stringify(body)
-	});
-}
-
 export async function initializeNotifications() {
 	if (!browser || !messaging) {
 		console.log('Browser or messaging not available');

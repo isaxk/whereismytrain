@@ -7,7 +7,6 @@
 	import { fade, slide } from 'svelte/transition';
 
 	import CallingPointItem from '$lib/components/train/calling-point-item.svelte';
-	import DetailedView from '$lib/components/train/detailed-view.svelte';
 	import Disruption from '$lib/components/train/disruption.svelte';
 	import DivideLine from '$lib/components/train/divide-line.svelte';
 	import Formation from '$lib/components/train/formation.svelte';
@@ -19,18 +18,11 @@
 	import Button from '$lib/components/ui/button/button.svelte';
 	import Skeleton from '$lib/components/ui/skeleton.svelte';
 	import Spinner from '$lib/components/ui/spinner/spinner.svelte';
-	import {
-		headerColor,
-		highlightedStation,
-		mapData,
-		showAllLocations
-	} from '$lib/state/map.svelte.js';
+	import { headerColor, highlightedStation, mapData } from '$lib/state/map.svelte.js';
 	import { refreshing } from '$lib/state/services-subscriber.svelte';
 	import type { TrainService } from '$lib/types';
 
 	import type { PageData } from './$types';
-	import Time from '$lib/components/journey/time.svelte';
-	import { pushState } from '$app/navigation';
 
 	let { data }: { data: PageData } = $props();
 
@@ -40,7 +32,7 @@
 
 	let showPrevious = $state(false);
 	let showSplit = $state(false);
-	let detailedView = $state(false);
+
 	let lastSuccessfulRefresh: Dayjs | null = $state(null);
 
 	$effect(() => {
@@ -81,14 +73,13 @@
 	$effect(() => {
 		if (
 			serviceData?.callingPoints.some(
-				(cp) => cp.order === 'previous' && highlightedStation.current === cp.crs + cp.rtDepDate
+				(cp) =>
+					cp.order === 'previous' && highlightedStation.current === (cp.crs ?? '') + cp.rtDepDate
 			)
 		) {
 			showPrevious = true;
 		}
 	});
-
-	let selectedTestItem = $state('0');
 </script>
 
 <svelte:head>
@@ -112,7 +103,6 @@
 		destination,
 		isToday,
 		date,
-		locations,
 		category
 	} = serviceData as TrainService}
 
@@ -214,17 +204,6 @@
 				destinations={serviceData.destination.map((d) => d.name)}
 			/>
 		{/if}
-		<!-- <div class="px-4">
-			<Button
-				variant="outline"
-				onclick={() => (showAllLocations.current = !showAllLocations.current)}
-				>{#if showAllLocations.current}
-					Show only calling points
-				{:else}
-					Show all locations
-				{/if}</Button
-			>
-		</div> -->
 
 		<div class="flex flex-col px-4">
 			<div class="flex gap-4 px-2 pb-2 text-xs text-muted-foreground">
@@ -236,111 +215,67 @@
 				<div>Platform</div>
 			</div>
 
-			{#if !showAllLocations.current}
-				{#each callingPoints as cp, i (cp.tiploc + cp.times.plan.dep + i)}
-					{#if !['previous', 'origin'].includes(cp.order) || showPrevious}
-						{@const next = callingPoints[i + 1]}
-						{@const prev = callingPoints[i - 1]}
+			{#each callingPoints as cp, i (cp.tiploc + cp.times.plan.dep + i)}
+				{#if !['previous', 'origin'].includes(cp.order) || showPrevious}
+					{@const next = callingPoints[i + 1]}
+					{@const prev = callingPoints[i - 1]}
 
-						{@const anyPrevious =
-							callingPoints.filter((c) => c.order === 'previous' || c.order === 'origin').length >
-							0}
+					{@const anyPrevious =
+						callingPoints.filter((c) => c.order === 'previous' || c.order === 'origin').length > 0}
 
-						{#if cp.order === 'focus' && anyPrevious}
-							<LineToggle
-								bind:show={showPrevious}
-								name="previous"
-								color={operator.color}
-								trainVisible={(callingPoints[i - 1].departed ||
-									(callingPoints.some((cp, j) => cp.departed && j < i) && !showPrevious)) &&
-									!callingPoints.some((cp, j) => (cp.departed || cp.arrived) && j > i - 1)}
-								{category}
-								inDivision={cp.inDivision && !cp.startJoin}
-							/>
-						{/if}
-
-						{#if cp.startDivide}
-							<DivideLine type="split" color={operator.color} />
-						{/if}
-
-						{#if cp.startDivide && !filter.inDivision}
-							<div class="-mt-4">
-								<LineToggle
-									bind:show={showSplit}
-									name="division"
-									color={operator.color}
-									trainVisible={(cp.departed || cp.arrived) &&
-										!callingPoints.find((cp) => cp.endDivide)?.arrived &&
-										!showSplit}
-									{category}
-									inDivision={true}
-								/>
-							</div>
-						{/if}
-
-						{#if showSplit || filter.inDivision || !cp.inDivision || cp.endDivide}
-							<CallingPointItem
-								{cp}
-								{operator}
-								{category}
-								index={i}
-								length={callingPoints.length}
-								pickupOnly={!cp.times.plan.arr && i > 0 && !cp.startDivide && !prev.endDivide}
-								setdownOnly={!cp.times.plan.dep &&
-									i < callingPoints.length - 1 &&
-									!cp.endDivide &&
-									!next.startDivide &&
-									!cp.isDestination}
-								showTrain={!(cp.departed && next?.order === 'focus')}
-								showArrivalMark={next?.startDivide}
-								showDepartureMark={prev?.endDivide || cp.startDivide}
-								hideDetails={cp.endDivide &&
-									!showSplit &&
-									!callingPoints.find((cp) => cp.order === 'filter')?.inDivision}
-							/>
-						{/if}
-
-						{#if cp.endDivide && (showPrevious || !previousIncludesStartDivide)}
-							<DivideLine type="end-split" color={operator.color} />
-						{/if}
+					{#if cp.order === 'focus' && anyPrevious}
+						<LineToggle
+							bind:show={showPrevious}
+							name="previous"
+							color={operator.color}
+							trainVisible={(callingPoints[i - 1].departed ||
+								(callingPoints.some((cp, j) => cp.departed && j < i) && !showPrevious)) &&
+								!callingPoints.some((cp, j) => (cp.departed || cp.arrived) && j > i - 1)}
+							{category}
+							inDivision={cp.inDivision && !cp.startJoin}
+						/>
 					{/if}
-				{/each}
-			{:else}
-				{#each locations.flat() as location, i (location.tiploc + i)}
-					{#if location.isCallingPoint}
-						{@const cp = callingPoints.find((cp) => cp.tiploc === location.tiploc)}
-						{#if cp}
-							<CallingPointItem
-								cp={{ ...cp, inDivision: false }}
-								{operator}
+
+					{#if cp.startDivide}
+						<DivideLine type="split" color={operator.color} />
+					{/if}
+
+					{#if cp.startDivide && !filter.inDivision}
+						<div class="-mt-4">
+							<LineToggle
+								bind:show={showSplit}
+								name="division"
+								color={operator.color}
+								trainVisible={(cp.departed || cp.arrived) &&
+									!callingPoints.find((cp) => cp.endDivide)?.arrived &&
+									!showSplit}
 								{category}
-								index={i}
-								length={locations.flat().length}
-								pickupOnly={false}
-								setdownOnly={false}
-								showTrain={false}
-								showArrivalMark={false}
-								showDepartureMark={false}
-								hideDetails={false}
+								inDivision={true}
 							/>
-						{/if}
-					{:else}
-						<div class="flex h-7 items-center gap-2 px-2 font-light">
-							<div class="flex w-10 min-w-10 flex-col items-end justify-center opacity-70">
-								<Time small scheduled={location.std ?? ''} estimated={location.etd ?? null}></Time>
-							</div>
-							<div class="flex h-8 w-8 flex-col items-center">
-								<div style:background={operator.color} class="w-1.5 grow bg-black"></div>
-							</div>
-							<div
-								class={['text-xs italic', location.crs ? 'font-normal opacity-30' : 'opacity-30']}
-							>
-								{location.name}
-							</div>
 						</div>
 					{/if}
-				{/each}
-			{/if}
+
+					{#if showSplit || filter.inDivision || !cp.inDivision || cp.endDivide}
+						<CallingPointItem
+							{cp}
+							{operator}
+							{category}
+							index={i}
+							length={callingPoints.length}
+							showTrain={!(cp.departed && next?.order === 'focus')}
+							showArrivalMark={next?.startDivide}
+							showDepartureMark={prev?.endDivide || cp.startDivide}
+							hideDetails={cp.endDivide &&
+								!showSplit &&
+								!callingPoints.find((cp) => cp.order === 'filter')?.inDivision}
+						/>
+					{/if}
+
+					{#if cp.endDivide && (showPrevious || !previousIncludesStartDivide)}
+						<DivideLine type="end-split" color={operator.color} />
+					{/if}
+				{/if}
+			{/each}
 		</div>
 	</div>
 {:else if error}

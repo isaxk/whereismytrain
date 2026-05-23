@@ -6,12 +6,10 @@
 	import { londonTerminals } from '$lib/data/favourites';
 	import { saved } from '$lib/state/saved.svelte';
 
-	import AlternativeProvider from '../providers/alternative-provider.svelte';
 	import SubscriptionProvider from '../providers/subscription-provider.svelte';
 	import { buttonVariants } from '../ui/button';
 	import * as Popover from '../ui/popover';
 
-	import AlternativeDisplay from './alternative-display.svelte';
 	import Button from '../ui/button/button.svelte';
 
 	let { crs, planArr, rtArr, originalArr } = $props();
