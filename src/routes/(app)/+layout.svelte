@@ -15,7 +15,7 @@
 	import { pwa } from '$lib/state/saved.svelte';
 	import { servicesSub } from '$lib/state/services-subscriber.svelte.js';
 
-	import { PUBLIC_CONVEX_URL } from '$env/static/public';
+	import { PUBLIC_CONVEX_URL, PUBLIC_MAP_ENABLED } from '$env/static/public';
 
 	let { children, data } = $props();
 
@@ -156,20 +156,26 @@
 <ModeWatcher />
 <Toaster expand position="top-center" />
 
-<div class="fixed inset-0 flex">
-	{#if lg.current}
-		<div
-			class="relative h-full w-md max-w-md min-w-md transform-gpu overflow-y-scroll bg-background"
-		>
-			{@render children()}
-		</div>
-	{:else}
-		<Pane>
-			{@render children()}
-		</Pane>
-	{/if}
+{#if PUBLIC_MAP_ENABLED == 'true'}
+	<div class="fixed inset-0 flex">
+		{#if lg.current}
+			<div
+				class="relative h-full w-md max-w-md min-w-md transform-gpu overflow-y-scroll bg-background"
+			>
+				{@render children()}
+			</div>
+		{:else}
+			<Pane>
+				{@render children()}
+			</Pane>
+		{/if}
 
-	{#if mounted && browser}
-		<Map />
-	{/if}
-</div>
+		{#if mounted && browser}
+			<Map />
+		{/if}
+	</div>
+{:else}
+	<div class="relative mx-auto w-full max-w-screen-sm transform-gpu">
+		{@render children()}
+	</div>
+{/if}

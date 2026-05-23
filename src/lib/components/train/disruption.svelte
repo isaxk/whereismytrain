@@ -16,15 +16,6 @@
 	const data = getReasonCode(code);
 </script>
 
-<!-- {#await data}
-	<AlertCard status={type === 'cancel' ? 'major' : 'minor'} text="Loading..." />
-{:then data}
-	<AlertCard
-		status={type === 'cancel' ? 'major' : 'minor'}
-		text={type === 'delay' ? data.lateReason : data.cancReason}
-	/>
-{/await} -->
-
 <AlertCard
 	Icon={type === 'delay' ? ClockAlertIcon : XIcon}
 	status={type === 'cancel' ? 'major' : 'minor'}

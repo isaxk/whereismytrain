@@ -1,4 +1,3 @@
-import { error as kitError, json } from '@sveltejs/kit';
 import dayjs from 'dayjs';
 
 import { operatorList } from '$lib/data/operators';
@@ -11,11 +10,7 @@ import type {
 	TimeObject,
 	TrainService
 } from '$lib/types';
-import type {
-	ServiceDetails,
-	ServiceLocation as APIServiceLocation,
-	Association
-} from '$lib/types/api.js';
+import type { ServiceDetails, ServiceLocation as APIServiceLocation } from '$lib/types/api.js';
 
 const nullTime = '0001-01-01T00:00:00';
 
@@ -64,26 +59,27 @@ export async function fetchService(
 
 	let focusIndex = rawCallingPoints.findIndex((l) => l.crs === crs);
 
-	let formedFrom: string | null = null;
+	const formedFrom: string | null = null;
 
-	const hasNextAssoc = rawCallingPoints.find((l) =>
-		l.associations?.some((a) => a.category === 4 || a.category === 'next')
-	);
-	if (hasNextAssoc) {
-		const nextAssoc = hasNextAssoc.associations?.find(
-			(l: Association) => l.category === 4 || l.category === 'next'
-		);
-		// formedFrom = nextAssoc?.rid ?? null;
-	}
+	// const hasNextAssoc = rawCallingPoints.find((l) =>
+	// 	l.associations?.some((a) => a.category === 4 || a.category === 'next')
+	// );
+	// if (hasNextAssoc) {
+	// 	const nextAssoc = hasNextAssoc.associations?.find(
+	// 		(l: Association) => l.category === 4 || l.category === 'next'
+	// 	);
+	// 	// formedFrom = nextAssoc?.rid ?? null;
+	// }
 
 	let destination: APIServiceLocation[] = [];
 
-	// Division logic
-	//
+	// --- Division & Joins Logic ---
 
+	// If the trains joins another service, the train's calling point list must continue on another service
 	if (
 		rawCallingPoints[rawCallingPoints.length - 1].associations?.some((l) => l.category === 'join')
 	) {
+		// Fetch the associated service
 		const rid = rawCallingPoints?.[rawCallingPoints.length - 1].associations?.find(
 			(l) => l.category === 'join'
 		)?.rid;
@@ -91,28 +87,24 @@ export async function fetchService(
 		const assocService: ServiceDetails | null = rid ? await fetchAssocService(rid, token) : null;
 
 		if (assocService) {
-			// add the location as a line to the map object
-			// locations.push(assocParsedLocations);
-
 			const assocRawCallingPoints: WorkingCallingPoint[] = (assocService.locations ?? []).filter(
 				(l) => !l.isPass
 			);
-			// destination.push(assocRawCallingPoints[assocRawCallingPoints.length - 1]);
 
+			// Find where the first service joins onto the associated service, in the associated service's calling point list
 			const joinIndexOnAssoc = assocRawCallingPoints.findIndex((cp) =>
 				cp.associations?.some((l) => l.rid === id)
 			);
 			const joinIndexOnAssocLocations = (assocService.locations ?? []).findIndex((cp) =>
 				cp.associations?.some((l) => l.rid === id)
 			);
-
 			const joinOnAssoc = assocRawCallingPoints[joinIndexOnAssoc];
-
 			const joinOnAssocLocations = (assocService.locations ?? [])[joinIndexOnAssocLocations];
 
 			const lastOfMain = rawCallingPoints[rawCallingPoints.length - 1];
 			const lastOfAssoc = locations[0][locations[0].length - 1];
 
+			// Add departure times to the join point
 			rawCallingPoints[rawCallingPoints.length - 1] = {
 				...lastOfMain,
 				std: joinOnAssoc.std,
@@ -127,35 +119,17 @@ export async function fetchService(
 				atd: joinOnAssocLocations.atd ?? null
 			};
 
+			// Join the two lists to form one continuous calling point list
 			callingPoints = rawCallingPoints.concat(assocRawCallingPoints.slice(joinIndexOnAssoc + 1));
 			const sliced = assocService.locations!.slice(joinIndexOnAssocLocations + 1);
 			locations[0] = locations[0].concat(sliced.map(parseLocation));
-
-			// assocRawCallingPoints.forEach((cp: any) => {
-			// 	// Insert the join calling point to the list
-
-			// 	if (cp.associations?.some((l: any) => l.category === 0)) {
-			// 		callingPoints.push({ ...cp, std: null, etd: null, atd: null });
-			// 		rawCallingPoints.forEach((cp: any, i: number) => {
-			// 			callingPoints.push({
-			// 				...cp,
-			// 				inDivision: true,
-			// 				startJoin: i === 0, // and specify where the division starts and ends
-			// 				endJoin: i === rawCallingPoints.length - 1
-			// 			});
-			// 		});
-			// 		callingPoints.push({ ...cp, sta: null, eta: null, ata: null });
-			// 	} else {
-			// 		callingPoints.push(cp);
-			// 	}
-			// });
 		}
-	}
-	// otherwise assume the current service is the primary service, or there is no division
-	else {
+	} else {
 		for (const [i, entry] of rawCallingPoints.entries()) {
 			let cp = entry;
+			// If the service divides onto another service, or is the division service
 			if (cp.associations?.some((l) => l.category === 'divide') && (i > focusIndex || i === 0)) {
+				// Set the destination of the main service
 				destination = [
 					rawCallingPoints.findLast(
 						(l) => !l.isCancelled || rawCallingPoints[focusIndex + 1].isCancelled
@@ -165,8 +139,8 @@ export async function fetchService(
 				// get associations
 				const associations = cp.associations.filter((l) => l.category === 'divide');
 
-				// add the location before the division, with arr. info only
-				//
+				// When a service divides the join location is repeated at least 3 times: once for the arrival and once for each departure on each split
+				// add the location before the division, with arrival info only
 				if (i > 0) {
 					callingPoints.push({
 						...cp,
@@ -209,10 +183,13 @@ export async function fetchService(
 						(l: APIServiceLocation) => !l.isPass
 					);
 
+					// if the requested service is the division service
 					if (i === 0) {
 						const divPoint = assocRawCallingPoints.findIndex((l) => l.crs === cp.crs);
 						const locationDivPoint = parsedAssoc.findIndex((l) => l.crs === cp.crs);
 						const beforeRawCallingPoints = assocRawCallingPoints.slice(0, divPoint);
+
+						// add arrival information
 						cp = {
 							...cp,
 
@@ -223,9 +200,13 @@ export async function fetchService(
 							ataSpecified: assocRawCallingPoints[divPoint].ataSpecified,
 							etaSpecified: assocRawCallingPoints[divPoint].etaSpecified
 						};
+
+						// add previous calling points
 						callingPoints = beforeRawCallingPoints.concat(callingPoints);
 						locations[0] = parsedAssoc.slice(0, locationDivPoint).concat(locations[0]);
-					} else {
+					}
+					// if the requested service is not the division service
+					else {
 						// add to destination array
 						//
 						if (category === 'divide') {
@@ -647,31 +628,31 @@ function parseCallingPoint(
 	if (activities.includes('D')) {
 		feature = 'setdown';
 	}
-	if (activities)
-		return {
-			crs: item.crs!,
-			tiploc: item.tiploc!,
-			name: item.locationName ?? '',
-			times,
-			delay,
-			arrivalDelay,
-			rtDepDate: item.atd ?? item.etd ?? null,
-			departed: (item.atdSpecified === true && item.atd !== nullTime) || departedAfter === true,
-			arrived: item.ataSpecified === true && item.ata !== nullTime,
-			isCancelled: item.isCancelled ?? false,
-			feature,
-			departureCancelled,
-			arrivalCancelled,
-			inDivision: item.inDivision ?? false,
-			startDivide: item.startDivide ?? false,
-			endDivide: item.endDivide ?? false,
-			startJoin: item.startJoin ?? false,
-			endJoin: item.endJoin ?? false,
-			platform: item.platform ?? null,
-			order,
-			isOrigin: index === 0,
-			showTrain
-		};
+
+	return {
+		crs: item.crs!,
+		tiploc: item.tiploc!,
+		name: item.locationName ?? '',
+		times,
+		delay,
+		arrivalDelay,
+		rtDepDate: item.atd ?? item.etd ?? null,
+		departed: (item.atdSpecified === true && item.atd !== nullTime) || departedAfter === true,
+		arrived: item.ataSpecified === true && item.ata !== nullTime,
+		isCancelled: item.isCancelled ?? false,
+		feature,
+		departureCancelled,
+		arrivalCancelled,
+		inDivision: item.inDivision ?? false,
+		startDivide: item.startDivide ?? false,
+		endDivide: item.endDivide ?? false,
+		startJoin: item.startJoin ?? false,
+		endJoin: item.endJoin ?? false,
+		platform: item.platform ?? null,
+		order,
+		isOrigin: index === 0,
+		showTrain
+	};
 }
 
 async function fetchAssocService(rid: string, token: string) {

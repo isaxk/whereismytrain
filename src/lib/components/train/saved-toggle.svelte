@@ -7,7 +7,7 @@
 	import * as AlertDialog from '$lib/components/ui/alert-dialog/index.js';
 
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
-	import { getFCMToken, unsubscribeToTrain } from '$lib/notifications';
+	import { getFCMToken } from '$lib/notifications';
 	import { parseSavedInfo } from '$lib/shared/service';
 	import { localStore, pwa, saved, setSavedTrainData } from '$lib/state/saved.svelte';
 	import type { TrainService, SavedTrain as SavedTrainType } from '$lib/types';

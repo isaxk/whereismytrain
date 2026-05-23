@@ -19,8 +19,7 @@
 		index,
 		length,
 		showTrain = false,
-		pickupOnly = false,
-		setdownOnly = false,
+
 		showArrivalMark = false,
 		showDepartureMark = false,
 		category = 'standard'
@@ -31,8 +30,7 @@
 		index: number;
 		length: number;
 		showTrain?: boolean;
-		pickupOnly?: boolean;
-		setdownOnly?: boolean;
+
 		showArrivalMark?: boolean;
 		showDepartureMark?: boolean;
 		category?: 'standard' | 'express' | 'metro' | 'sleeper' | 'bus';

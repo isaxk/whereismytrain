@@ -4,6 +4,8 @@ import type { ServiceMapData } from '$lib/types/index.js';
 
 import { API_COMPATIBLE_VERSION } from '../../../../../api/_shared/index.js';
 
+import { PUBLIC_MAP_ENABLED } from '$env/static/public';
+
 export const load = async ({ params, fetch, url }) => {
 	const { id, crs } = params;
 
@@ -57,5 +59,5 @@ export const load = async ({ params, fetch, url }) => {
 		return mapData;
 	}
 
-	return { id, service, backTo, map: mapData() };
+	return { id, service, backTo, map: PUBLIC_MAP_ENABLED == 'true' ? mapData() : null };
 };
