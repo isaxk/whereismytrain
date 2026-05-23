@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
-	import { goto, preloadCode } from '$app/navigation';
+	import { goto, preloadCode, preloadData } from '$app/navigation';
 	import { page } from '$app/state';
 
 	import SearchIcon from '@lucide/svelte/icons/search';
@@ -107,7 +107,7 @@
 
 	$effect(() => {
 		if (href !== '#') {
-			preloadCode(href);
+			preloadData(href);
 		}
 	});
 
