@@ -20,7 +20,7 @@ export const operatorList: Record<string, { name: string; bg: string; text: stri
 		text: '#ffffff'
 	},
 	IL: {
-		name: 'Island Line (SWR)',
+		name: 'Island Line',
 		bg: '#357AA9',
 		text: '#ffffff'
 	},
@@ -55,7 +55,12 @@ export const operatorList: Record<string, { name: string; bg: string; text: stri
 		text: '#ffffff'
 	},
 	LD: {
-		name: 'Lumo',
+		name: 'lumo',
+		bg: '#1B46C3',
+		text: '#ffffff'
+	},
+	LF: {
+		name: 'lumo',
 		bg: '#1B46C3',
 		text: '#ffffff'
 	},
@@ -65,43 +70,13 @@ export const operatorList: Record<string, { name: string; bg: string; text: stri
 		text: '#ffffff'
 	},
 	LM: {
-		name: 'West Midlands Trains',
+		name: 'LNWR & WMR',
 		bg: '#1E4B45',
 		text: '#ffffff'
 	},
 	LO: {
 		name: 'London Overground',
 		bg: '#DA772F',
-		text: '#ffffff'
-	},
-	LOMM: {
-		name: 'Mildmay (Overground)',
-		bg: '#008855',
-		text: '#ffffff'
-	},
-	LOWR: {
-		name: 'Windrush (Overground)',
-		bg: '#D95700',
-		text: '#ffffff'
-	},
-	LOSG: {
-		name: 'Suffragette (Overground)',
-		bg: '#693D90',
-		text: '#ffffff'
-	},
-	LOWV: {
-		name: 'Weaver (Overground)',
-		bg: '#970042',
-		text: '#ffffff'
-	},
-	LOLE: {
-		name: 'Lioness (Overground)',
-		bg: '#CE4800',
-		text: '#ffffff'
-	},
-	LOLT: {
-		name: 'Liberty (Overground)',
-		bg: '#5F8AC9',
 		text: '#ffffff'
 	},
 	GC: {
@@ -125,7 +100,7 @@ export const operatorList: Record<string, { name: string; bg: string; text: stri
 		text: '#ffffff'
 	},
 	SE: {
-		name: 'Southeastern',
+		name: 'southeastern',
 		bg: '#1E1E4D',
 		text: '#ffffff'
 	},
@@ -192,31 +167,6 @@ export const operatorList: Record<string, { name: string; bg: string; text: stri
 	ME: {
 		name: 'MerseyRail',
 		bg: '#404745',
-		text: '#ffffff'
-	},
-	LIONESS: {
-		name: 'Lioness Line',
-		bg: '#CE4800',
-		text: '#ffffff'
-	},
-	WEAVER: {
-		name: 'Weaver Line',
-		bg: '#970042',
-		text: '#ffffff'
-	},
-	SUFF: {
-		name: 'Suffragette Line',
-		bg: '#693D90',
-		text: '#ffffff'
-	},
-	MILDMAY: {
-		name: 'Mildmay Line',
-		bg: '#008855',
-		text: '#ffffff'
-	},
-	WINDRUSH: {
-		name: 'Windrush Line',
-		bg: '#D95700',
 		text: '#ffffff'
 	}
 };
