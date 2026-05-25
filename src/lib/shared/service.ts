@@ -402,8 +402,8 @@ export async function fetchService(
 		isBus: data.serviceType === 'bus' || data.serviceType === 1,
 		operator: {
 			id: data.operatorCode!,
-			// name: operatorList[data.operatorCode!]?.name ?? data.operator ?? 'Unknown',
-			name: data.operator ?? 'Unknown',
+			name: operatorList[data.operatorCode!]?.name ?? data.operator ?? 'Unknown',
+			// name: data.operator ?? 'Unknown',
 			color: operatorList[data.operatorCode!]?.bg ?? '#000000'
 		},
 		title,
