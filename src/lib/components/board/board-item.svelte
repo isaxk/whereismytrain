@@ -205,6 +205,7 @@
 				</div>
 			{/if}
 		</div>
+
 		<div
 			class="h-max truncate rounded-md px-1.5 py-0.5 text-[10px] text-white"
 			style:background={operator.color}
