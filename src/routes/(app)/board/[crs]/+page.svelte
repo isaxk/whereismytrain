@@ -147,7 +147,7 @@
 			<BoardHeader from={data.crs} to={page.data.to} {details} />
 
 			{#if (details && details.notices.length > 0) || error}
-				<div class="flex flex-col gap-2 px-4 pt-4" in:fade|global={{ duration: 200 }}>
+				<div class={cn(['flex flex-col gap-2 px-4 pt-4 pb-2'])} in:fade|global={{ duration: 200 }}>
 					{#if error}
 						<AlertCard status="major">{error}</AlertCard>
 					{/if}
@@ -277,16 +277,18 @@
 									{#if services.length > 0}
 										{#each services as service (service.rid + service.rawTime)}
 											<div
-												class={['border-b border-border px-4 transition-all odd:bg-muted/30']}
+												class={['border-b border-border transition-all']}
 												animate:flip={{ duration: 200 }}
 												out:fly={{ duration: 200, x: -50 }}
 											>
 												<BoardItemComponent
 													href={serviceUrl(service.rid)}
 													date={service.rawTime}
+													reason={service.reason}
 													isToday={dayjs(service.rawTime).isSame(dayjs(), 'day')}
 													planDep={service.times.plan.dep ?? 'N/A'}
 													rtDep={service.times.rt.dep}
+													delay={service.delay}
 													departed={service.departed}
 													isCancelled={service.isCancelled}
 													isFilterCancelled={service.isFilterCancelled}

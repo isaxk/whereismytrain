@@ -33,6 +33,7 @@ export type BoardItem = {
 	origin: DestinationOrigin[];
 	times: TimeObject;
 	rawTime: string;
+	reason: string | null;
 	departed: boolean;
 	isCancelled: boolean;
 	isFilterCancelled: boolean;
