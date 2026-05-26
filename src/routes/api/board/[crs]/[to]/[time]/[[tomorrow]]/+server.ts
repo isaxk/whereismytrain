@@ -9,13 +9,13 @@ import { dayjsFromHHmm } from '$lib/utils';
 
 import { API_COMPATIBLE_VERSION, NULL_TIME } from '../../../../../_shared';
 
-import { ACCESS_TOKEN } from '$env/static/private';
+import { ACCESS_TOKEN, REFERENCE_DATA_KEY } from '$env/static/private';
 import { operatorList } from '$lib/data/operators';
 
 dayjs.extend(utc);
 dayjs.extend(tz);
 
-function parseBoardItem(item: ServiceItemWithLocations, filter): BoardItem {
+function parseBoardItem(item: ServiceItemWithLocations, filter, reasonCodes): BoardItem {
 	if (item.ata === NULL_TIME) item.ata = null;
 	if (item.atd === NULL_TIME) item.atd = null;
 	if (item.eta === NULL_TIME) item.eta = null;
@@ -83,10 +83,20 @@ function parseBoardItem(item: ServiceItemWithLocations, filter): BoardItem {
 		item.operatorCode = 'SX';
 	}
 
+	const reason =
+		item.delayReason || item.cancelReason
+			? reasonCodes.find((r) =>
+					item.isCancelled
+						? r.code === item.cancelReason?.Value || r.code === item.cancelReason?.value
+						: r.code === item.delayReason?.Value || r.code === item.delayReason?.value
+				)
+			: null;
+
 	return {
 		rid: item.rid,
 		uid: item.uid!,
 		sdd: item.sdd!,
+		reason: reason?.lateReason?.replace('This service has been delayed by', ''),
 		destination:
 			item.destination?.map((d) => ({
 				crs: d.crs,
@@ -118,6 +128,19 @@ function parseBoardItem(item: ServiceItemWithLocations, filter): BoardItem {
 	};
 }
 
+async function getReasonCodes() {
+	const response = await fetch(
+		`https://api1.raildata.org.uk/1010-reference-data1_0/LDBSVWS/api/ref/20211101/GetReasonCodeList`,
+		{
+			headers: {
+				'x-apikey': REFERENCE_DATA_KEY
+			}
+		}
+	);
+	const data = await response.json();
+	return data;
+}
+
 export const GET: RequestHandler = async ({ params, request }) => {
 	const { crs, to, time, tomorrow: tomorrowParam } = params;
 
@@ -130,6 +153,8 @@ export const GET: RequestHandler = async ({ params, request }) => {
 	}
 
 	const tomorrow = tomorrowParam == 'true';
+
+	const reasonCodes = await getReasonCodes();
 
 	// console.log('tomorrow', tomorrow);
 
@@ -179,7 +204,7 @@ export const GET: RequestHandler = async ({ params, request }) => {
 		const services = (data.trainServices ?? [])
 			.concat(data.busServices ?? [])
 			.toSorted((a, b) => dayjs(a.std).diff(dayjs(b.std)))
-			.map((s) => parseBoardItem(s, to));
+			.map((s) => parseBoardItem(s, to, reasonCodes));
 
 		const nrccMessages: Notice[] = (data.nrccMessages ?? [])
 			.map((m) => ({

@@ -11,9 +11,10 @@
 	import Skeleton from '$lib/components/ui/skeleton.svelte';
 	import { pinned } from '$lib/state/saved.svelte';
 	import { refreshing } from '$lib/state/services-subscriber.svelte';
-	import type { BoardDetails } from '$lib/types';
+	import { Severity, type BoardDetails } from '$lib/types';
 
 	import Spinner from '../ui/spinner/spinner.svelte';
+	import { cn } from '$lib/utils';
 
 	let {
 		from,
@@ -40,7 +41,9 @@
 </script>
 
 <div
-	class="sticky top-0 z-20 flex h-18 items-center gap-2 border-b border-b-border bg-background px-4 pt-2 lg:pt-0"
+	class={cn([
+		'sticky top-0 z-20 flex h-18 items-center gap-2 border-b border-b-border bg-background px-4 pt-2 lg:pt-0'
+	])}
 >
 	<div class="absolute top-1.5 right-0 left-0 flex h-2 min-w-10 justify-center lg:hidden">
 		<div class="h-[5px] w-10 rounded-sm bg-black/40"></div>
