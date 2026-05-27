@@ -20,6 +20,7 @@
 		PUBLIC_MAP_ENABLED,
 		PUBLIC_NOTIFICATIONS_ENABLED
 	} from '$env/static/public';
+	import { innerHeight, innerWidth } from 'svelte/reactivity/window';
 
 	let { children, data } = $props();
 
@@ -162,7 +163,7 @@
 <ModeWatcher />
 <Toaster expand position="top-center" />
 
-{#if PUBLIC_MAP_ENABLED == 'true'}
+{#if PUBLIC_MAP_ENABLED == 'true' && ((innerHeight.current ?? 10000) > 800 || (innerWidth.current ?? 0) > 1050)}
 	<div class="fixed inset-0 flex">
 		{#if lg.current}
 			<div
