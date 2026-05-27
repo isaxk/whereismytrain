@@ -296,8 +296,8 @@
 </a> -->
 
 <a {href} class="flex">
-	<div class="flex h-full w-20 flex-col bg-muted/30 py-4 pl-5">
-		<div class="flex h-6 items-center font-medium">
+	<div class="flex h-full w-18 flex-col bg-muted/30 py-4 pl-5">
+		<div class="flex h-7 items-center font-medium">
 			{planDep || 'N/A'}
 		</div>
 		<!-- {#if destination[0].via}
@@ -312,8 +312,8 @@
 			<div class="h-5"></div>
 		{/if}
 	</div>
-	<div class="flex min-w-0 grow flex-col px-4 py-4">
-		<div class="flex h-6 items-center">
+	<div class="flex min-w-0 grow flex-col px-3 py-4">
+		<div class="flex h-7 items-center">
 			<div class={['min-w-0 grow truncate text-base/5 font-medium']}>
 				{destination.map((d) => d.name).join(', ')}
 			</div>
