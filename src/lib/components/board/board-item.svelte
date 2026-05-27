@@ -328,7 +328,7 @@
 	</div> -->
 	<div class="flex min-w-0 grow flex-col">
 		<div>
-			<div class="h-3 w-18 min-w-18 bg-muted/50"></div>
+			<div class="h-4 w-18 min-w-18 bg-muted/50"></div>
 		</div>
 		<div class="flex min-h-5 items-start">
 			<div
@@ -483,7 +483,7 @@
 			</div>
 		{/if} -->
 		<div>
-			<div class="h-3 w-18 min-w-18 bg-muted/50"></div>
+			<div class="h-4 w-18 min-w-18 bg-muted/50"></div>
 		</div>
 	</div>
 </a>

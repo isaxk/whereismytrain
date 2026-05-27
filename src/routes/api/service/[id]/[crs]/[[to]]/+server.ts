@@ -10,7 +10,7 @@ export const GET = async ({ params, request }) => {
 	const { id, crs, to } = params;
 
 	if (request.headers.get('api-version') !== API_COMPATIBLE_VERSION) {
-		return kitError(400, 'Your app version is not compatible. Please refresh your app.');
+		return kitError(400, 'Your app version is out of date. Please refresh your app to update.');
 	}
 
 	try {
