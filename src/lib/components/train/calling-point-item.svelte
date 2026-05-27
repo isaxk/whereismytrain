@@ -78,10 +78,10 @@
 >
 	<div
 		class={[
-			'z-0 flex w-10 min-w-10 justify-end gap-0',
+			'z-0 flex w-10 min-w-10 justify-end gap-0 tabular-nums',
 
 			{
-				'font-medium opacity-100': cp.order === 'focus' || cp.order === 'filter',
+				'opacity-100': cp.order === 'focus' || cp.order === 'filter',
 				'opacity-70':
 					(cp.order === 'previous' ||
 						cp.order === 'further' ||
@@ -102,11 +102,12 @@
 		>
 			<div
 				class={[
+					'font-normal',
 					cp.isCancelled
 						? 'text-sm text-red-600 line-through'
 						: time.rt !== time.plan
 							? time.rt
-								? 'text-xs/3'
+								? 'text-sm/3'
 								: 'text-sm/3'
 							: 'text-sm font-medium text-good'
 				]}

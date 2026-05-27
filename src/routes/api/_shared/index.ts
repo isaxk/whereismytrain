@@ -6,7 +6,7 @@ import type { ServiceItem } from '$lib/types/api';
 
 export const NULL_TIME = '0001-01-01T00:00:00';
 
-export const API_COMPATIBLE_VERSION = '5';
+export const API_COMPATIBLE_VERSION = '6';
 
 export function parseBoardItem(item: ServiceItem): BoardItem {
 	if (item.ata === NULL_TIME) item.ata = null;
@@ -31,12 +31,12 @@ export function parseBoardItem(item: ServiceItem): BoardItem {
 
 	const times = {
 		rt: {
-			arr: item.ata || item.eta ? dayjs(item.ata ?? item.eta).format('HH:mm') : null,
-			dep: item.atd || item.etd ? dayjs(item.atd ?? item.etd).format('HH:mm') : null
+			arr: item.ata || item.eta ? (item.ata ?? item.eta) : null,
+			dep: item.atd || item.etd ? (item.atd ?? item.etd) : null
 		},
 		plan: {
-			arr: item.sta ? dayjs(item.sta).format('HH:mm') : null,
-			dep: item.std ? dayjs(item.std).format('HH:mm') : null
+			arr: item.sta ? item.sta : null,
+			dep: item.std ? item.std : null
 		}
 	};
 

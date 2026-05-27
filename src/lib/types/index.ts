@@ -41,6 +41,7 @@ export type BoardItem = {
 	operator: Operator;
 	position: Position;
 	delay: number | null;
+	publicDelay: number | null;
 	delayReason: string | null;
 	cancelReason: string | null;
 };
