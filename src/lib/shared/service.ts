@@ -50,9 +50,7 @@ export async function fetchService(
 	// console.log(data);
 	const locations: ServiceLocation[][] = [(data.locations ?? []).map(parseLocation)];
 	const rawCallingPoints: APIServiceLocation[] = (data.locations ?? []).filter(
-		(l) =>
-			!l.isPass &&
-			l.activities?.split(' ').some((a) => ['T', 'U', 'D', 'TB', 'TF', 'R'].includes(a))
+		(l) => !l.isPass && l.activities?.split('').some((a) => ['T', 'U', 'D', 'R'].includes(a))
 	);
 
 	let callingPoints: WorkingCallingPoint[] = [];
@@ -72,6 +70,8 @@ export async function fetchService(
 	// }
 
 	let destination: APIServiceLocation[] = [];
+
+	console.log(rawCallingPoints.map((cp) => cp.activities?.split('')));
 
 	// --- Division & Joins Logic ---
 

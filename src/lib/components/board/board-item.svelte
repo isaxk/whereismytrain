@@ -328,8 +328,22 @@
 	</div>
 	<div class="flex min-w-0 grow flex-col py-4 pr-3 pl-2">
 		<div class="flex h-5 items-center">
-			<div class={['min-w-0 grow truncate text-base/5 font-medium']}>
-				{destination.map((d) => d.name).join(', ')}
+			<div class={['flex min-w-0 grow text-base/5 font-medium']}>
+				{#each destination as dest, i (dest.crs)}
+					<div class="flex min-w-0 items-end gap-0.5">
+						<div class="min-w-0 truncate">
+							{dest.name}
+						</div>
+						{#if destination.map((d) => d.name).join('').length < 20}
+							<div class="translate-y-0.5 text-[10px] font-normal text-muted-foreground opacity-60">
+								({dest.crs})
+							</div>
+						{/if}
+						{#if i < destination.length - 1}
+							&nbsp;&&nbsp;
+						{/if}
+					</div>
+				{/each}
 			</div>
 			<ChangeNotifier
 				class={[
