@@ -147,7 +147,7 @@ export const GET: RequestHandler = async ({ params, request }) => {
 	}
 
 	if (request.headers.get('api-version') !== API_COMPATIBLE_VERSION) {
-		return kitError(500, 'Your app version is not compatible. Please refresh your app.');
+		return kitError(500, 'Your app version is out of date. Please refresh your app to update.');
 	}
 
 	const tomorrow = tomorrowParam == 'true';
