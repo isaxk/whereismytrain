@@ -26,24 +26,24 @@ function parseBoardItem(item: ServiceItemWithLocations, filter, reasonCodes): Bo
 	let delay = null;
 
 	// const rta = item.ata || item.eta ? dayjs(item.ata ?? item.eta) : null;
-	const rtd = item.atd || item.etd ? dayjs(item.atd ?? item.etd) : null;
+	const rtd = item.atd || item.etd ? (item.atd ?? item.etd) : null;
 	// const pta = item.sta ? dayjs(item.sta) : null;
-	const ptd = item.std ? dayjs(item.std) : null;
+	const ptd = item.std ? item.std : null;
 
 	item.rid = `${item.rid}`;
 
 	if (rtd && ptd) {
-		delay = rtd.diff(ptd, 'minutes');
+		delay = dayjs(rtd).diff(ptd, 'minutes', true);
 	}
 
 	const times = {
 		rt: {
-			arr: item.ata || item.eta ? dayjs(item.ata ?? item.eta).format('HH:mm') : null,
-			dep: item.atd || item.etd ? dayjs(item.atd ?? item.etd).format('HH:mm') : null
+			arr: item.ata ?? item.eta ?? null,
+			dep: item.atd ?? item.etd ?? null
 		},
 		plan: {
-			arr: item.sta ? dayjs(item.sta).format('HH:mm') : null,
-			dep: item.std && item.std !== NULL_TIME ? dayjs(item.std).format('HH:mm') : null
+			arr: item.sta ?? null,
+			dep: item.std ?? null
 		}
 	};
 
@@ -63,12 +63,9 @@ function parseBoardItem(item: ServiceItemWithLocations, filter, reasonCodes): Bo
 				rt:
 					(filterLocation?.ata && filterLocation.ataSpecified) ||
 					(filterLocation.eta && filterLocation.etaSpecified)
-						? dayjs(filterLocation.ata ?? filterLocation.eta).format('HH:mm')
+						? (filterLocation.ata ?? filterLocation.eta)
 						: null,
-				plan:
-					filterLocation?.sta && filterLocation.sta !== NULL_TIME
-						? dayjs(filterLocation.sta).format('HH:mm')
-						: null
+				plan: filterLocation?.sta && filterLocation.sta !== NULL_TIME ? filterLocation.sta : null
 			}
 		: null;
 
@@ -113,6 +110,7 @@ function parseBoardItem(item: ServiceItemWithLocations, filter, reasonCodes): Bo
 		rawTime: item.std!,
 		departed: (item.atdSpecified && item.atd !== NULL_TIME) ?? false,
 		delay,
+
 		platform: item.category === 'BR' || item.category === 'BS' ? 'BUS' : (item.platform ?? null),
 		operator: {
 			id: item.operatorCode ?? null,
@@ -175,7 +173,7 @@ export const GET: RequestHandler = async ({ params, request }) => {
 	let url = `https://huxley2.azurewebsites.net/staffdepartures/${crs}/?timeOffset=${offset}&timeWindow=120&access_token=${ACCESS_TOKEN}&expand=true`;
 	if (shouldUseRailData) {
 		const urlObj = new URL(
-			`https://api1.raildata.org.uk/1010-live-departure-board---staff-version1_0/LDBSVWS/api/20220120/GetDepBoardWithDetails/${crs}/${date.format('YYYYMMDDTHHmmss')}?numRows=20`
+			`https://api1.raildata.org.uk/1010-live-departure-board---staff-version1_0/LDBSVWS/api/20220120/GetDepBoardWithDetails/${crs}/${date.format('YYYYMMDDTHHmmss')}?numRows=20&timeWindow=120`
 		);
 		if (to && to != 'null') urlObj.searchParams.append('filterCRS', to);
 		url = urlObj.toString();

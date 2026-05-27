@@ -4,12 +4,18 @@
 	import dayjs from 'dayjs';
 	import {
 		ArrowDownRight,
+		BadgeQuestionMarkIcon,
 		Bus,
 		Check,
+		CircleQuestionMarkIcon,
 		ClockAlert,
 		GitCompareArrowsIcon,
+		List,
+		ListIcon,
 		Radio,
 		Rss,
+		Table,
+		Table2,
 		X
 	} from 'lucide-svelte';
 
@@ -27,6 +33,7 @@
 		rtDep,
 		planDep,
 		delay,
+
 		reason,
 		departed,
 		focus = null,
@@ -48,6 +55,7 @@
 		rtDep: string | null;
 		planDep: string;
 		delay: number | null;
+
 		reason: string | null;
 		departed: boolean;
 		focus?: string | null;
@@ -296,24 +304,30 @@
 </a> -->
 
 <a {href} class="flex">
-	<div class="flex h-full w-18 flex-col bg-muted/30 py-4 pl-5">
-		<div class="flex h-7 items-center font-medium">
-			{planDep || 'N/A'}
+	<div class="flex h-full min-w-17 flex-col bg-muted/30 py-4 pl-4">
+		<div class="kerning flex h-5 items-center font-sans font-semibold tracking-tight tabular-nums">
+			{dayjs(planDep).format('HH:mm')}
 		</div>
-		<!-- {#if destination[0].via}
-			<div class="h-5"></div>
-		{/if} -->
-		<ChangeNotifier class="flex h-5 items-center text-sm text-warning" value={rtDep}>
-			{#if rtDep !== planDep}
-				{rtDep}
-			{/if}
-		</ChangeNotifier>
-		{#if isFilterCancelled && !isCancelled}
-			<div class="h-5"></div>
+		{#if destination[0].via}
+			<div class="h-4"></div>
+		{:else}
+			<div></div>
 		{/if}
+		<div class="flex h-6 items-center">
+			<ChangeNotifier class="font-semibold tracking-tight text-warning tabular-nums" value={rtDep}>
+				{#if delay && Math.abs(delay) >= 1}
+					{dayjs(rtDep).format('HH:mm')}
+				{/if}
+			</ChangeNotifier>
+		</div>
+
+		<!-- {#if reason && (delay === null || Math.abs(delay) >= 1 || isCancelled || isFilterCancelled)}
+			<div class="h-3"></div>
+		{/if} -->
+		<!-- <div class="h-5"></div> -->
 	</div>
-	<div class="flex min-w-0 grow flex-col px-3 py-4">
-		<div class="flex h-7 items-center">
+	<div class="flex min-w-0 grow flex-col py-4 pr-3 pl-2">
+		<div class="flex h-5 items-center">
 			<div class={['min-w-0 grow truncate text-base/5 font-medium']}>
 				{destination.map((d) => d.name).join(', ')}
 			</div>
@@ -333,19 +347,32 @@
 				{/if}
 			</ChangeNotifier>
 		</div>
-		<!-- {#if destination[0].via}
-			<div class="flex h-5 items-center text-xs/4 font-light text-muted-foreground">
-				{destination[0].via}
+		{#if destination[0].via}
+			<div class="flex h-4 items-center">
+				<div class="min-w-0 grow truncate text-xs/4 font-light text-muted-foreground">
+					{destination[0].via}
+				</div>
+				<div
+					class="-mb-1.5 h-max w-max rounded-[6px] px-[5px] py-px text-[10px] text-nowrap text-white"
+					style:background={operator.color}
+				>
+					{operator.name}
+				</div>
 			</div>
-		{/if} -->
-		<div class="flex h-5 items-center gap-1.5">
+		{:else}
+			<div></div>
+		{/if}
+		<div class="flex h-6 items-center gap-1.5">
 			<ChangeNotifier
-				value={(delay?.toString() ?? 'Delayed') + isCancelled}
+				value={(delay?.toString() ?? 'Delayed') + isCancelled + isFilterCancelled}
 				class={cn([
 					'flex min-w-0 items-center gap-1 text-xs font-medium text-muted-foreground',
 					{
-						'text-good': delay !== null || rtDep === planDep,
-						'text-warning': delay === null || Math.abs(delay) > 0,
+						'text-good':
+							delay !== null &&
+							Math.abs(delay) < 1 &&
+							dayjs(date).diff(dayjs(), 'minutes') < 5 * 60,
+						'text-warning': delay === null || Math.abs(delay) >= 1,
 						'text-danger': isCancelled
 					}
 				])}
@@ -353,36 +380,63 @@
 				{#if isCancelled}
 					<X size={14} />
 					Cancelled
+				{:else if isFilterCancelled}
+					<X size={14} />
+					Cancelled to {filterName}
 				{:else if delay === null}
 					<ClockAlert size={14} />
 					Delayed
-				{:else if rtDep === planDep}
-					<Rss size={14} />
-					On time
-				{:else if delay < 0}
+				{:else if Math.abs(delay) < 1}
+					{#if dayjs(date).diff(dayjs(), 'minutes') < 5 * 60}
+						<Rss size={14} />
+						On time
+					{:else}
+						Scheduled
+					{/if}
+				{:else if delay <= -1}
 					<ClockAlert size={14} />
-					{Math.max(1, -delay)}m early
+					{Math.floor(-delay)} minute{Math.floor(-delay) !== 1 ? 's' : ''} early
 				{:else}
 					<ClockAlert size={14} />
-					{Math.max(1, delay)}m late
+					{Math.floor(delay)} minute{Math.floor(delay) !== 1 ? 's' : ''} late
 				{/if}
 			</ChangeNotifier>
-			<div class="flex h-5 items-center text-xs/4 font-light text-muted-foreground/80">
-				{destination[0].via}
-			</div>
+
 			<div class="grow"></div>
-			<div
-				class="h-max rounded-md px-1.5 py-0.5 text-[10px] text-nowrap text-white"
-				style:background={operator.color}
-			>
-				{operator.name}
-			</div>
+
+			{#if !destination[0].via}
+				<div
+					class="h-max w-max rounded-[6px] px-[5px] py-px text-[10px] text-nowrap text-white"
+					style:background={operator.color}
+				>
+					{operator.name}
+				</div>
+			{/if}
 		</div>
-		{#if isFilterCancelled && !isCancelled}
-			<div class="flex h-5 items-center gap-1 text-xs font-medium text-danger">
+		<!-- {#if isFilterCancelled && !isCancelled}
+			<div class="flex h-4 items-center gap-1 text-xs font-medium text-danger">
 				<X size={14} />
 				Cancelled to {filterName}
 			</div>
-		{/if}
+		{/if} -->
+		<!-- {#if reason && (delay === null || Math.abs(delay) >= 1 || isCancelled || isFilterCancelled)}
+			<div
+				class={cn([
+					'flex h-3 w-full items-center gap-1 text-[10px] text-muted-foreground',
+					{
+						'text-warning': delay === null || Math.abs(delay) >= 1,
+						'text-danger': isCancelled || isFilterCancelled
+					}
+				])}
+			>
+				<div class="min-w-3">
+					<BadgeQuestionMarkIcon size={12} />
+				</div>
+				<div class="min-w-0 grow truncate">
+					Due to
+					{reason}
+				</div>
+			</div>
+		{/if} -->
 	</div>
 </a>
