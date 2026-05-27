@@ -334,7 +334,7 @@
 						<div class="min-w-0 truncate">
 							{dest.name}
 						</div>
-						{#if destination.map((d) => d.name).join('').length < 20}
+						{#if destination.map((d) => d.name).join(' & ').length < 30}
 							<div class="translate-y-0.5 text-[10px] font-normal text-muted-foreground opacity-60">
 								({dest.crs})
 							</div>
