@@ -304,7 +304,7 @@
 </a> -->
 
 <a {href} class="flex">
-	<div class="flex h-full min-w-17 flex-col bg-muted/30 py-4 pl-4">
+	<!-- <div class="flex h-full min-w-17 flex-col bg-muted/30 py-4 pl-4">
 		<div class="kerning flex h-5 items-center font-sans font-semibold tracking-tight tabular-nums">
 			{dayjs(planDep).format('HH:mm')}
 		</div>
@@ -323,116 +323,146 @@
 
 		<!-- {#if reason && (delay === null || Math.abs(delay) >= 1 || isCancelled || isFilterCancelled)}
 			<div class="h-3"></div>
-		{/if} -->
-		<!-- <div class="h-5"></div> -->
-	</div>
-	<div class="flex min-w-0 grow flex-col py-4 pr-3 pl-2">
-		<div class="flex h-5 items-center">
-			<div class={['flex min-w-0 grow text-base/5 font-medium']}>
-				{#each destination as dest, i (dest.crs)}
-					<div class="flex min-w-0 items-end gap-0.5">
-						<div class="min-w-0 truncate">
-							{dest.name}
-						</div>
-						{#if destination.map((d) => d.name).join(' & ').length < 30}
-							<div class="translate-y-0.5 text-[10px] font-normal text-muted-foreground opacity-60">
-								({dest.crs})
-							</div>
-						{/if}
-						{#if i < destination.length - 1}
-							&nbsp;&&nbsp;
-						{/if}
-					</div>
-				{/each}
-			</div>
-			<ChangeNotifier
-				class={[
-					'-mr-1 items-center justify-center px-1 text-right',
-					platform === 'BUS' && 'text-sm text-warning'
-				]}
-				value={platform}
+		{/if}
+		<!-- <div class="h-5"></div>
+	</div> -->
+	<div class="flex min-w-0 grow flex-col">
+		<div>
+			<div class="h-3 w-18 min-w-18 bg-muted/50"></div>
+		</div>
+		<div class="flex min-h-5 items-start">
+			<div
+				class="kerning flex h-full min-w-18 items-start bg-muted/50 pl-4 font-sans text-base/4 font-semibold tracking-tight tabular-nums"
 			>
-				{#if platform === 'BUS'}
-					<Bus size={16} /> Bus service
-				{:else}
-					<span class="text-xs text-muted-foreground">Platform </span>
+				<div class="flex h-5 items-center">
+					{dayjs(planDep).format('HH:mm')}
+				</div>
+			</div>
+			<div class="flex min-w-0 grow items-start px-3">
+				<div
+					class={[
+						'flex min-h-5 min-w-0 grow flex-wrap items-center gap-x-1 text-base/5 font-medium'
+					]}
+				>
+					{#each destination as dest, i (dest.crs)}
+						<div class="truncate">
+							{#if i !== 0}
+								<span class="text-foreground/60">&</span>
+							{/if}
 
-					{platform !== 'BUS' ? (platform ?? '-') : ''}
-				{/if}
-			</ChangeNotifier>
+							{dest.name}
+
+							<!-- <div class="translate-y-0.5 text-[10px] font-normal text-muted-foreground opacity-60">
+								({dest.crs})
+							</div> -->
+						</div>
+					{/each}
+				</div>
+				<ChangeNotifier
+					class={[
+						'-mr-1 flex flex-nowrap items-center justify-center gap-1 px-1 text-right',
+						platform === 'BUS' && 'text-sm/4 text-warning'
+					]}
+					value={platform}
+				>
+					{#if platform === 'BUS'}
+						<Bus size={16} /> Bus service
+					{:else}
+						<span class="text-xs/3 text-muted-foreground">Platform </span>
+
+						{platform !== 'BUS' ? (platform ?? '-') : ''}
+					{/if}
+				</ChangeNotifier>
+			</div>
 		</div>
 		{#if destination[0].via}
 			<div class="flex h-4 items-center">
-				<div class="min-w-0 grow truncate text-xs/4 font-light text-muted-foreground">
-					{destination[0].via}
-				</div>
-				<div
-					class="-mb-1.5 h-max w-max rounded-[6px] px-[5px] py-px text-[10px] text-nowrap text-white"
-					style:background={operator.color}
-				>
-					{operator.name}
+				<div class="h-full min-w-18 bg-muted/50"></div>
+				<div class="flex min-w-0 grow px-3">
+					<div class="-mt-1 min-w-0 grow truncate text-xs/4 font-light text-muted-foreground">
+						{destination[0].via}
+					</div>
+					<div
+						class="-mb-1.5 h-max w-max rounded-[6px] px-[5px] py-px text-[10px] text-nowrap text-white"
+						style:background={operator.color}
+					>
+						{operator.name}
+					</div>
 				</div>
 			</div>
 		{:else}
 			<div></div>
 		{/if}
-		<div class="flex h-6 items-center gap-1.5">
-			<ChangeNotifier
-				value={(delay?.toString() ?? 'Delayed') + isCancelled + isFilterCancelled}
-				class={cn([
-					'flex min-w-0 items-center gap-1 text-xs font-medium text-muted-foreground',
-					{
-						'text-good':
-							delay !== null &&
-							Math.abs(delay) < 1 &&
-							dayjs(date).diff(dayjs(), 'minutes') < 5 * 60,
-						'text-warning': delay === null || Math.abs(delay) >= 1,
-						'text-danger': isCancelled
-					}
-				])}
-			>
-				{#if isCancelled}
-					<X size={14} />
-					Cancelled
-				{:else if isFilterCancelled}
-					<X size={14} />
-					Cancelled to {filterName}
-				{:else if delay === null}
-					<ClockAlert size={14} />
-					Delayed
-				{:else if Math.abs(delay) < 1}
-					{#if dayjs(date).diff(dayjs(), 'minutes') < 5 * 60}
-						<Rss size={14} />
-						On time
-					{:else}
-						Scheduled
-					{/if}
-				{:else if delay <= -1}
-					<ClockAlert size={14} />
-					{Math.floor(-delay)} minute{Math.floor(-delay) !== 1 ? 's' : ''} early
-				{:else}
-					<ClockAlert size={14} />
-					{Math.floor(delay)} minute{Math.floor(delay) !== 1 ? 's' : ''} late
-				{/if}
-			</ChangeNotifier>
-
-			<div class="grow"></div>
-
-			{#if !destination[0].via}
-				<div
-					class="h-max w-max rounded-[6px] px-[5px] py-px text-[10px] text-nowrap text-white"
-					style:background={operator.color}
+		<div class="flex h-5 items-center">
+			<div class="flex h-5 min-w-18 items-center bg-muted/50 pl-4">
+				<ChangeNotifier
+					class="font-semibold tracking-tight text-warning tabular-nums"
+					value={rtDep}
 				>
-					{operator.name}
-				</div>
-			{/if}
+					{#if delay && Math.abs(delay) >= 1}
+						{dayjs(rtDep).format('HH:mm')}
+					{/if}
+				</ChangeNotifier>
+			</div>
+			<div class="flex h-5 min-w-0 grow items-center px-3">
+				<ChangeNotifier
+					value={(delay?.toString() ?? 'Delayed') + isCancelled + isFilterCancelled}
+					class={cn([
+						'flex min-w-0 grow items-center gap-1 text-xs font-medium text-muted-foreground',
+						{
+							'text-good':
+								delay !== null &&
+								Math.abs(delay) < 1 &&
+								dayjs(date).diff(dayjs(), 'minutes') < 5 * 60,
+							'text-warning': delay === null || Math.abs(delay) >= 1,
+							'text-danger': isCancelled
+						}
+					])}
+				>
+					{#if isCancelled}
+						<X size={14} />
+						Cancelled
+					{:else if isFilterCancelled}
+						<X size={14} />
+						Cancelled to {filterName}
+					{:else if delay === null}
+						<ClockAlert size={14} />
+						Delayed
+					{:else if Math.abs(delay) < 1}
+						{#if dayjs(date).diff(dayjs(), 'minutes') < 5 * 60}
+							<Rss size={14} />
+							On time
+						{:else}
+							Scheduled
+						{/if}
+					{:else if delay <= -1}
+						<ClockAlert size={14} />
+						{Math.floor(-delay)} minute{Math.floor(-delay) !== 1 ? 's' : ''} early
+					{:else}
+						<ClockAlert size={14} />
+						{Math.floor(delay)} minute{Math.floor(delay) !== 1 ? 's' : ''} late
+					{/if}
+				</ChangeNotifier>
+
+				<div class="grow"></div>
+
+				{#if !destination[0].via}
+					<div
+						class="h-max w-max rounded-[6px] px-[5px] py-px text-[10px] text-nowrap text-white"
+						style:background={operator.color}
+					>
+						{operator.name}
+					</div>
+				{/if}
+			</div>
 		</div>
+
 		<!-- {#if isFilterCancelled && !isCancelled}
 			<div class="flex h-4 items-center gap-1 text-xs font-medium text-danger">
 				<X size={14} />
 				Cancelled to {filterName}
 			</div>
-		{/if} -->
+		{/if}
 		<!-- {#if reason && (delay === null || Math.abs(delay) >= 1 || isCancelled || isFilterCancelled)}
 			<div
 				class={cn([
@@ -452,5 +482,8 @@
 				</div>
 			</div>
 		{/if} -->
+		<div>
+			<div class="h-3 w-18 min-w-18 bg-muted/50"></div>
+		</div>
 	</div>
 </a>
