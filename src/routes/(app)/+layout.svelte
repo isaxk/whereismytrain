@@ -163,7 +163,7 @@
 <ModeWatcher />
 <Toaster expand position="top-center" />
 
-{#if PUBLIC_MAP_ENABLED == 'true' && ((innerHeight.current ?? 10000) > 800 || (innerWidth.current ?? 0) > 1050)}
+{#if PUBLIC_MAP_ENABLED == 'true' && ((innerHeight.current ?? 10000) > 500 || (innerWidth.current ?? 0) > 1050)}
 	<div class="fixed inset-0 flex">
 		{#if lg.current}
 			<div
