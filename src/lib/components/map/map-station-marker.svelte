@@ -84,7 +84,7 @@
 {#if tiploc?.coords}
 	<Marker
 		onclick={() => {
-			highlightedStation.current = (cp.crs ?? '') + cp.rtDepDate;
+			highlightedStation.current = (cp.crs ?? '') + (cp.times.plan.dep ?? cp.times.plan.arr ?? '');
 			if (paneHeight.break !== 'top') {
 				paneHeight.break = 'top';
 			}

@@ -39,7 +39,7 @@
 	let elm: HTMLDivElement;
 
 	$effect(() => {
-		if (highlightedStation.current === cp.crs + (cp.rtDepDate || '')) {
+		if (highlightedStation.current === cp.crs + (cp.times.plan.dep ?? cp.times.plan.arr ?? '')) {
 			elm.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'center' });
 			setTimeout(() => {
 				highlightedStation.current = null;
