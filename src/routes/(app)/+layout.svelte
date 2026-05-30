@@ -6,6 +6,7 @@
 	import { ModeWatcher } from 'mode-watcher';
 	import { onMount } from 'svelte';
 	import { MediaQuery } from 'svelte/reactivity';
+	import { innerHeight, innerWidth } from 'svelte/reactivity/window';
 	import { toast } from 'svelte-sonner';
 
 	import Map from '$lib/components/map/map.svelte';
@@ -20,7 +21,6 @@
 		PUBLIC_MAP_ENABLED,
 		PUBLIC_NOTIFICATIONS_ENABLED
 	} from '$env/static/public';
-	import { innerHeight, innerWidth } from 'svelte/reactivity/window';
 
 	let { children, data } = $props();
 
@@ -163,7 +163,7 @@
 <ModeWatcher />
 <Toaster expand position="top-center" />
 
-<div class="fixed top-0 left-0 z-[100000]">{innerHeight.current}</div>
+<!-- <div class="fixed top-0 left-0 z-[100000]">{innerHeight.current}</div> -->
 
 {#if PUBLIC_MAP_ENABLED == 'true' && ((innerHeight.current ?? 0) > 550 || (innerWidth.current ?? 0) > 1050)}
 	<div class="fixed inset-0 flex">

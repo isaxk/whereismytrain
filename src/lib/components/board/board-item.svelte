@@ -431,15 +431,25 @@
 					{:else if Math.abs(delay) < 1}
 						{#if dayjs(date).diff(dayjs(), 'minutes') < 5 * 60}
 							<Rss size={14} />
-							On time
+							{#if departed}
+								Departed
+							{:else}
+								On time
+							{/if}
 						{:else}
 							Scheduled
 						{/if}
 					{:else if delay <= -1}
 						<ClockAlert size={14} />
+						{#if departed}
+							Departed
+						{/if}
 						{Math.floor(-delay)} minute{Math.floor(-delay) !== 1 ? 's' : ''} early
 					{:else}
 						<ClockAlert size={14} />
+						{#if departed}
+							Departed
+						{/if}
 						{Math.floor(delay)} minute{Math.floor(delay) !== 1 ? 's' : ''} late
 					{/if}
 				</ChangeNotifier>
