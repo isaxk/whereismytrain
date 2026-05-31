@@ -7,6 +7,8 @@ export default defineSchema({
 		serviceId: v.string(),
 		crs: v.string(),
 		filter: v.string(),
+		focusTiploc: v.string(),
+		filterTiploc: v.string(),
 		planDep: v.string(),
 		rtDep: v.union(v.null(), v.string()),
 		delay: v.union(v.null(), v.number()),
@@ -21,6 +23,7 @@ export default defineSchema({
 		to: v.string(),
 		destination: v.string(),
 		platform: v.union(v.null(), v.string()),
+		isPlatformConfirmed: v.boolean(),
 		isCancelled: v.boolean(),
 		isCancelledAtFilter: v.boolean(),
 		operator: v.object({
@@ -29,5 +32,12 @@ export default defineSchema({
 			name: v.string()
 		}),
 		refreshedAt: v.number()
-	}).index('by_arrived', ['arrived'])
+	}).index('by_arrived', ['arrived']),
+	tiplocs: defineTable({
+		tiploc: v.string(),
+		crs: v.string(),
+		name: v.string(),
+		longitude: v.number(),
+		latitude: v.number()
+	}).index('by_tiploc', ['tiploc'])
 });

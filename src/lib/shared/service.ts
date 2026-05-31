@@ -28,7 +28,7 @@ export async function fetchService(
 	to: string | null,
 	token: string
 ): Promise<TrainService> {
-	console.log('token', token);
+	// console.log('token', token);
 	const response = await fetch(
 		`https://api1.raildata.org.uk/1010-query-services-and-service-details1_0/LDBSVWS/api/20220120/GetServiceDetailsByRID/${id}`,
 		{
@@ -40,7 +40,7 @@ export async function fetchService(
 
 	if (!response.ok) {
 		const data: ServiceDetails = await response.json();
-		console.log(data);
+		// console.log(data);
 		throw new Error(
 			'Failed to fetch service. This usually means it does not (or no longer) exists in the National Rail database.'
 		);
@@ -71,7 +71,7 @@ export async function fetchService(
 
 	let destination: APIServiceLocation[] = [];
 
-	console.log(rawCallingPoints.map((cp) => cp.activities?.split('')));
+	// console.log(rawCallingPoints.map((cp) => cp.activities?.split('')));
 
 	// --- Division & Joins Logic ---
 
@@ -439,6 +439,7 @@ function parseLocation(l: APIServiceLocation): ServiceLocation {
 		crs: l.crs ?? null,
 		name: l.locationName ?? 'null',
 		platform: l.platform ?? null,
+		isPlatformConfirmed: l.platformIsHidden != true,
 		isCancelled: l.isCancelled ?? false,
 		tiploc: l.tiploc!,
 		isCallingPoint: !l.isPass,
@@ -652,6 +653,7 @@ function parseCallingPoint(
 		startJoin: item.startJoin ?? false,
 		endJoin: item.endJoin ?? false,
 		platform: item.platform ?? null,
+		isPlatformConfirmed: item.platformIsHidden != true,
 		order,
 		isOrigin: index === 0,
 		showTrain
@@ -683,6 +685,7 @@ export function parseSavedInfo(service: TrainService): SavedTrainServiceInfo | n
 	return {
 		crs: focus.crs ?? '',
 		from: focus.name,
+		focusTiploc: focus.tiploc,
 		planDep: focus.times.plan.dep!,
 		planArr: filter.times.plan.arr!,
 		departed: focus.departed,
@@ -691,6 +694,7 @@ export function parseSavedInfo(service: TrainService): SavedTrainServiceInfo | n
 
 		filter: filter.crs ?? '',
 		to: filter.name,
+		filterTiploc: filter.tiploc,
 		rtDep: focus?.times.rt.dep ?? null,
 		rtArr: filter?.times.rt.arr ?? null,
 		arrived: filter.arrived,
@@ -702,6 +706,7 @@ export function parseSavedInfo(service: TrainService): SavedTrainServiceInfo | n
 		refreshedAt: Date.now(),
 
 		platform: focus.platform,
+		isPlatformConfirmed: focus.isPlatformConfirmed,
 		operator: service.operator
 	};
 }

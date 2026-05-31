@@ -104,6 +104,8 @@ try {
 
 
 
+
+
     const allNotifications = await self.registration.getNotifications();
     console.log('allNotifications', allNotifications);
 

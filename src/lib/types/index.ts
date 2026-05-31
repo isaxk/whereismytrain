@@ -85,6 +85,7 @@ export type ServiceLocation = {
 	tiploc: string;
 	isCancelled: boolean;
 	isCallingPoint: boolean;
+	isPlatformConfirmed: boolean;
 	name: string;
 	platform: string | null;
 	atd: string | null;
@@ -115,6 +116,7 @@ export type CallingPoint = {
 	arrivalCancelled: boolean;
 	name: string;
 	platform: string | null;
+	isPlatformConfirmed: boolean;
 	inDivision: boolean;
 	startDivide: boolean;
 	endDivide: boolean;
@@ -164,7 +166,9 @@ export type TrainService = {
 
 export type SavedTrainServiceInfo = {
 	crs: string;
+	focusTiploc: string;
 	filter: string;
+	filterTiploc: string;
 	planDep: string;
 	rtDep: string | null;
 	delay: number | null;
@@ -177,6 +181,7 @@ export type SavedTrainServiceInfo = {
 	to: string;
 	destination: string;
 	platform: string | null;
+	isPlatformConfirmed: boolean;
 	isCancelled: boolean;
 	isCancelledAtFilter: boolean;
 	operator: Operator;

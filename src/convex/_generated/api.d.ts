@@ -11,6 +11,7 @@
 import type * as crons from "../crons.js";
 import type * as fcm from "../fcm.js";
 import type * as notifications from "../notifications.js";
+import type * as templates from "../templates.js";
 
 import type {
   ApiFromModules,
@@ -22,6 +23,7 @@ declare const fullApi: ApiFromModules<{
   crons: typeof crons;
   fcm: typeof fcm;
   notifications: typeof notifications;
+  templates: typeof templates;
 }>;
 
 /**

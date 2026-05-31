@@ -366,7 +366,7 @@
 					value={platform}
 				>
 					{#if platform === 'BUS'}
-						<Bus size={16} /> Bus service
+						<Bus size={16} /> Bus
 					{:else}
 						<span class="text-xs/3 text-muted-foreground">Platform </span>
 

@@ -10,18 +10,41 @@ import type { SavedTrainServiceInfo } from '$lib/types';
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-import { components, internal } from './_generated/api';
+import { api, components, internal } from './_generated/api';
 import {
 	action,
 	internalAction,
 	internalMutation,
 	internalQuery,
+	query,
 	mutation
 } from './_generated/server';
 
 import type { Doc, Id } from './_generated/dataModel';
+import { templates } from './templates';
 
 const FLUTTER_THRESHOLD = 3;
+
+function dayjsFromHHmm(hhmm: string, colon = true, tz?: string) {
+	if (colon) {
+		const [hh, mm] = hhmm.split(':').map(Number);
+		return tz
+			? dayjs.tz(undefined, tz).hour(hh).minute(mm).second(0).millisecond(0)
+			: dayjs().hour(hh).minute(mm).second(0).millisecond(0);
+	} else {
+		const hours = hhmm.substring(0, 2);
+		const minutes = hhmm.substring(2, 4);
+		// console.log(hours, minutes);
+		return tz
+			? dayjs
+					.tz(undefined, tz)
+					.hour(parseInt(hours))
+					.minute(parseInt(minutes))
+					.second(0)
+					.millisecond(0)
+			: dayjs().hour(parseInt(hours)).minute(parseInt(minutes)).second(0).millisecond(0);
+	}
+}
 
 const crons = new Crons(components.crons);
 
@@ -95,11 +118,136 @@ export const registerSubscription = action({
 	}
 });
 
-export const getAllSubscriptions = internalQuery({
+export const getAllSubscriptions = query({
 	args: {},
 	handler: async (ctx) => {
 		const subscriptions: Doc<'subscriptions'>[] = await ctx.db.query('subscriptions').collect();
 		return subscriptions;
+	}
+});
+
+export const getSubscription = query({
+	args: {
+		id: v.id('subscriptions')
+	},
+	handler: async (ctx, args) => {
+		const subscription = await ctx.db.get('subscriptions', args.id);
+		return subscription;
+	}
+});
+
+export const pushPortUpdate = action({
+	args: {
+		subscriptionId: v.id('subscriptions'),
+		rtDep: v.optional(v.union(v.string(), v.null())),
+		departed: v.optional(v.boolean()),
+		rtArr: v.optional(v.union(v.string(), v.null())),
+		arrived: v.optional(v.boolean()),
+		platform: v.optional(v.union(v.string(), v.null())),
+		isPlatformConfirmed: v.optional(v.boolean()),
+		isCancelled: v.optional(v.boolean()),
+		isCancelledAtFilter: v.optional(v.boolean())
+	},
+	handler: async (ctx, args) => {
+		console.log(args);
+		const existing = await ctx.runQuery(api.notifications.getSubscription, {
+			id: args.subscriptionId
+		});
+		if (!existing) return;
+		let delay = existing.delay;
+		let filterDelay = existing.filterDelay;
+		let rtDep = existing.rtDep ? dayjs(existing.rtDep).toISOString() : null;
+		let rtArr = existing.rtArr ? dayjs(existing.rtArr).toISOString() : null;
+
+		if (args.rtDep !== undefined) {
+			delay = args.rtDep ? dayjsFromHHmm(args.rtDep).diff(dayjs(existing?.planDep), 'm') : null;
+			rtDep = args.rtDep ? dayjsFromHHmm(args.rtDep).toISOString() : null;
+			if (delay && rtDep && delay > 6 * 60) {
+				delay = dayjs(rtDep).add(1, 'day').diff(dayjs(existing?.planDep), 'm');
+				rtDep = dayjs(rtDep).add(1, 'day').toISOString();
+			}
+		}
+		if (args.rtArr !== undefined) {
+			filterDelay = args.rtArr
+				? dayjsFromHHmm(args.rtArr).diff(dayjs(existing?.planArr), 'm')
+				: null;
+			rtArr = args.rtArr ? dayjsFromHHmm(args.rtArr).toISOString() : null;
+			if (filterDelay && rtArr && filterDelay > 6 * 60) {
+				filterDelay = dayjs(rtArr).add(1, 'day').diff(dayjs(existing?.planArr), 'm');
+				rtArr = dayjs(rtArr).add(1, 'day').toISOString();
+			}
+		}
+
+		const updated = {
+			...existing,
+			refreshedAt: Date.now(),
+			isPlatformConfirmed:
+				args.isPlatformConfirmed !== undefined
+					? args.isPlatformConfirmed
+					: existing.isPlatformConfirmed,
+			platform: args.platform !== undefined ? args.platform : existing.platform,
+			rtDep,
+			rtArr,
+			delay: delay === undefined ? existing.delay : delay,
+			departed: args.departed !== undefined ? args.departed : existing.departed,
+			filterDelay: filterDelay !== undefined ? filterDelay : existing.filterDelay,
+			isCancelled: args.isCancelled !== undefined ? args.isCancelled : existing.isCancelled
+		};
+
+		await ctx.runMutation(internal.notifications.updateSubscription, {
+			id: existing._id,
+			data: updated
+		});
+
+		let title: string | null = null;
+		let description = `${dayjs(existing?.planDep).format('HH:mm')} to ${existing?.destination}`;
+		if (existing) {
+			if (updated.departed === true) {
+				if (!existing.departed) {
+					const r = templates.departure(
+						delay ?? 0,
+						updated.filterDelay,
+						updated.rtArr ? dayjs(updated.rtArr).format('HH:mm') : null,
+						updated.to !== updated.destination ? updated.to : undefined
+					);
+					title = r.title;
+					description += r.descriptionAppend;
+				}
+			} else if (updated.delay !== existing.delay) {
+				title = templates.delay(
+					updated.delay,
+					updated.rtDep ? dayjs(updated.rtDep).format('HH:mm') : null
+				);
+			}
+			if (title) {
+				console.log(title, description);
+				await ctx.runAction(internal.fcm.sendFCM, {
+					fcmToken: existing.fcmToken,
+					title,
+					description,
+					data: updated,
+					tag: existing.serviceId + '-status'
+				});
+			}
+			if (
+				updated.platform !== existing.platform ||
+				(updated.isPlatformConfirmed && !existing.isPlatformConfirmed)
+			) {
+				title = templates.platform(
+					updated.platform,
+					!updated.isPlatformConfirmed,
+					updated.isPlatformConfirmed && !existing.isPlatformConfirmed
+				);
+
+				await ctx.runAction(internal.fcm.sendFCM, {
+					fcmToken: existing.fcmToken,
+					title,
+					description,
+					data: updated,
+					tag: existing.serviceId + '-platform'
+				});
+			}
+		}
 	}
 });
 
@@ -116,7 +264,7 @@ export const updateSubscription = internalMutation({
 export const refresh = internalAction({
 	args: {},
 	handler: async (ctx): Promise<void> => {
-		const subscriptions = await ctx.runQuery(internal.notifications.getAllSubscriptions);
+		const subscriptions = await ctx.runQuery(api.notifications.getAllSubscriptions);
 
 		const services = new Map<
 			string,
@@ -137,14 +285,14 @@ export const refresh = internalAction({
 					.diff(dayjs(), 'minutes', true);
 				const timeSinceLastUpdate = dayjs().diff(dayjs(sub.refreshedAt), 'minutes', true);
 
-				console.log(
-					'timeUntilDeparture',
-					timeUntilDeparture,
-					'timeUntilArrival',
-					timeUntilArrival,
-					'timeSinceLastUpdate',
-					timeSinceLastUpdate
-				);
+				// console.log(
+				// 	'timeUntilDeparture',
+				// 	timeUntilDeparture,
+				// 	'timeUntilArrival',
+				// 	timeUntilArrival,
+				// 	'timeSinceLastUpdate',
+				// 	timeSinceLastUpdate
+				// );
 
 				let shouldRefresh = true;
 
@@ -163,9 +311,9 @@ export const refresh = internalAction({
 						shouldRefresh = false;
 					} else if (timeUntilDeparture > 60 && timeSinceLastUpdate < 12) {
 						shouldRefresh = false;
-					} else if (timeUntilDeparture > 30 && timeSinceLastUpdate < 6) {
+					} else if (timeUntilDeparture > 15 && timeSinceLastUpdate < 8) {
 						shouldRefresh = false;
-					} else if (timeUntilDeparture > 15 && timeSinceLastUpdate < 2) {
+					} else if (timeSinceLastUpdate < 3) {
 						shouldRefresh = false;
 					}
 				}
@@ -378,6 +526,8 @@ export const refresh = internalAction({
 						tag: sub.serviceId + '-platform'
 					});
 				}
+
+				console.log(sub.filterDelay, newSub.filterDelay);
 
 				await ctx.runMutation(internal.notifications.updateSubscription, {
 					id: sub._id,
