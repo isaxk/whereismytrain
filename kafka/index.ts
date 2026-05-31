@@ -69,14 +69,14 @@ const run = async () => {
 		fromBeginning: false
 	});
 
-	let i = 0;
+	// let i = 0;
 
 	// Start the message loop
 	await consumer.run({
 		eachMessage: async ({ topic, partition, message }) => {
 			const payload = message.value.toString();
-			i++;
-			if (i % 100 === 0) console.log(i);
+			// i++;
+			// if (i % 100 === 0) console.log(i);
 			const parsed = JSON.parse(payload);
 
 			// const trainId = parsed.bytes;
