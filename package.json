@@ -51,9 +51,6 @@
 		"vite-plugin-devtools-json": "^1.0.0"
 	},
 	"dependencies": {
-		"@capacitor/cli": "^8.1.0",
-		"@capacitor/core": "^8.1.0",
-		"@capacitor/ios": "^8.1.0",
 		"@convex-dev/crons": "^0.2.0",
 		"@supabase/supabase-js": "^2.84.0",
 		"@sveltejs/adapter-auto": "^7.0.0",
