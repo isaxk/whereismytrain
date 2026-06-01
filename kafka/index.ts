@@ -140,15 +140,24 @@ const run = async () => {
 									isCancelled = focus?.can;
 								}
 							}
-							client.action(anyApi.notifications.pushPortUpdate, {
-								subscriptionId: sub._id,
-								rtDep,
-								rtArr,
-								departed,
-								isCancelled,
-								platform,
-								isPlatformConfirmed
-							});
+							if (
+								rtDep !== undefined ||
+								rtArr !== undefined ||
+								departed !== undefined ||
+								isCancelled !== undefined ||
+								platform !== undefined ||
+								isPlatformConfirmed !== undefined
+							) {
+								client.action(anyApi.notifications.pushPortUpdate, {
+									subscriptionId: sub._id,
+									rtDep,
+									rtArr,
+									departed,
+									isCancelled,
+									platform,
+									isPlatformConfirmed
+								});
+							}
 						});
 					}
 				}
