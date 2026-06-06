@@ -34,8 +34,20 @@ export const templates = {
 		if (delay <= -1) return `🟡 Expected ${rt} • ${-delay}m early`;
 		return `🟢 Back on time`;
 	},
-	cancellation: (value: boolean) => {
+	cancellation: (value: boolean, delay?: number | null, rtDep?: string | null) => {
 		if (value) return `🚫 Cancelled`;
+		if (delay !== undefined) {
+			if (delay === null) {
+				return `🟡 No longer cancelled • Delayed`;
+			}
+			if (delay >= 1) {
+				return `🟡 No longer cancelled • Exp. ${rtDep} (${delay}m late)`;
+			} else if (delay <= 1) {
+				return `🟡 No longer cancelled • Exp. ${rtDep} (${-delay}m early)`;
+			} else {
+				return `🟢 No longer cancelled • Back on time`;
+			}
+		}
 		return `🟢 No longer cancelled`;
 	},
 	filterCancellation: (value: boolean, filter: string | undefined) => {

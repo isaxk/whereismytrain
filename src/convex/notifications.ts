@@ -204,13 +204,30 @@ export const pushPortUpdate = action({
 		let description: string | null = null;
 		const title = `${dayjs(existing?.planDep).format('HH:mm')} to ${existing?.destination}`;
 		if (existing) {
-			if (updated.departed === true) {
+			if (
+				updated.isCancelled !== existing.isCancelled &&
+				!(!updated.isCancelled && updated.isCancelledAtFilter)
+			) {
+				description = templates.cancellation(
+					updated.isCancelled,
+					updated.filterDelay,
+					updated.rtDep ? dayjs(updated.rtDep).format('HH:mm') : null
+				);
+			} else if (updated.isCancelledAtFilter !== existing.isCancelledAtFilter) {
+				description = templates.filterCancellation(updated.isCancelledAtFilter, updated.filter);
+			} else if (updated.departed === true) {
 				if (!existing.departed) {
 					description = templates.departure(
 						delay ?? 0,
 						updated.filterDelay,
 						updated.rtArr ? dayjs(updated.rtArr).format('HH:mm') : null,
 						updated.to !== updated.destination ? updated.to : undefined
+					);
+				} else if (updated.filterDelay !== existing.filterDelay) {
+					description = templates.filterDelay(
+						updated.filterDelay,
+						updated.rtArr ? dayjs(updated.rtArr).format('HH:mm') : null,
+						updated.filter
 					);
 				}
 			} else if (updated.delay !== existing.delay) {

@@ -141,10 +141,10 @@ const run = async () => {
 										}
 									}
 									if (filter) {
-										rtArr = filter?.arr.delayed
+										rtArr = filter?.arr?.delayed
 											? null
-											: (focus?.arr.at ?? focus?.arr.et ?? undefined);
-										arrived = focus?.arr?.at !== undefined;
+											: (filter?.arr?.at ?? filter?.arr?.et ?? undefined);
+										arrived = filter?.arr?.at !== undefined;
 									}
 								}
 								if (scheduleData) {
