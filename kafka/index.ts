@@ -119,7 +119,7 @@ const run = async () => {
 											: undefined;
 									const filter = Array.isArray(timeData.Location)
 										? timeData.Location?.find((loc) => loc.tpl === sub.filterTiploc)
-										: timeData.Location?.tpl === sub.focusTiploc
+										: timeData.Location?.tpl === sub.filterTiploc
 											? timeData.Location
 											: undefined;
 									if (focus) {
