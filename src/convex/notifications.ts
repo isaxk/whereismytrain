@@ -85,6 +85,8 @@ export const registerSubscription = action({
 
 		const parsed = parseSavedInfo(data);
 
+		console.log('platformIsConfirmed', parsed?.isPlatformConfirmed);
+
 		const result = await ctx.runMutation(internal.notifications.createSubscription, {
 			fcmToken: args.fcmToken,
 			data: parsed,
@@ -199,27 +201,25 @@ export const pushPortUpdate = action({
 			data: updated
 		});
 
-		let title: string | null = null;
-		let description = `${dayjs(existing?.planDep).format('HH:mm')} to ${existing?.destination}`;
+		let description: string | null = null;
+		const title = `${dayjs(existing?.planDep).format('HH:mm')} to ${existing?.destination}`;
 		if (existing) {
 			if (updated.departed === true) {
 				if (!existing.departed) {
-					const r = templates.departure(
+					description = templates.departure(
 						delay ?? 0,
 						updated.filterDelay,
 						updated.rtArr ? dayjs(updated.rtArr).format('HH:mm') : null,
 						updated.to !== updated.destination ? updated.to : undefined
 					);
-					title = r.title;
-					description += r.descriptionAppend;
 				}
 			} else if (updated.delay !== existing.delay) {
-				title = templates.delay(
+				description = templates.delay(
 					updated.delay,
 					updated.rtDep ? dayjs(updated.rtDep).format('HH:mm') : null
 				);
 			}
-			if (title) {
+			if (description) {
 				console.log(title, description);
 				await ctx.runAction(internal.fcm.sendFCM, {
 					fcmToken: existing.fcmToken,
@@ -233,7 +233,7 @@ export const pushPortUpdate = action({
 				updated.platform !== existing.platform ||
 				(updated.isPlatformConfirmed && !existing.isPlatformConfirmed)
 			) {
-				title = templates.platform(
+				description = templates.platform(
 					updated.platform,
 					!updated.isPlatformConfirmed,
 					updated.isPlatformConfirmed && !existing.isPlatformConfirmed

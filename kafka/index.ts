@@ -42,6 +42,18 @@ const subscribedTrains = new Map();
 //   });
 // });
 
+let activeRidRegex: RegExp | null = null;
+
+// Call this whenever your Convex subscription list changes
+function updateRegex(subscriptions: string[]) {
+	if (subscriptions.length === 0) {
+		activeRidRegex = null;
+		return;
+	}
+	// Creates a regex like /RID1|RID2|RID3/
+	activeRidRegex = new RegExp(subscriptions.join('|'));
+}
+
 client.onUpdate(anyApi.notifications.getAllSubscriptions, {}, (subs) => {
 	subscribedTrains.clear();
 	subs.forEach((sub) => {
@@ -52,6 +64,7 @@ client.onUpdate(anyApi.notifications.getAllSubscriptions, {}, (subs) => {
 			subscribedTrains.set(sub.serviceId, [sub]);
 		}
 	});
+	updateRegex(subs.map((s) => s.serviceId));
 });
 
 const consumer = kafka.consumer({
@@ -69,96 +82,114 @@ const run = async () => {
 		fromBeginning: false
 	});
 
-	// let i = 0;
-
-	// Start the message loop
 	await consumer.run({
-		eachMessage: async ({ topic, partition, message }) => {
-			const payload = message.value.toString();
-			// i++;
-			// if (i % 100 === 0) console.log(i);
-			const parsed = JSON.parse(payload);
+		eachMessage: async ({ message }) => {
+			const payload = message.value?.toString();
 
-			// const trainId = parsed.bytes;
-			if (parsed.bytes) {
-				const bytesParsed = JSON.parse(parsed.bytes);
+			if (payload && activeRidRegex && activeRidRegex.test(payload)) {
+				const outer = JSON.parse(payload);
 
-				// console.log(bytesParsed);
+				if (outer.bytes) {
+					const inner = JSON.parse(outer.bytes);
 
-				if (bytesParsed.uR?.TS || bytesParsed.uR?.schedule) {
-					const timeData = bytesParsed.uR?.TS;
-					const scheduleData = bytesParsed.uR?.schedule;
-					if (
-						(timeData?.rid && subscribedTrains.has(timeData.rid)) ||
-						(scheduleData?.rid && subscribedTrains.has(scheduleData.rid))
-					) {
-						const subs = subscribedTrains.get(timeData?.rid ?? scheduleData?.rid);
-						subs.forEach((sub) => {
-							let rtDep = undefined;
-							let rtArr = undefined;
-							let departed = undefined;
-							let isCancelled = undefined;
-							let platform = undefined;
-							let isPlatformConfirmed = undefined;
-							if (timeData) {
-								console.log(timeData);
-								const focus = Array.isArray(timeData.Location)
-									? timeData.Location?.find((loc) => loc.tpl === sub.focusTiploc)
-									: timeData.Location?.tpl === sub.focusTiploc
-										? timeData.Location
-										: undefined;
-								if (focus) {
-									rtDep = focus?.dep.delayed ? null : (focus?.dep.at ?? focus?.dep.et ?? undefined);
-									departed = focus?.dep?.at !== undefined;
-									if (focus?.plat) {
-										if (focus?.plat['']) {
-											platform = focus?.plat[''];
-										} else {
-											platform = typeof focus?.plat === 'string' ? focus?.plat : undefined;
-										}
-										if (focus?.platsup == 'true') {
-											isPlatformConfirmed = false;
-										} else if (platform) {
-											isPlatformConfirmed = true;
+					// console.log(bytesParsed);
+					if (inner.uR?.TS || inner.uR?.schedule) {
+						const timeData = inner.uR?.TS;
+						const scheduleData = inner.uR?.schedule;
+						if (
+							(timeData?.rid && subscribedTrains.has(timeData.rid)) ||
+							(scheduleData?.rid && subscribedTrains.has(scheduleData.rid))
+						) {
+							const subs = subscribedTrains.get(timeData?.rid ?? scheduleData?.rid);
+							subs.forEach((sub) => {
+								let rtDep = undefined;
+								let rtArr = undefined;
+								let departed = undefined;
+								let arrived = undefined;
+								let isCancelled = undefined;
+								let isCancelledAtFilter = undefined;
+								let platform = undefined;
+								let isPlatformConfirmed = undefined;
+								if (timeData) {
+									console.log(timeData);
+									const focus = Array.isArray(timeData.Location)
+										? timeData.Location?.find((loc) => loc.tpl === sub.focusTiploc)
+										: timeData.Location?.tpl === sub.focusTiploc
+											? timeData.Location
+											: undefined;
+									const filter = Array.isArray(timeData.Location)
+										? timeData.Location?.find((loc) => loc.tpl === sub.filterTiploc)
+										: timeData.Location?.tpl === sub.focusTiploc
+											? timeData.Location
+											: undefined;
+									if (focus) {
+										rtDep = focus?.dep.delayed
+											? null
+											: (focus?.dep.at ?? focus?.dep.et ?? undefined);
+										departed = focus?.dep?.at !== undefined;
+										if (focus?.plat) {
+											if (focus?.plat['']) {
+												platform = focus?.plat[''];
+											} else {
+												platform = typeof focus?.plat === 'string' ? focus?.plat : undefined;
+											}
+											if (focus?.platsup == 'true') {
+												isPlatformConfirmed = false;
+											} else if (platform) {
+												isPlatformConfirmed = true;
+											}
 										}
 									}
+									if (filter) {
+										rtArr = filter?.arr.delayed
+											? null
+											: (focus?.arr.at ?? focus?.arr.et ?? undefined);
+										arrived = focus?.arr?.at !== undefined;
+									}
 								}
-							}
-							if (scheduleData) {
-								console.log(scheduleData);
-								let locations = Array.isArray(scheduleData.OR)
-									? scheduleData.OR
-									: [scheduleData.OR];
-								locations = Array.isArray(scheduleData.PP)
-									? locations.concat(scheduleData.PP)
-									: [scheduleData.PP];
-								locations = Array.isArray(scheduleData.DT)
-									? locations.concat(scheduleData.DT)
-									: [scheduleData.DT];
-								const focus = locations.find((loc) => loc.tpl === sub.focusTiploc);
-								if (focus?.can) {
-									isCancelled = focus?.can;
+								if (scheduleData) {
+									console.log(scheduleData);
+									let locations = Array.isArray(scheduleData.OR)
+										? scheduleData.OR
+										: [scheduleData.OR];
+									locations = Array.isArray(scheduleData.PP)
+										? locations.concat(scheduleData.PP)
+										: [scheduleData.PP];
+									locations = Array.isArray(scheduleData.DT)
+										? locations.concat(scheduleData.DT)
+										: [scheduleData.DT];
+									const focus = locations.find((loc) => loc.tpl === sub.focusTiploc);
+									const filter = locations.find((loc) => loc.tpl === sub.filterTiploc);
+									if (focus?.can) {
+										isCancelled = focus?.can;
+									}
+									if (filter?.can) {
+										isCancelledAtFilter = filter?.can;
+									}
 								}
-							}
-							if (
-								rtDep !== undefined ||
-								rtArr !== undefined ||
-								departed !== undefined ||
-								isCancelled !== undefined ||
-								platform !== undefined ||
-								isPlatformConfirmed !== undefined
-							) {
-								client.action(anyApi.notifications.pushPortUpdate, {
-									subscriptionId: sub._id,
-									rtDep,
-									rtArr,
-									departed,
-									isCancelled,
-									platform,
-									isPlatformConfirmed
-								});
-							}
-						});
+								if (
+									rtDep !== undefined ||
+									rtArr !== undefined ||
+									arrived !== undefined ||
+									departed !== undefined ||
+									isCancelled !== undefined ||
+									platform !== undefined ||
+									isPlatformConfirmed !== undefined
+								) {
+									client.action(anyApi.notifications.pushPortUpdate, {
+										subscriptionId: sub._id,
+										rtDep,
+										rtArr,
+										arrived,
+										departed,
+										isCancelled,
+										isCancelledAtFilter,
+										platform,
+										isPlatformConfirmed
+									});
+								}
+							});
+						}
 					}
 				}
 			}
