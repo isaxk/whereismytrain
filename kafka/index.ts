@@ -176,7 +176,7 @@ const run = async () => {
 									platform !== undefined ||
 									isPlatformConfirmed !== undefined
 								) {
-									client.action(anyApi.notifications.pushPortUpdate, {
+									client.action(anyApi.data.pushPortUpdate, {
 										subscriptionId: sub._id,
 										rtDep,
 										rtArr,
