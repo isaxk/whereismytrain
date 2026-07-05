@@ -29,6 +29,8 @@ interface TiplocData {
 	// Add other properties from your JSON if needed
 }
 
+console.log(process.env);
+
 async function seedData() {
 	try {
 		const rawData = fs.readFileSync(filePath, 'utf8');
@@ -70,4 +72,4 @@ async function seedData() {
 	}
 }
 
-seedData();
+// seedData();

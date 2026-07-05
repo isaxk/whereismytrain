@@ -7,6 +7,7 @@
 		BadgeQuestionMarkIcon,
 		Bus,
 		Check,
+		CircleQuestionMark,
 		CircleQuestionMarkIcon,
 		ClockAlert,
 		GitCompareArrowsIcon,
@@ -39,6 +40,7 @@
 		focus = null,
 		destination,
 		platform,
+		isPlatformConfirmed = null,
 		filter,
 		operator,
 		date = null,
@@ -55,7 +57,7 @@
 		rtDep: string | null;
 		planDep: string;
 		delay: number | null;
-
+		isPlatformConfirmed?: boolean | null;
 		reason: string | null;
 		departed: boolean;
 		focus?: string | null;
@@ -361,7 +363,9 @@
 				<ChangeNotifier
 					class={[
 						'-mr-1 flex flex-nowrap items-center justify-center gap-1 px-1 text-right',
-						platform === 'BUS' && 'text-sm/4 text-warning'
+						platform === 'BUS' && 'text-sm/4 text-warning',
+						isPlatformConfirmed == false && 'font-light opacity-60',
+						isPlatformConfirmed == true && ''
 					]}
 					value={platform}
 				>
@@ -370,7 +374,19 @@
 					{:else}
 						<span class="text-xs/3 text-muted-foreground">Platform </span>
 
-						{platform !== 'BUS' ? (platform ?? '-') : ''}
+						{#if platform}
+							<div class="font-normal">
+								{platform !== 'BUS' ? (platform ?? '-') : ''}
+							</div>
+
+							{#if isPlatformConfirmed == true}
+								<!-- <Check strokeWidth={4} size={14} /> -->
+							{:else if isPlatformConfirmed == false}
+								<CircleQuestionMark strokeWidth={2} size={14} />
+							{/if}
+						{:else}
+							<CircleQuestionMark strokeWidth={2} size={14} />
+						{/if}
 					{/if}
 				</ChangeNotifier>
 			</div>

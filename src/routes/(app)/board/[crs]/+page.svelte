@@ -294,6 +294,9 @@
 													isFilterCancelled={service.isFilterCancelled}
 													destination={service.destination}
 													platform={service.platform}
+													isPlatformConfirmed={services.some((s) => !s.isPlatformConfirmed)
+														? service.isPlatformConfirmed
+														: null}
 													operator={service.operator}
 													filterName={details?.filterName}
 												/>
