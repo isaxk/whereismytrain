@@ -4,12 +4,6 @@ import { internal } from './_generated/api';
 
 const crons = cronJobs();
 
-// crons.interval(
-// 	'refresh subscriptions',
-// 	{ seconds: 30 }, // every minute
-// 	internal.notifications.refresh
-// );
-
 crons.interval(
 	'delete arrived subscriptions',
 	{

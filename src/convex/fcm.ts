@@ -90,3 +90,51 @@ export const sendFCM = internalAction({
 		}
 	}
 });
+
+export const sendMultipleFCM = internalAction({
+	args: {
+		notifications: v.array(
+			v.object({
+				fcmToken: v.string(),
+				title: v.string(),
+				description: v.string(),
+				data: v.any(),
+				tag: v.string()
+			})
+		)
+	},
+	handler: async (_, args) => {
+		const accessToken = await getAccessToken();
+
+		const projectId = process.env.FIREBASE_PROJECT_ID;
+		if (!projectId) throw new Error('Missing FIREBASE_PROJECT_ID');
+
+		const promises = args.notifications.map(async (notification) => {
+			const res = await fetch(`https://fcm.googleapis.com/v1/projects/${projectId}/messages:send`, {
+				method: 'POST',
+				headers: {
+					Authorization: `Bearer ${accessToken}`,
+					'Content-Type': 'application/json',
+					ttl: '10' // seconds
+				},
+				body: JSON.stringify({
+					message: {
+						token: notification.fcmToken,
+						data: {
+							title: notification.title,
+							body: notification.description,
+							service: JSON.stringify(notification.data),
+							tag: notification.tag
+						}
+					}
+				})
+			});
+
+			if (!res.ok) {
+				throw new Error(await res.text());
+			}
+		});
+
+		await Promise.all(promises);
+	}
+});
