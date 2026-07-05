@@ -37,6 +37,42 @@ type NotificationData = {
 	description: string;
 };
 
+const replacements: [string, string][] = [
+	['Central', 'Ctl'],
+	['North', 'N'],
+	['South', 'S'],
+	['East', 'E'],
+	['West', 'W'],
+	['Junction', 'Jn'],
+	['Road', 'Rd'],
+	['Square', 'Sq'],
+	['Saint', 'St'],
+	['Street', 'St'],
+	['Parkway', 'Pkwy'],
+	['Temple Meads', 'T M'],
+	['Picadilly', 'Pic']
+];
+
+function shortenStationName(name: string): string {
+	replacements.forEach((r) => {
+		name = name.replaceAll(r[0], r[1]);
+	});
+	if (name !== 'London Bridge') {
+		return name.replaceAll('London ', '');
+	}
+	if (name.includes('Heathrow')) {
+		if (name.includes('5')) {
+			return 'Terminal 5';
+		} else if (name.includes('4')) {
+			return 'Terminal 4';
+		} else {
+			return 'Terminals 12&3';
+		}
+	}
+
+	return name;
+}
+
 function generateNotificationText(
 	existing: SavedTrainServiceInfo,
 	updated: SavedTrainServiceInfo
@@ -86,13 +122,13 @@ function generateNotificationText(
 				updated.delay ?? 0,
 				updated.filterDelay,
 				updated.rtArr ? dayjs(updated.rtArr).format('HH:mm') : null,
-				updated.to !== updated.destination ? updated.to : undefined
+				updated.to !== updated.destination ? shortenStationName(updated.to) : undefined
 			);
 		} else if (updated.filterDelay !== existing.filterDelay) {
 			description = templates.filterDelay(
 				updated.filterDelay,
 				updated.rtArr ? dayjs(updated.rtArr).format('HH:mm') : null,
-				updated.filter
+				updated.to !== updated.destination ? shortenStationName(updated.to) : undefined
 			);
 		}
 	} else if (updated.delay !== existing.delay) {

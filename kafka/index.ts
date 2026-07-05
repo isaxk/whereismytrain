@@ -46,6 +46,7 @@ let activeRidRegex: RegExp | null = null;
 
 // Call this whenever your Convex subscription list changes
 function updateRegex(subscriptions: string[]) {
+	console.log(subscriptions);
 	if (subscriptions.length === 0) {
 		activeRidRegex = null;
 		return;

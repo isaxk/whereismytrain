@@ -8,22 +8,23 @@ export const templates = {
 		rtArr?: string | null,
 		filter?: string
 	) => {
-		let text = '🚀 Departed on time';
-
-		if (delay >= 1) text = `🚀 Departed ${delay}m late`;
-		if (delay <= -1) text = `🚀 Departed ${-delay}m early`;
+		let text = '🚀 Departed';
 
 		if (rtArr && filterDelay !== null && filterDelay !== undefined) {
 			if (filter) {
-				if (filterDelay >= 1) text += `\n🟡 Exp. ${filterDelay}m late (${rtArr}) at ${filter}`;
+				if (filterDelay >= 1) text += ` • ETA: ${rtArr} (${filterDelay}m late)`;
 				else if (filterDelay <= -1)
-					text += `\n🟡 Exp. ${-filterDelay}m early (${rtArr}) at ${filter}`;
-				else text += `\n🟢 Exp. on time (${rtArr}) at ${filter}`;
+					text += ` • ETA: ${rtArr} (${-filterDelay}m early) at ${filter}`;
+				else text += ` • ETA: ${rtArr} (on time) at ${filter}`;
 			} else {
-				if (filterDelay >= 1) text += `\n🟡 Exp. arrival ${filterDelay}m late • ${rtArr}`;
-				else if (filterDelay <= -1) text += `\n🟡 Exp. arrival ${-filterDelay}m early • ${rtArr}`;
-				else text += `\n🟢 Exp. arrival on time • ${rtArr}`;
+				if (filterDelay >= 1) text += ` • ETA: ${rtArr} (${filterDelay}m late)`;
+				else if (filterDelay <= -1) text += ` • ETA: ${rtArr} (${-filterDelay}m early)`;
+				else text += ` • ETA: ${rtArr} (on time)`;
 			}
+		} else {
+			if (delay >= 1) text = `🚀 Departed ${delay}m late`;
+			if (delay <= -1) text = `🚀 Departed ${-delay}m early`;
+			if (delay === 0) text = `🚀 Departed on time`;
 		}
 
 		return text;
@@ -73,15 +74,15 @@ export const templates = {
 	},
 	filterDelay: (filterDelay: number | null, rtArr?: string | null, filter?: string) => {
 		if (filter) {
-			if (filterDelay === null) return `🟡 Arrival at ${filter} delayed`;
-			if (filterDelay >= 1) return `🟡 Arrival ${filterDelay}m late • ${rtArr} at ${filter}`;
-			if (filterDelay <= -1) return `🟡 Arrival ${filterDelay}m early • ${rtArr} at ${filter}`;
-			return `🟢 Arrival back on time • ${rtArr} at ${filter}`;
+			if (filterDelay === null) return `🟡 ETA at ${filter} delayed`;
+			if (filterDelay >= 1) return `🟡 ETA ${filterDelay}m late • ${rtArr} at ${filter}`;
+			if (filterDelay <= -1) return `🟡 ETA ${filterDelay}m early • ${rtArr} at ${filter}`;
+			return `🟢 ETA back on time • ${rtArr} at ${filter}`;
 		} else {
-			if (filterDelay === null) return `🟡 Arrival delayed • Time unknown`;
-			if (filterDelay >= 1) return `🟡 Arrival ${filterDelay}m late ${rtArr}`;
-			if (filterDelay <= -1) return `🟡 Arrival ${filterDelay}m early ${rtArr}`;
-			return `🟢 Arrival back on time • ${rtArr}`;
+			if (filterDelay === null) return `🟡 ETA delayed • Time unknown`;
+			if (filterDelay >= 1) return `🟡 ETA ${filterDelay}m late ${rtArr}`;
+			if (filterDelay <= -1) return `🟡 ETA ${filterDelay}m early ${rtArr}`;
+			return `🟢 ETA back on time • ${rtArr}`;
 		}
 	}
 };

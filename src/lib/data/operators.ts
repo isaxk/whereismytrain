@@ -1,6 +1,6 @@
 export const operatorList: Record<string, { name: string; bg: string; text: string }> = {
 	GW: {
-		name: 'Great Western Railway',
+		name: 'GWR',
 		bg: '#20483E',
 		text: '#ffffff'
 	},
@@ -10,7 +10,7 @@ export const operatorList: Record<string, { name: string; bg: string; text: stri
 		text: '#ffffff'
 	},
 	LT: {
-		name: 'London Underground',
+		name: 'Underground',
 		bg: '#C9382C',
 		text: '#ffffff'
 	},
@@ -140,7 +140,7 @@ export const operatorList: Record<string, { name: string; bg: string; text: stri
 		text: '#ffffff'
 	},
 	AW: {
-		name: 'Transport for Wales',
+		name: 'TfW',
 		bg: '#D32D1F',
 		text: '#ffffff'
 	},

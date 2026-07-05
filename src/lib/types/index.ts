@@ -38,6 +38,7 @@ export type BoardItem = {
 	isCancelled: boolean;
 	isFilterCancelled: boolean;
 	platform: string | null;
+	isPlatformConfirmed: boolean;
 	operator: Operator;
 	position: Position;
 	delay: number | null;
