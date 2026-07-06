@@ -1,9 +1,9 @@
 <script lang="ts">
 	import dayjs from 'dayjs';
-	import { GitCompareArrowsIcon, SearchIcon } from 'lucide-svelte';
+	import { Footprints, GitCompareArrowsIcon, RouteIcon, SearchIcon } from 'lucide-svelte';
 
 	import Tubeicon from '$lib/assets/tubeicon.svelte';
-	import { londonTerminals } from '$lib/data/favourites';
+	import { londonTerminals, walkingConnections } from '$lib/data/favourites';
 	import { saved } from '$lib/state/saved.svelte';
 
 	import SubscriptionProvider from '../providers/subscription-provider.svelte';
@@ -48,7 +48,11 @@
 					londonTerminals.includes(crs ?? '') &&
 					connection.focusCrs !== crs;
 
-				if (connection.focusCrs !== crs && !acrossLondon) return false;
+				const walking = walkingConnections.some(
+					(c) => c.includes(crs ?? '') && c.includes(connection?.focusCrs ?? '')
+				);
+
+				if (connection.focusCrs !== crs && !acrossLondon && !walking) return false;
 
 				return isValidConnectionTime(true, connection.service.planDep, planArr, originalArr);
 			}) ??
@@ -58,12 +62,25 @@
 			? { ...savedItem?.service, service_id: savedItem?.service_id, id: savedItem?.id }
 			: null;
 	});
-	const acrossLondon = $derived(
-		connectingService !== null &&
+	const type = $derived.by(() => {
+		if (!connectingService) return null;
+		if (
+			walkingConnections.some(
+				(connection) =>
+					connection.includes(crs ?? '') && connection.includes(connectingService?.crs ?? '')
+			)
+		)
+			return 'walking';
+		if (
+			connectingService !== null &&
 			londonTerminals.includes(connectingService.crs) &&
 			londonTerminals.includes(crs ?? '') &&
 			connectingService.crs !== crs
-	);
+		)
+			return 'tube';
+
+		return 'change';
+	});
 
 	const connection = $derived.by(() => {
 		if (!connectingService) return null;
@@ -84,7 +101,7 @@
 
 		let status = 'ok';
 
-		if (acrossLondon) {
+		if (type === 'tube') {
 			console.log((rtDiff ?? 0) / (originalDiff ?? schDiff ?? 1));
 			if (rtDiff === null || schDiff === null) status = 'alternative';
 			else if (rtDiff < 1) status = 'impossible';
@@ -114,97 +131,90 @@
 </script>
 
 {#if connection && connectingService}
-	{#if connection.status === 'ok'}
-		<div class="relative h-5">
-			<div class="absolute -top-8.5 right-0 left-0 flex min-h-24 items-center">
-				<div class="w-12 min-w-12"></div>
-				<div class="flex h-20 w-10 min-w-10 flex-col items-center justify-center gap-0.5">
-					<div class="w-px grow rounded-full bg-muted-foreground"></div>
-					{#if acrossLondon}
-						<div class="h-6 w-6 p-1">
-							<Tubeicon />
-						</div>
-					{:else}
-						<GitCompareArrowsIcon size={15} />
-					{/if}
-					<div class="w-px grow rounded-full bg-muted-foreground"></div>
-				</div>
-				<div class="grow text-xs">
-					{#if connection.schDiff !== connection.rtDiff}
-						<span class="line-through opacity-80">{connection.schDiff}m</span>
-					{/if}
-					{connection.rtDiff}m to change {#if acrossLondon}via Underground{/if}
-				</div>
+	<div class="relative h-5">
+		<div
+			class={[
+				'absolute -top-8.5 right-0 left-0 flex h-24 items-center',
+				{
+					'text-amber-500': connection.status === 'warning' || connection.status === 'alternative',
+
+					'text-red-500': connection.status === 'impossible'
+				}
+			]}
+		>
+			<div class="w-12 min-w-12"></div>
+			<div class={['flex h-20 w-10 min-w-10 flex-col items-center justify-center gap-0.5']}>
+				<div
+					class={[
+						'w-px grow rounded-full bg-muted-foreground',
+						{
+							'bg-amber-500':
+								connection.status === 'warning' || connection.status === 'alternative',
+
+							'bg-red-500': connection?.status === 'impossible'
+						}
+					]}
+				></div>
+				{#if type === 'tube'}
+					<div class="h-6 w-6 p-1">
+						<Tubeicon />
+					</div>
+				{:else if type === 'walking'}
+					<Footprints size={15} />
+				{:else}
+					<GitCompareArrowsIcon size={15} />
+				{/if}
+				<div
+					class={[
+						'w-px grow rounded-full bg-muted-foreground',
+						{
+							'bg-amber-500':
+								connection?.status === 'warning' || connection.status === 'alternative',
+
+							'bg-red-500': connection?.status === 'impossible'
+						}
+					]}
+				></div>
 			</div>
-		</div>
-	{:else}
-		<div class="relative h-5">
-			<div
-				class={[
-					'absolute -top-8.5 right-0 left-0 flex h-24 items-center',
-					{
-						'text-amber-500':
-							connection.status === 'warning' || connection.status === 'alternative',
-
-						'text-red-500': connection.status === 'impossible'
-					}
-				]}
-			>
-				<div class="w-12 min-w-12"></div>
-				<div class={['flex h-20 w-10 min-w-10 flex-col items-center justify-center gap-0.5']}>
-					<div
-						class={[
-							'w-px grow rounded-full',
-							{
-								'bg-amber-500':
-									connection.status === 'warning' || connection.status === 'alternative',
-
-								'bg-red-500': connection?.status === 'impossible'
-							}
-						]}
-					></div>
-					{#if acrossLondon}
-						<div class="h-6 w-6 p-1">
-							<Tubeicon />
+			<div class="grow text-[13px] font-medium">
+				{#if connection.status === 'impossible'}
+					Connection likely missed
+					{#if connection.schDiff !== connection.rtDiff && (connection.schDiff ?? 2) >= 1}
+						<div class="text-xs font-normal opacity-80">
+							({connection.schDiff ?? 0}m scheduled)
 						</div>
-					{:else}
-						<GitCompareArrowsIcon size={15} />
 					{/if}
-					<div
-						class={[
-							'w-px grow rounded-full',
-							{
-								'bg-amber-500':
-									connection?.status === 'warning' || connection.status === 'alternative',
-
-								'bg-red-500': connection?.status === 'impossible'
-							}
-						]}
-					></div>
-				</div>
-				<div class="grow text-xs">
-					{#if connection.status === 'impossible'}
-						{#if connection.schDiff !== connection.rtDiff && (connection.schDiff ?? 2) >= 1}
-							<div class="line-through opacity-80">
-								{connection.schDiff ?? 0}m to change {#if acrossLondon}via Underground{/if}
-							</div>
-						{/if}
-						Change not possible
+				{:else if connection.schDiff !== connection.rtDiff && connection.rtDiff}
+					Estimated {connection.rtDiff ?? connection.schDiff}m to
+					{#if type === 'tube'}
+						connect via Tube
+					{:else if type === 'walking'}
+						walk between stations
 					{:else}
-						{#if connection.schDiff !== connection.rtDiff && connection.rtDiff}
-							<span class="line-through opacity-80">{connection.schDiff}m</span>
-						{/if}
-						{connection.rtDiff ?? connection.schDiff}m to change {#if acrossLondon}via Underground{/if}
+						change
 					{/if}
-				</div>
-				{#if (connection.status === 'impossible' || connection.status === 'alternative') && !connection.isCancelled}
-					<Button
-						href="/board/{connectingService.crs}?to={connectingService.filter}&time={dayjs(
-							rtArr ?? planArr
-						).format('HHmm')}"
-						variant="secondary"><SearchIcon size={18} /> Search Alternatives</Button
-					>
-					<!-- <Popover.Root bind:open={popoverOpen}>
+					{#if connection.schDiff !== connection.rtDiff && connection.rtDiff}
+						<div class="text-xs font-normal opacity-80">({connection.schDiff}m scheduled)</div>
+					{/if}
+				{:else}
+					{connection.rtDiff ?? connection.schDiff}m to
+					{#if type === 'tube'}
+						connect via Tube
+					{:else if type === 'walking'}
+						walk between stations
+					{:else}
+						change
+					{/if}
+				{/if}
+			</div>
+			{#if (connection.status === 'impossible' || connection.status === 'alternative') && !connection.isCancelled}
+				<Button
+					href="/board/{connectingService.crs}?to={connectingService.filter}&time={dayjs(
+						rtArr ?? planArr
+					).format('HHmm')}"
+					variant="secondary"><SearchIcon size={18} /> Alternatives</Button
+				>
+				<!-- <Popover.Root bind:open={popoverOpen}>
 						<Popover.Trigger class={[buttonVariants({ variant: 'secondary', size: 'sm' }), 'z-10']}
 							>Find alternative
 						</Popover.Trigger>
@@ -265,8 +275,7 @@
 							</AlternativeProvider>
 						</Popover.Content>
 					</Popover.Root> -->
-				{/if}
-			</div>
+			{/if}
 		</div>
-	{/if}
+	</div>
 {/if}

@@ -69,3 +69,10 @@ export const londonTerminals = [
 	'WAT',
 	'ZFD'
 ];
+
+export const walkingConnections = [
+	['STP', 'KGX'],
+	['GLC', 'GLQ'],
+	['BHM', 'BMO'],
+	['WAT', 'WAE']
+];

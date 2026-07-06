@@ -211,9 +211,10 @@
 			>
 				<svelte:boundary>
 					<SavedTrain data={item} {index} />
-					{#snippet failed()}
+					{#snippet failed(e)}
 						<div>
 							An error occurred loading this subscribed train. Try unsubscribing and re-subscribing.
+							{e}
 						</div>
 						<div class="flex">
 							<a

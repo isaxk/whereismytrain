@@ -332,18 +332,18 @@
 		<div>
 			<div class="h-4 w-18 min-w-18 bg-muted/50"></div>
 		</div>
-		<div class="flex min-h-5 items-start">
+		<div class="flex h-6 items-start">
 			<div
 				class="kerning flex h-full min-w-18 items-start bg-muted/50 pl-4 font-sans text-base/4 font-semibold tracking-tight tabular-nums"
 			>
-				<div class="flex h-5 items-center">
+				<div class="flex h-6 items-center">
 					{dayjs(planDep).format('HH:mm')}
 				</div>
 			</div>
 			<div class="flex min-w-0 grow items-start px-3">
 				<div
 					class={[
-						'flex min-h-5 min-w-0 grow flex-wrap items-center gap-x-1 text-base/5 font-medium'
+						'flex h-6 min-h-6 min-w-0 grow flex-wrap items-center gap-x-1  text-base/5 font-medium'
 					]}
 				>
 					{#each destination as dest, i (dest.crs)}
@@ -362,7 +362,7 @@
 				</div>
 				<ChangeNotifier
 					class={[
-						'-mr-1 flex flex-nowrap items-center justify-center gap-1 px-1 text-right',
+						'-mr-1 flex h-6 flex-nowrap items-center justify-center gap-1 px-1 text-right',
 						platform === 'BUS' && 'text-sm/4 text-warning',
 						isPlatformConfirmed == false && 'font-light opacity-60',
 						isPlatformConfirmed == true && ''
