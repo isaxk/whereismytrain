@@ -1,6 +1,6 @@
 <script lang="ts">
 	import dayjs from 'dayjs';
-	import { Bus, ClockAlert } from 'lucide-svelte';
+	import { Bus, CircleQuestionMarkIcon, ClockAlert, Rss } from 'lucide-svelte';
 	import { onMount } from 'svelte';
 
 	import type { CallingPoint, Operator, SavedTrainServiceInfo, TrainService } from '$lib/types';
@@ -22,6 +22,7 @@
 		to,
 		destination,
 		platform,
+		isPlatformConfirmed,
 		isCancelled,
 		isCancelledAtFilter,
 		operator,
@@ -89,22 +90,27 @@
 {/if}
 
 <div class="flex items-center">
-	<div class="flex min-w-12 justify-end">
-		<ChangeNotifier value={delay} class="flex w-max flex-col items-end text-sm">
+	<div class="flex w-12 justify-end">
+		<ChangeNotifier value={delay} class="flex w-max flex-col items-end text-sm tabular-nums">
 			{#if isCancelled}
 				<div class="text-sm/4 text-danger line-through">{planDepTime}</div>
 			{:else if delay === null}
-				<div class="text-sm/3">{planDepTime}</div>
+				<div class="text-sm/3 text-foreground/75">{planDepTime}</div>
 				{#if departed}
 					<div class="text-[10px]/3">Unknown</div>
 				{:else}
-					<div class="text-xs/3 text-warning">Delayed</div>
+					<div class="text-sm/3 font-medium text-warning">Delayed</div>
 				{/if}
 			{:else if planDepTime !== rtDepTime}
-				<div class="text-xs/4">{planDepTime}</div>
-				<div class="text-sm/3 text-warning">{rtDepTime}</div>
+				<div class="text-sm/4 text-foreground/75">{planDepTime}</div>
+				<div class="flex items-center gap-0.5 text-sm/3 font-medium text-warning">
+					{rtDepTime}
+				</div>
 			{:else}
-				<div class="text-sm/3 text-good">{planDepTime}</div>
+				<div class="text-sm/3">{planDepTime}</div>
+				{#if dayjs(planDep)?.diff(now, 'minutes') < 5 * 60 || delay >= 1}
+					<div class="flex items-center gap-0.5 text-xs font-medium text-good">On time</div>
+				{/if}
 			{/if}
 		</ChangeNotifier>
 	</div>
@@ -122,8 +128,9 @@
 			<ChangeNotifier
 				value={platform}
 				class={[
-					'-mr-1 items-center justify-center gap-1 px-1 text-right text-base/5',
-					platform === 'BUS' && 'text-sm text-warning'
+					'-mr-1 flex items-center justify-center gap-1 px-1 text-right text-base/5',
+					platform === 'BUS' && 'text-sm text-warning',
+					!isPlatformConfirmed && 'text-muted-foreground'
 				]}
 			>
 				{#if platform === 'BUS'}
@@ -131,7 +138,12 @@
 				{:else}
 					<span class="text-xs/4 text-muted-foreground sm:text-xs/6">Platform </span>
 
-					{platform !== 'BUS' ? (platform ?? '-') : ''}
+					{#if platform}
+						{platform !== 'BUS' ? (platform ?? '-') : ''}
+					{/if}
+					{#if !platform || !isPlatformConfirmed}
+						<CircleQuestionMarkIcon size={16} />
+					{/if}
 				{/if}
 			</ChangeNotifier>
 		</div>
@@ -230,18 +242,23 @@
 	</div>
 </div>
 <div class="flex h-12 items-center">
-	<div class="flex min-w-12 justify-end">
-		<ChangeNotifier value={filterDelay} class="flex w-max flex-col items-end text-sm">
+	<div class="flex w-12 justify-end">
+		<ChangeNotifier value={filterDelay} class="flex w-max flex-col items-end text-sm tabular-nums">
 			{#if isCancelledAtFilter}
 				<div class="text-sm/3 text-danger line-through">{planArrTime}</div>
 			{:else if filterDelay === null}
-				<div class="text-base/4">{planArrTime}</div>
-				<div class="text-xs/3 text-warning">Delayed</div>
+				<div class="text-sm/4 text-foreground/75">{planArrTime}</div>
+				<div class="text-xs/3 font-medium text-warning">Delayed</div>
 			{:else if planArrTime !== rtArrTime}
-				<div class="text-xs/4">{planArrTime}</div>
-				<div class="text-sm/3 text-warning">{rtArrTime}</div>
+				<div class="text-sm/4 text-foreground/75">{planArrTime}</div>
+				<div class="flex items-center gap-0.5 text-sm/3 font-medium text-warning">
+					{rtArrTime}
+				</div>
 			{:else}
-				<div class="text-sm/3 text-good">{planArrTime}</div>
+				<div class="text-sm/3">{planArrTime}</div>
+				{#if dayjs(planDep)?.diff(now, 'minutes') < 5 * 60}
+					<div class="flex items-center gap-0.5 text-xs font-medium text-good">On time</div>
+				{/if}
 			{/if}
 		</ChangeNotifier>
 	</div>
