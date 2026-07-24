@@ -82,7 +82,7 @@
 					focus={crs}
 					title={serviceData.title}
 					{refreshing}
-					showTrain={page.data.id === rid || !serviceData.filter.arrived}
+					showTrain={page.data.id === rid || (!serviceData.filter.arrived && (group.lineLocations.some((l) => l.crs === filter) || !serviceData.callingPoints.find((l) => l.startDivide)?.departed))}
 					category={serviceData.category}
 					filter={group.lineLocations.some((l) => l.crs === filter)
 						? filter

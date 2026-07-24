@@ -227,14 +227,14 @@
 	{#if data.trainPosition && showTrain}
 		<MapTrainIndication
 			{category}
-			{title}
+			title={showDestination ? 'to ' + data.destination.name : title}
 			href={page.data.id === rid ? null : href}
-			showTitle={page.data.id === rid ? false : true}
+			showTitle={showDestination || page.data.id !== rid}
 			opacity={!to || data.lineLocations.some((l) => l.crs === to && l.crs !== null)
 				? data.isFormedFromTrain
-					? 0.2
+					? 0.5
 					: 1
-				: 0.2}
+				: 0.5}
 			trainBearing={data.trainBearing}
 			trainPosition={data.trainPosition}
 			isFormedFromTrain={data.isFormedFromTrain}

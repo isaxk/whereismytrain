@@ -316,7 +316,7 @@ export async function fetchService(
 	const date = callingPoints[focusIndex].std ?? dayjs().toString();
 
 	const destinationDisplay =
-		callingPoints[focusIndex]?.falseDest ?? destination.map((d) => d.locationName).join(', ');
+		callingPoints[focusIndex]?.falseDest ?? destination.map((d) => d.locationName).join(' & ');
 
 	const title = `${dayjs(date).format('HH:mm')} to ${destinationDisplay}`;
 
@@ -653,7 +653,10 @@ function parseCallingPoint(
 		startJoin: item.startJoin ?? false,
 		endJoin: item.endJoin ?? false,
 		platform: item.platform ?? null,
-		isPlatformConfirmed: item.platformIsHidden != true,
+		isPlatformConfirmed:
+			item.platformIsHidden != true ||
+			(item.platform && item.atdSpecified) ||
+			departedAfter === true,
 		order,
 		isOrigin: index === 0,
 		showTrain
@@ -701,7 +704,7 @@ export function parseSavedInfo(service: TrainService): SavedTrainServiceInfo | n
 		filterDelay: filter.arrivalDelay,
 		isCancelledAtFilter: filter.isCancelled,
 
-		destination: service.destination.map((d) => d.name).join(', '),
+		destination: service.destination.map((d) => d.name).join(' & '),
 
 		refreshedAt: Date.now(),
 

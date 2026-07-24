@@ -167,23 +167,25 @@ export const POST: RequestHandler = async ({ request }) => {
 	const tiplocsData = await getTiplocs(tiplocs, type, crs);
 	// console.log(tiplocsData);
 	const parsedLocations: MapDataLocationGroup[] = locations.map((group) => {
-		const groupWithCoords: ServiceLocationWithCoords[] = group.map((item) => {
-			if (item.ata === nullTime) item.ata = null;
-			if (item.atd === nullTime) item.atd = null;
-			if (item.eta === nullTime) item.eta = null;
-			if (item.etd === nullTime) item.etd = null;
-			if (item.sta === nullTime) item.sta = null;
-			if (item.std === nullTime) item.std = null;
+		const groupWithCoords: ServiceLocationWithCoords[] = group
+			.filter((item) => !item.isCancelled || !group.some((cp) => !cp.isCancelled))
+			.map((item) => {
+				if (item.ata === nullTime) item.ata = null;
+				if (item.atd === nullTime) item.atd = null;
+				if (item.eta === nullTime) item.eta = null;
+				if (item.etd === nullTime) item.etd = null;
+				if (item.sta === nullTime) item.sta = null;
+				if (item.std === nullTime) item.std = null;
 
-			const coords = tiplocsData.find((tiploc) => item.tiploc && tiploc.tiploc === item.tiploc)
-				?.coords ??
-				tiplocsData.find((tiploc) => tiploc.crs === item.crs)?.coords ?? [0, 0];
+				const coords = tiplocsData.find((tiploc) => item.tiploc && tiploc.tiploc === item.tiploc)
+					?.coords ??
+					tiplocsData.find((tiploc) => tiploc.crs === item.crs)?.coords ?? [0, 0];
 
-			return {
-				...item,
-				coords
-			};
-		});
+				return {
+					...item,
+					coords
+				};
+			});
 
 		// let coords: null | [number, number] = null;
 		// let bearing: number | null = null;

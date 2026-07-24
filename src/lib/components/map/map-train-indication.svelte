@@ -32,20 +32,22 @@
 	onclick={() => href && goto(href)}
 	class="relative p-5"
 	zIndex={isFormedFromTrain ? 0 : 2000}
-	opacity={page.data.crs && page.data.id !== rid ? 0.2 : 1}
+
 >
 	{#if title && showTitle}
+	<div class={["bg-white absolute left-1/2 -translate-x-1/2 rounded-sm overflow-hidden", trainBearing > 140 && trainBearing < 220 ? 'top-0' : 'bottom-0']}>
 		<div
 			style:color
 			style:opacity
 			style:border-color={color}
 			class={[
-				'absolute left-1/2 box-border w-max -translate-x-1/2 rounded-sm border bg-background px-1 py-0 font-sans text-[11px]/4 font-medium text-nowrap drop-shadow backdrop-blur-sm transition-all',
-				trainBearing > 140 && trainBearing < 220 ? 'top-0' : 'bottom-0'
+				'box-border w-max rounded-sm border bg-background px-1 py-0 font-sans text-[11px]/4 font-medium text-nowrap drop-shadow backdrop-blur-sm transition-all',
+
 			]}
 		>
 			{title}
 		</div>
+	</div>
 	{/if}
 	<div class="relative rounded-full bg-background">
 		<div
@@ -67,14 +69,14 @@
 					</div>
 				{/if}
 				<div class={['rounded-full transition-all', refreshing ? 'scale-60' : 'scale-100']}>
-					<TrainIconByCategory {category} size={showDestination || isFormedFromTrain ? 14 : 18} />
+					<TrainIconByCategory {category} size={isFormedFromTrain ? 14 : 18} />
 				</div>
 			</div>
-			{#if showDestination}
+			<!-- {#if showDestination}
 				<div class="text-[8px]/3">
 					to {showDestination}
 				</div>
-			{/if}
+			{/if} -->
 		</div>
 
 		{#if !isFormedFromTrain && trainBearing != null}
