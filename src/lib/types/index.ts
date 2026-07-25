@@ -157,7 +157,8 @@ export type TrainService = {
 	operator: Operator;
 	isToday: boolean;
 	date: string;
-	title: string;
+  title: string;
+	cancelledBetween: string | null;
 	reasonCode: string | null;
 	formation: Carriage[] | null;
 	formationLengthOnly: boolean;

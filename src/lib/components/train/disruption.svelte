@@ -5,7 +5,7 @@
 
 	import Skeleton from '../ui/skeleton.svelte';
 
-	let { code, type = 'delay' }: { code: string; type?: 'delay' | 'cancel' | 'part-cancelled' } =
+	let { code, type = 'delay', cancelledBetween = null }: { code: string; type?: 'delay' | 'cancel' | 'part-cancelled'; cancelledBetween?: string | null } =
 		$props();
 
 	async function getReasonCode(code: string) {
@@ -28,6 +28,8 @@
 			? data.lateReason
 			: type === 'cancel'
 				? data.cancReason
-				: data.cancReason.replace('cancelled', 'partially cancelled')}
+				: cancelledBetween
+					? data.cancReason.replace('has been cancelled', `${cancelledBetween}`)
+					: data.cancReason.replace('cancelled', 'partially cancelled')}
 	{/await}
 </AlertCard>

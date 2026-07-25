@@ -185,6 +185,7 @@
 							: serviceData.callingPoints.some((cp) => cp.isCancelled)
 								? 'part-cancelled'
 								: 'delay'}
+						cancelledBetween={serviceData.cancelledBetween}
 						code={serviceData.reasonCode}
 					/>
 				{/if}

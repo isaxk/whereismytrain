@@ -108,8 +108,8 @@
 {/if}
 
 <div class="relative overflow-hidden rounded-lg">
-	<div class="flex min-h-6 items-center px-3">
-		<div class="flex w-full flex-col justify-center px-0 pt-3 text-xs">
+	<div class="flex min-h-6 items-center justify-center px-3">
+		<div class="flex w-full flex-col justify-center px-0 py-2 text-xs">
 			<ChangeNotifier
 				value={destination}
 				class="flex w-max items-center gap-1 truncate pr-5 text-xs/4"
@@ -248,7 +248,7 @@
 		</div>
 	</div>
 	<div class="pt-0">
-		<div class="flex items-center px-2">
+		<div class="flex items-center  px-2">
 			<div class="flex w-12 justify-end">
 				<ChangeNotifier value={delay} class="flex w-max flex-col items-end text-sm tabular-nums">
 					{#if isCancelled}
@@ -273,7 +273,7 @@
 					{/if}
 				</ChangeNotifier>
 			</div>
-			<div class="flex h-16 min-w-10 flex-col items-center justify-center">
+			<div class="flex h-10 min-w-10 flex-col items-center justify-center">
 				<div class="w-1.5 grow"></div>
 				<div class="flex h-1.5 min-w-4" style:background={operator.color}></div>
 				<div class="w-1.5 grow" style:background={operator.color}></div>

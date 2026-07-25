@@ -96,7 +96,7 @@
 		const interval = setInterval(() => {
 			now = dayjs();
 		}, 1000);
-		if(dayjs().diff(dayjs(data.date), 'h') > 24) {
+		if (dayjs().diff(dayjs(data.date), 'h') > 24) {
 			saved.value = saved.value.filter((_, i) => i !== index);
 			// return;
 		}
@@ -150,19 +150,18 @@
 						<div style:min-height="{clientHeight}px"></div>
 
 						{#if !service.isCancelled && !service.isCancelledAtFilter}
-							<Connection
-								crs={service.filter}
-								originalArr={data.originalArrival}
-								planArr={service.planArr}
-								rtArr={service.rtArr}
-							/>
-
+							<div class="px-2">
+								<Connection
+									crs={service.filter}
+									originalArr={data.originalArrival}
+									planArr={service.planArr}
+									rtArr={service.rtArr}
+								/>
+							</div>
 						{:else}
 							<div class="h-6"></div>
 						{/if}
 					</div>
-
-
 				</div>
 			{/if}
 		{/snippet}
