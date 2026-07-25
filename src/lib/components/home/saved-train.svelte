@@ -96,6 +96,10 @@
 		const interval = setInterval(() => {
 			now = dayjs();
 		}, 1000);
+		if (dayjs().diff(dayjs(data.date), 'h') > 24) {
+			saved.value = saved.value.filter((_, i) => i !== index);
+			// return;
+		}
 		return () => {
 			clearInterval(interval);
 		};
@@ -110,152 +114,56 @@
 	let clientHeight = $state(176);
 </script>
 
-<SubscriptionProvider serviceId={data.service_id} crs={data.filterCrs} filter={data.filterCrs}>
-	{#snippet children({ onUnsubscribe })}
-		{#if service}
-			<div
-				style:min-height="{clientHeight}px"
-				class={[
-					'relative py-6 transition-all duration-300',
-					(!refreshed && !refreshing.current) || refreshing.error ? 'opacity-40' : 'opacity-100',
-					!refreshed && refreshing.current && !refreshing.error ? 'animate-pulse' : ''
-				]}
-			>
-				<div>
-					{#key serviceId}
-						<a
-							bind:clientHeight
-							class="absolute top-0 right-0 left-0"
-							out:fly={{ duration: 200, y: 15 }}
-							in:fly={{ duration: 200, y: -15, delay: 201 }}
-							href={`/board/${data.focusCrs}/t/${data.service_id}?to=${data.filterCrs}&backTo=/`}
-						>
-							<TrainDiagram
-								{...service}
-								showDate={!dayjs(service.rtDep ?? service.planDep).isSame(dayjs(), 'day') &&
-									!saved.value.some(
-										(item, i) =>
-											i < index &&
-											!dayjs(item.service.rtDep ?? item.service.planDep).isSame(dayjs(), 'day')
-									)}
-							/>
-						</a>
-					{/key}
-					<div style:min-height="{clientHeight}px"></div>
-
-					{#if !service.isCancelled && !service.isCancelledAtFilter}
-						<Connection
-							crs={service.filter}
-							originalArr={data.originalArrival}
-							planArr={service.planArr}
-							rtArr={service.rtArr}
-						/>
-					{/if}
-				</div>
-
-				<!-- {#if service.isCancelled || service.isCancelledAtFilter}
-					<div class="z-100">
-						<AlertCard status="major" class="z-[1000] -mt-4 font-normal" Icon={X}>
-							<div class="flex items-center gap-2">
-								<div class="grow">
-									<div class="text-sm font-semibold">Your service was cancelled</div>
-								</div>
-
-								<div class=""></div>
-							</div>
-						</AlertCard>
-					</div>
-				{/if} -->
-				<div class="absolute top-14 right-0 flex flex-col items-end gap-2">
-					{#if service.isCancelled || service.isCancelledAtFilter}
-						<Button
-							variant="secondary"
-							class=""
-							href="/board/{data.focusCrs}?to={data.filterCrs}&time={dayjs(service.planDep).format(
-								'HHmm'
-							)}"
-						>
-							<SearchIcon size={18} /> Alternatives
-						</Button>
-					{:else}
-						<div class="h-6"></div>
-					{/if}
-					<DropdownMenu.Root>
-						<DropdownMenu.Trigger class={[buttonVariants({ variant: 'outline', size: 'icon' })]}>
-							<EllipsisVertical />
-						</DropdownMenu.Trigger>
-						<DropdownMenu.Content align="end">
-							<!-- <DropdownMenu.Item onclick={() => (showMissedDialog = true)}></DropdownMenu.Item> -->
+{#if !service?.arrived}
+	<SubscriptionProvider serviceId={data.service_id} crs={data.filterCrs} filter={data.filterCrs}>
+		{#snippet children({ onUnsubscribe })}
+			{#if service}
+				<div
+					style:min-height="{clientHeight}px"
+					class={[
+						'relative py-4 transition-all duration-300',
+						(!refreshed && !refreshing.current) || refreshing.error ? 'opacity-40' : 'opacity-100',
+						!refreshed && refreshing.current && !refreshing.error ? 'animate-pulse' : ''
+					]}
+				>
+					<div>
+						{#key serviceId}
 							<a
-								href="/board/{data.focusCrs}?to={data.filterCrs}&time={dayjs(data.service.planDep)
-									.add(10, 'minutes')
-									.format('HHmm')}"
+								bind:clientHeight
+								class="absolute top-0 right-0 left-0"
+								out:fly={{ duration: 200, y: 15 }}
+								in:fly={{ duration: 200, y: -15, delay: 201 }}
+								href={`/board/${data.focusCrs}/t/${data.service_id}?to=${data.filterCrs}&backTo=/`}
 							>
-								<DropdownMenu.Item>
-									<TriangleAlertIcon /> Alternatives
-								</DropdownMenu.Item>
+								<TrainDiagram
+									{...service}
+									onRemove={onUnsubscribe}
+									showDate={!dayjs(service.rtDep ?? service.planDep).isSame(dayjs(), 'day') &&
+										!saved.value.some(
+											(item, i) =>
+												i < index &&
+												!dayjs(item.service.rtDep ?? item.service.planDep).isSame(dayjs(), 'day')
+										)}
+								/>
 							</a>
+						{/key}
+						<div style:min-height="{clientHeight}px"></div>
 
-							<DropdownMenu.Item onclick={onUnsubscribe} variant="destructive"
-								><Trash /> Remove</DropdownMenu.Item
-							>
-						</DropdownMenu.Content>
-					</DropdownMenu.Root>
-					<!-- <Dialog.Root bind:open={showMissedDialog}>
-						<Dialog.Content>
-							<Dialog.Title>Missed train, what now?</Dialog.Title>
-							<Dialog.Description>
-								If you have an "Advance" ticket, you will need to buy a new ticket. However, if this
-								is a connecting train you will be entitled to take the next train (this includes
-								split tickets). Most other tickets will be valid on the next train(s).
-							</Dialog.Description>
-							<div class="h-56">
-								<AlternativeProvider
-									time={dayjs(data.service.planDep).format('HH:mm')}
-									allowance={10}
-									from={data.focusCrs}
-									to={data.filterCrs}
-									existingRid={data.service_id}
-								>
-									{#snippet children({ loading, failed, item, serviceId })}
-										{#if item && serviceId}
-											<SubscriptionProvider {serviceId} crs={data.focusCrs} filter={data.filterCrs}>
-												{#snippet children({ loading, onSwitchFrom })}
-													<AlternativeDisplay
-														state="complete"
-														switching={loading}
-														outline
-														from={data.focusCrs}
-														to={data.filterCrs}
-														time={dayjs(data.service.planDep).add(10, 'minutes').format('HHmm')}
-														service={item}
-														showDescription={false}
-														onSwitch={() => {
-															onSwitchFrom(data.id).then(() => {
-																showMissedDialog = false;
-															});
-														}}
-													></AlternativeDisplay>
-												{/snippet}
-											</SubscriptionProvider>
-										{:else}
-											<AlternativeDisplay
-												outline
-												showDescription
-												from={data.focusCrs}
-												to={data.filterCrs}
-												time={dayjs(data.service.planDep).add(10, 'minutes').format('HHmm')}
-												state={failed ? 'failed' : 'loading'}
-											/>
-										{/if}
-									{/snippet}
-								</AlternativeProvider>
+						{#if !service.isCancelled && !service.isCancelledAtFilter}
+							<div class="px-2">
+								<Connection
+									crs={service.filter}
+									originalArr={data.originalArrival}
+									planArr={service.planArr}
+									rtArr={service.rtArr}
+								/>
 							</div>
-						</Dialog.Content>
-					</Dialog.Root> -->
-					<!-- {/key} -->
+						{:else}
+							<div class="h-6"></div>
+						{/if}
+					</div>
 				</div>
-			</div>
-		{/if}
-	{/snippet}
-</SubscriptionProvider>
+			{/if}
+		{/snippet}
+	</SubscriptionProvider>
+{/if}

@@ -31,6 +31,10 @@
 	import { pwa, saved } from '$lib/state/saved.svelte';
 	import { refreshing, servicesSub } from '$lib/state/services-subscriber.svelte';
 	import { iOS } from '$lib/utils.js';
+	import { Accordion } from 'bits-ui';
+	import TrainDiagram from '$lib/components/itinerary/train-diagram.svelte';
+	import SubscriptionProvider from '$lib/components/providers/subscription-provider.svelte';
+	import ChevronDown from '@lucide/svelte/icons/chevron-down';
 
 	dayjs.extend(relativeTime);
 
@@ -135,7 +139,7 @@
 	<TrainSearch />
 </div>
 <div class="flex flex-col py-4">
-	{#if saved.value.length === 0}
+	{#if saved.value.filter((item) => !item.service.arrived).length === 0}
 		<div class="flex flex-col items-center justify-center gap-1 p-4 py-5 text-muted-foreground">
 			<div class="font-semibold">No trains added yet</div>
 			<div class="max-w-xs text-center text-sm">
@@ -143,72 +147,44 @@
 				them here
 			</div>
 		</div>
-		<!-- {#if !pwa.value}
-			<div class="flex flex-col gap-10 p-4 py-5">
-				<div class="relative">
-					<img src="/promo/tracktrain.png" class="w-[90%] rounded-lg dark:opacity-90" alt="" />
-					<div
-						class="absolute right-0 -bottom-5 rounded-lg border border-border bg-background px-4 py-2 text-lg font-medium drop-shadow-xs"
-					>
-						Track the progress of your train...
-					</div>
-				</div>
-				<div class="relative mt-4">
-					<img src="/promo/notifications.jpeg" class="ml-auto w-[85%] rounded-lg" alt="" />
-					<div
-						class="absolute -top-5 left-0 rounded-lg border border-border bg-background px-4 py-2 text-lg font-medium drop-shadow-xs"
-					>
-						with notifications to stay in the know
-					</div>
-				</div>
-				<div class="relative">
-					<img src="/promo/busy.png" class="mb-4 w-[80%] rounded-lg dark:opacity-90" alt="" />
-					<div
-						class="absolute right-0 -bottom-7 rounded-lg border border-border bg-background px-4 py-2 text-lg font-medium drop-shadow-xs"
-					>
-						See where you can get a seat... <div class="text-right text-xs text-muted-foreground">
-							(select operators and services only)
-						</div>
-					</div>
-				</div>
-				<div class="relative mt-6 flex h-72">
-					<img
-						src="/promo/platforms.png"
-						class="absolute right-0 bottom-0 mb-4 w-2/3 rounded-sm border border-border drop-shadow-xs dark:opacity-90"
-						alt=""
-					/>
-					<img
-						src="/promo/noplatforms.png"
-						class="absolute top-10 left-0 mb-4 w-2/3 rounded-lg border border-border drop-shadow-xs"
-						alt=""
-					/>
-					<div
-						class="absolute -top-5 left-0 rounded-lg border border-border bg-background px-4 py-2 text-lg font-medium drop-shadow-xs"
-					>
-						and platforms before everyone else
-					</div>
-				</div>
-				<div class="relative mt-4 flex h-72">
-					<img
-						src="/promo/connections.png"
-						class="w-[90%] rounded-sm border border-border object-cover drop-shadow-xs dark:opacity-90"
-						alt=""
-					/>
-					<div
-						class="absolute -top-5 right-0 rounded-lg border border-border bg-background px-4 py-2 text-lg font-medium drop-shadow-xs"
-					>
-						Manage your connections with ease
-					</div>
-				</div>
-			</div>
-		{/if} -->
 	{:else}
+		{#if saved.value.some((item) => item.service.arrived)}
+			<Accordion.Root type="single" class="px-4 pb-2">
+				<Accordion.Item class="group">
+					<Accordion.Trigger class={['', buttonVariants({ variant: 'ghost' })]}
+						><ChevronDown size={16} class="transition-all group-data-[state=open]:rotate-180" />
+						Completed trains</Accordion.Trigger
+					>
+
+					<Accordion.Content class="">
+						{#each saved.value.filter((item) => item.service.arrived) as item (item.id)}
+							<div class="border-b border-border py-2 even:bg-muted/20">
+								<svelte:boundary>
+									<SubscriptionProvider
+										serviceId={item.service_id}
+										crs={item.focusCrs}
+										filter={item.filterCrs}
+									>
+										{#snippet children({ onUnsubscribe })}
+											<TrainDiagram {...item.service} onRemove={() => onUnsubscribe()} />
+										{/snippet}
+									</SubscriptionProvider>
+									{#snippet failed(e)}
+										<div>
+											An error occurred loading this subscribed train. Try unsubscribing and
+											re-subscribing.
+											{e}
+										</div>
+									{/snippet}
+								</svelte:boundary>
+							</div>
+						{/each}
+					</Accordion.Content>
+				</Accordion.Item>
+			</Accordion.Root>
+		{/if}
 		{#each saved.value as item, index (item.id)}
-			<div
-				class="px-4 even:bg-muted/20"
-				transition:fly={{ duration: 200, x: -100 }}
-				animate:flip={{ duration: 200 }}
-			>
+			<div class="px-4 even:bg-muted/20">
 				<svelte:boundary>
 					<SavedTrain data={item} {index} />
 					{#snippet failed(e)}

@@ -112,7 +112,8 @@ function parseBoardItem(item: ServiceItemWithLocations, filter, reasonCodes): Bo
 		delay,
 
 		platform: item.category === 'BR' || item.category === 'BS' ? 'BUS' : (item.platform ?? null),
-		isPlatformConfirmed: item.platformIsHidden !== true,
+		isPlatformConfirmed:
+			item.platformIsHidden !== true ||  item.serviceIsSuppressed===true || (item.platform !== undefined && item.atdSpecified === true),
 		operator: {
 			id: item.operatorCode ?? null,
 			name: operatorList[item.operatorCode!]?.name ?? item.operator ?? 'Unknown',

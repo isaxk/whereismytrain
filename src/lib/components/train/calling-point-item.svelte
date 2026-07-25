@@ -1,6 +1,16 @@
 <script lang="ts">
 	import dayjs from 'dayjs';
-	import { ArrowDownRight, ArrowUpRight, Hand, X } from 'lucide-svelte';
+	import {
+		ArrowDownRight,
+		ArrowUpRight,
+		CircleQuestionMark,
+		ClockAlert,
+		ClockAlertIcon,
+		Dot,
+		Hand,
+		Rss,
+		X
+	} from 'lucide-svelte';
 
 	import { highlightedStation } from '$lib/state/map.svelte';
 	import type { CallingPoint, Operator } from '$lib/types';
@@ -19,9 +29,10 @@
 		index,
 		length,
 		showTrain = false,
-
+		progress = null,
 		showArrivalMark = false,
 		showDepartureMark = false,
+		hideRealtime = false,
 		category = 'standard'
 	}: {
 		hideDetails: boolean;
@@ -30,9 +41,10 @@
 		index: number;
 		length: number;
 		showTrain?: boolean;
-
+		progress?: number | null;
 		showArrivalMark?: boolean;
 		showDepartureMark?: boolean;
+		hideRealtime?: boolean;
 		category?: 'standard' | 'express' | 'metro' | 'sleeper' | 'bus';
 	} = $props();
 
@@ -72,7 +84,7 @@
 <div
 	bind:this={elm}
 	class={[
-		'flex h-12 items-center gap-2 rounded-xl px-2 transition-all',
+		'flex h-14 items-center gap-2 rounded-xl px-2 transition-all',
 		highlightedStation.current === cp.crs + (cp.rtDepDate || '') && 'animate-pulse bg-amber-100'
 	]}
 >
@@ -96,42 +108,38 @@
 		<ChangeNotifier
 			value={time.delay}
 			class={[
-				'flex w-max origin-left flex-col items-end',
+				'flex w-max origin-left flex-col items-end tabular-nums',
 				cp.order === 'focus' || cp.order === 'filter' ? 'scale-100' : 'scale-95'
 			]}
 		>
 			<div
 				class={[
 					'font-normal',
-					cp.isCancelled
-						? 'text-sm text-red-600 line-through'
-						: time.rt !== time.plan
-							? time.rt
-								? 'text-sm/3'
-								: 'text-sm/3'
-							: 'text-sm font-medium text-good'
+					cp.isCancelled ? 'text-sm/5 text-red-600 line-through' : 'text-sm/5 font-medium'
 				]}
 			>
 				<div class="text-nowrap">
-					<span class="text-xs font-normal text-foreground"
+					<span class="text-xs/5 font-normal text-foreground"
 						>{#if showArrivalMark}a.{:else if showDepartureMark}d.{/if}
 					</span>{time.plan}
 				</div>
 			</div>
-			{#if time.rt !== time.plan && !cp.isCancelled}
+			{#if time.rt !== time.plan && !cp.isCancelled && !hideRealtime}
 				{#if time.rt}
-					<div class="text-sm/3 font-medium text-nowrap text-warning">
+					<div class="text-sm/4 font-semibold text-nowrap text-warning">
 						{time.rt}
 					</div>
 				{:else}
-					<div class={['text-right text-[10px]/3 font-medium', !cp.departed && 'text-warning']}>
+					<div class="text-xs/3 font-semibold text-nowrap text-warning">
 						{#if cp.departed}
-							Unknown
+							<span class="text-foreground">Unknown</span>
 						{:else}
 							Delayed
 						{/if}
 					</div>
 				{/if}
+			{:else if !cp.isCancelled && !hideRealtime}
+				<div class="text-xs/3 font-semibold text-nowrap text-good">On time</div>
 			{/if}
 		</ChangeNotifier>
 	</div>
@@ -167,8 +175,11 @@
 			<div style:background={operator.color} class="w-1.5 grow bg-black"></div>
 		{/if}
 		{#if (cp.departed || cp.isCancelled) && cp.showTrain && showTrain}
+			{@const top = 32 + (progress ?? 0.5) * 24}
+			<!-- 32px, 56px -->
 			<div
-				class="absolute top-9 z-10"
+				class="absolute z-10"
+				style:top="{top}px"
 				in:receive|global={{
 					key: cp.inDivision ? 'train-pos-icon-division' : 'train-pos-icon-'
 				}}
@@ -208,7 +219,7 @@
 		<div class="flex items-end gap-1">
 			<div
 				class={cn([
-					'min-w-0 overflow-hidden text-sm/4 text-nowrap text-ellipsis text-foreground/60',
+					'min-w-0 overflow-hidden text-sm/5 text-nowrap text-ellipsis text-foreground/60',
 					{
 						'font-medium text-foreground': cp.order === 'focus' || cp.order === 'filter'
 					}
@@ -216,21 +227,92 @@
 			>
 				{cp.name}
 			</div>
-			<div
+			<!-- <div
 				class={[
 					'text-zinc-400',
 					cp.order === 'focus' || cp.order === 'filter' ? 'text-[10px]/4' : 'text-[10px]/3'
 				]}
 			>
 				({cp.crs})
-			</div>
+			</div> -->
 		</div>
 
-		<ChangeNotifier value={cp.isCancelled} class="w-max">
+		<ChangeNotifier value={cp.isCancelled} class="flex w-max  items-center gap-2">
 			{#if cp.isCancelled}
 				<div class="flex w-max items-center gap-1 text-xs/4 text-red-600">
 					<X size={16} /> Cancelled
 				</div>
+			{:else}
+				<!-- {#if (cp.order === 'filter' ? cp.arrivalDelay : cp.delay) === null}
+			<div class="flex items-center gap-1 text-xs/4 text-warning">
+				<ClockAlert size={14} />
+				Delayed
+			</div>
+			{/if} -->
+				{#if cp.order === 'focus'}
+					{#if cp.delay !== null && !cp.departed}
+						{@const timeUntilDeparture = cp.times.rt.dep
+							? dayjs(cp.times.rt.dep).diff(dayjs(), 'minute')
+							: null}
+						<div class="flex items-center">
+							{#if timeUntilDeparture !== null && timeUntilDeparture < 60}
+								<div
+									class={[
+										'flex items-center gap-1 text-xs/4 font-medium',
+										cp.delay === 0 ? 'text-good' : 'text-warning'
+									]}
+								>
+									<Rss size={12} />
+
+									{#if timeUntilDeparture < 1}
+										now
+									{:else}
+										in {timeUntilDeparture} min{#if timeUntilDeparture !== 1}s{/if}
+									{/if}
+								</div>
+							{/if}
+							{#if cp.delay !== null && cp.delay !== 0}
+								<div class="flex items-center text-xs/4 text-warning">
+									{#if timeUntilDeparture !== null && timeUntilDeparture < 60}
+										<Dot size={14} />
+									{:else}
+										<ClockAlert size={12} />
+									{/if}
+									{Math.abs(cp.delay)} min{#if Math.abs(cp.delay) !== 1}s{/if}
+									{#if cp.delay > 0}late{:else}early{/if}
+								</div>
+							{/if}
+						</div>
+					{:else if cp.delay !== null && cp.departed}
+						{#if cp.delay !== 0}
+							<div class="flex items-center gap-1 text-xs/4 text-warning">
+								<ClockAlert size={14} />
+								Departed {Math.abs(cp.delay)} min{#if Math.abs(cp.delay) !== 1}s{/if}
+								{#if cp.delay > 0}late{:else}early{/if}
+							</div>
+						{:else}
+							<div class="flex items-center gap-1 text-xs/4 text-good">
+								<Rss size={14} />
+								Departed
+							</div>
+						{/if}
+					{/if}
+				{/if}
+				{#if cp.feature === 'request'}
+					<div class="flex items-center gap-1 text-xs/3 text-muted-foreground/80">
+						<Hand size={12} />
+						request stop
+					</div>
+				{/if}
+				{#if cp.feature === 'pickup'}
+					<div class="flex items-center gap-1 text-xs/3 text-muted-foreground/80">
+						<ArrowUpRight size={12} /> pick up only
+					</div>
+				{:else if cp.feature === 'setdown'}
+					<div class="flex items-center gap-1 text-xs/3 text-muted-foreground/80">
+						<ArrowDownRight size={12} /> set down only
+					</div>
+				{/if}
 			{/if}
 		</ChangeNotifier>
 	</div>
@@ -244,22 +326,15 @@
 			hideDetails ? 'opacity-0' : ''
 		]}
 	>
-		{cp.platform ?? '-'}
-		<div>
-			{#if cp.feature === 'request'}
-				<div class="flex items-center gap-1 text-[10px]/3 text-muted-foreground">
-					<Hand size={12} />
-					request stop
-				</div>
-			{:else if cp.feature === 'pickup'}
-				<div class="flex items-center gap-1 text-[10px]/3 text-muted-foreground">
-					<ArrowUpRight size={12} /> boarding only
-				</div>
-			{:else if cp.feature === 'setdown'}
-				<div class="flex items-center gap-1 text-[10px]/3 text-muted-foreground">
-					<ArrowDownRight size={12} /> alighting only
-				</div>
-			{/if}
-		</div>
+		{#if cp.platform && cp.isPlatformConfirmed}
+			<div class={['flex items-center gap-1']}>
+				{cp.platform}
+			</div>
+		{/if}
+		{#if cp.platform && !cp.isPlatformConfirmed}
+			<div class="text-xs/5 text-zinc-400/80">
+				Est. {cp.platform}
+			</div>
+		{/if}
 	</ChangeNotifier>
 </div>

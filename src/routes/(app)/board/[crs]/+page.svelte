@@ -296,7 +296,7 @@
 													platform={service.platform}
 													isPlatformConfirmed={services.some((s) => !s.isPlatformConfirmed)
 														? service.isPlatformConfirmed
-														: null}
+														: true}
 													operator={service.operator}
 													filterName={details?.filterName}
 												/>
@@ -387,7 +387,7 @@
 												</div>
 												<div class="w-10 font-medium">{service.times.plan.dep}</div>
 												<div class="min-w-0 grow truncate">
-													{service.destination.map((d) => d.name).join(', ')}
+													{service.destination.map((d) => d.name).join(' & ')}
 
 													{#if service.destination[0]?.via}
 														<span class="text-xs text-muted-foreground">

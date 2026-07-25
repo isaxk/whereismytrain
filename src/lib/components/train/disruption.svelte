@@ -5,7 +5,8 @@
 
 	import Skeleton from '../ui/skeleton.svelte';
 
-	let { code, type = 'delay' }: { code: string; type?: 'delay' | 'cancel' } = $props();
+	let { code, type = 'delay', cancelledBetween = null }: { code: string; type?: 'delay' | 'cancel' | 'part-cancelled'; cancelledBetween?: string | null } =
+		$props();
 
 	async function getReasonCode(code: string) {
 		const res = await fetch(`/api/reasoncode/${code}`);
@@ -18,11 +19,17 @@
 
 <AlertCard
 	Icon={type === 'delay' ? ClockAlertIcon : XIcon}
-	status={type === 'cancel' ? 'major' : 'minor'}
+	status={type === 'cancel' || type === 'part-cancelled' ? 'major' : 'minor'}
 >
 	{#await data}
 		<Skeleton class="h-4 w-full bg-zinc-200/50" />
 	{:then data}
-		{type === 'delay' ? data.lateReason : data.cancReason}
+		{type === 'delay'
+			? data.lateReason
+			: type === 'cancel'
+				? data.cancReason
+				: cancelledBetween
+					? data.cancReason.replace('has been cancelled', `${cancelledBetween}`)
+					: data.cancReason.replace('cancelled', 'partially cancelled')}
 	{/await}
 </AlertCard>

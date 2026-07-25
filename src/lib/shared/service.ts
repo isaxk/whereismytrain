@@ -316,7 +316,7 @@ export async function fetchService(
 	const date = callingPoints[focusIndex].std ?? dayjs().toString();
 
 	const destinationDisplay =
-		callingPoints[focusIndex]?.falseDest ?? destination.map((d) => d.locationName).join(', ');
+		callingPoints[focusIndex]?.falseDest ?? destination.map((d) => d.locationName).join(' & ');
 
 	const title = `${dayjs(date).format('HH:mm')} to ${destinationDisplay}`;
 
@@ -390,7 +390,22 @@ export async function fetchService(
 		)
 	);
 
-	console.log(data.uid);
+  let cancelledBetween: string | null = null;
+  if (parsedPoints.some((l) => l.isCancelled) && parsedPoints.some((l) => !l.isCancelled)) {
+    const firstCancelled = parsedPoints.findIndex((l) => l.isCancelled);
+    const lastCancelled = parsedPoints.findLastIndex((l) => l.isCancelled);
+    if (firstCancelled !== lastCancelled && !parsedPoints.some((l, i) => !l.isCancelled && i > firstCancelled && i < lastCancelled)) {
+      const end = lastCancelled === parsedPoints.length - 1 ? parsedPoints[lastCancelled] : parsedPoints[lastCancelled + 1];
+      const start = firstCancelled === 0 ? parsedPoints[firstCancelled] : parsedPoints[firstCancelled - 1];
+      if ((firstCancelled === 0 || lastCancelled === parsedPoints.length - 1)) {
+        cancelledBetween = 'has been cancelled between ' + start.name + ' and ' + end.name;
+      }
+      // else {
+      //   cancelledBetween = 'will no longer call at stations between ' + parsedPoints[firstCancelled].name + ' and ' + end.name;
+      // }
+
+    }
+  }
 
 	const final: TrainService = {
 		rid: id,
@@ -418,7 +433,8 @@ export async function fetchService(
 		uid: data.uid!,
 		sdd: data.sdd!,
 		date,
-		isToday: dayjs().isSame(date, 'day'),
+    isToday: dayjs().isSame(date, 'day'),
+		cancelledBetween,
 		reasonCode: (data.delayReason?.Value ?? data.cancelReason?.Value ?? null)?.toString() ?? ''
 	};
 
@@ -653,7 +669,10 @@ function parseCallingPoint(
 		startJoin: item.startJoin ?? false,
 		endJoin: item.endJoin ?? false,
 		platform: item.platform ?? null,
-		isPlatformConfirmed: item.platformIsHidden != true,
+		isPlatformConfirmed:
+			item.platformIsHidden != true ||
+			(item.platform && item.atdSpecified) ||
+			departedAfter === true,
 		order,
 		isOrigin: index === 0,
 		showTrain
@@ -701,7 +720,7 @@ export function parseSavedInfo(service: TrainService): SavedTrainServiceInfo | n
 		filterDelay: filter.arrivalDelay,
 		isCancelledAtFilter: filter.isCancelled,
 
-		destination: service.destination.map((d) => d.name).join(', '),
+		destination: service.destination.map((d) => d.name).join(' & '),
 
 		refreshedAt: Date.now(),
 

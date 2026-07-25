@@ -14,6 +14,8 @@
 
 	let { crs, planArr, rtArr, originalArr } = $props();
 
+
+
 	function isValidConnectionTime(
 		acrossLondon: boolean,
 		planDep: string | null,
@@ -45,12 +47,12 @@
 			saved.value.find((connection) => {
 				const acrossLondon =
 					londonTerminals.includes(connection.focusCrs) &&
-					londonTerminals.includes(crs ?? '') &&
+					londonTerminals.includes(crs) &&
 					connection.focusCrs !== crs;
 
 				const walking = walkingConnections.some(
 					(c) => c.includes(crs ?? '') && c.includes(connection?.focusCrs ?? '')
-				);
+				) && crs !== connection?.focusCrs;
 
 				if (connection.focusCrs !== crs && !acrossLondon && !walking) return false;
 
@@ -64,6 +66,7 @@
 	});
 	const type = $derived.by(() => {
 		if (!connectingService) return null;
+		if (connectingService.crs === crs) return 'change';
 		if (
 			walkingConnections.some(
 				(connection) =>
@@ -74,8 +77,7 @@
 		if (
 			connectingService !== null &&
 			londonTerminals.includes(connectingService.crs) &&
-			londonTerminals.includes(crs ?? '') &&
-			connectingService.crs !== crs
+			londonTerminals.includes(crs ?? '')
 		)
 			return 'tube';
 
@@ -130,61 +132,36 @@
 	let popoverOpen = $state(false);
 </script>
 
+{#snippet icon()}
+	{#if type === 'tube'}
+		<div class="h-4 w-4 p-px">
+			<Tubeicon />
+		</div>
+	{:else if type === 'walking'}
+		<Footprints size={16} />
+	{:else}
+		<GitCompareArrowsIcon size={16} />
+	{/if}
+{/snippet}
+
 {#if connection && connectingService}
-	<div class="relative h-5">
-		<div
-			class={[
-				'absolute -top-8.5 right-0 left-0 flex h-24 items-center',
-				{
-					'text-amber-500': connection.status === 'warning' || connection.status === 'alternative',
 
-					'text-red-500': connection.status === 'impossible'
-				}
-			]}
-		>
-			<div class="w-12 min-w-12"></div>
-			<div class={['flex h-20 w-10 min-w-10 flex-col items-center justify-center gap-0.5']}>
-				<div
-					class={[
-						'w-px grow rounded-full bg-muted-foreground',
-						{
-							'bg-amber-500':
-								connection.status === 'warning' || connection.status === 'alternative',
-
-							'bg-red-500': connection?.status === 'impossible'
-						}
-					]}
-				></div>
-				{#if type === 'tube'}
-					<div class="h-6 w-6 p-1">
-						<Tubeicon />
-					</div>
-				{:else if type === 'walking'}
-					<Footprints size={15} />
-				{:else}
-					<GitCompareArrowsIcon size={15} />
-				{/if}
-				<div
-					class={[
-						'w-px grow rounded-full bg-muted-foreground',
-						{
-							'bg-amber-500':
-								connection?.status === 'warning' || connection.status === 'alternative',
-
-							'bg-red-500': connection?.status === 'impossible'
-						}
-					]}
-				></div>
-			</div>
-			<div class="grow text-[13px] font-medium">
-				{#if connection.status === 'impossible'}
+	<div class="rounded-lg flex flex-col gap-1 border border-border bg-muted/60 px-2 py-2 drop-shadow-xs">
+		<div class="grow text-sm font-medium">
+			{#if connection.status === 'impossible'}
+				<div class="flex items-center gap-1 font-medium text-danger">
+					{@render icon()}
 					Connection likely missed
-					{#if connection.schDiff !== connection.rtDiff && (connection.schDiff ?? 2) >= 1}
-						<div class="text-xs font-normal opacity-80">
-							({connection.schDiff ?? 0}m scheduled)
-						</div>
-					{/if}
-				{:else if connection.schDiff !== connection.rtDiff && connection.rtDiff}
+				</div>
+
+				{#if connection.schDiff !== connection.rtDiff && (connection.schDiff ?? 2) >= 1}
+					<div class="text-xs font-normal opacity-80">
+						({connection.schDiff ?? 0}m scheduled)
+					</div>
+				{/if}
+			{:else if connection.schDiff !== connection.rtDiff && connection.rtDiff}
+				<div class="flex items-center gap-1 font-medium text-warning">
+					{@render icon()}
 					Estimated {connection.rtDiff ?? connection.schDiff}m to
 					{#if type === 'tube'}
 						connect via Tube
@@ -193,10 +170,13 @@
 					{:else}
 						change
 					{/if}
-					{#if connection.schDiff !== connection.rtDiff && connection.rtDiff}
-						<div class="text-xs font-normal opacity-80">({connection.schDiff}m scheduled)</div>
-					{/if}
-				{:else}
+				</div>
+				{#if connection.schDiff !== connection.rtDiff && connection.rtDiff}
+					<div class="text-xs font-normal opacity-80">({connection.schDiff}m scheduled)</div>
+				{/if}
+			{:else}
+				<div class="flex items-center gap-1 font-medium">
+					{@render icon()}
 					{connection.rtDiff ?? connection.schDiff}m to
 					{#if type === 'tube'}
 						connect via Tube
@@ -205,77 +185,16 @@
 					{:else}
 						change
 					{/if}
-				{/if}
-			</div>
-			{#if (connection.status === 'impossible' || connection.status === 'alternative') && !connection.isCancelled}
-				<Button
-					href="/board/{connectingService.crs}?to={connectingService.filter}&time={dayjs(
-						rtArr ?? planArr
-					).format('HHmm')}"
-					variant="secondary"><SearchIcon size={18} /> Alternatives</Button
-				>
-				<!-- <Popover.Root bind:open={popoverOpen}>
-						<Popover.Trigger class={[buttonVariants({ variant: 'secondary', size: 'sm' }), 'z-10']}
-							>Find alternative
-						</Popover.Trigger>
-						<Popover.Content class="w-sm max-w-full p-0">
-							<AlternativeProvider
-								from={connectingService.crs}
-								to={connectingService.filter}
-								time={dayjs(rtArr ?? planArr).format('HH:mm') ?? null}
-								allowance={Math.max(
-									acrossLondon
-										? (connection.rtDiff ?? Number.NEGATIVE_INFINITY) + 5
-										: Number.NEGATIVE_INFINITY,
-									acrossLondon ? 45 : 2, // The minimum allowance
-									Math.min(
-										acrossLondon ? 60 : 8, // The maximum allowance
-										connection.schDiff && connection.schDiff > 1
-											? Math.min(connection.schDiff, connection.originalDiff ?? 0)
-											: (connection.schDiff ?? 0)
-									)
-								)}
-								existingRid={connectingService.service_id}
-							>
-								{#snippet children({ loading, failed, item, serviceId })}
-									{#if item && serviceId}
-										<SubscriptionProvider
-											{serviceId}
-											crs={connectingService.crs}
-											filter={connectingService.filter}
-										>
-											{#snippet children({ loading, onSwitchFrom })}
-												<AlternativeDisplay
-													state="complete"
-													switching={loading}
-													from={connectingService.crs}
-													to={connectingService.filter}
-													time={dayjs(rtArr ?? planArr ?? dayjs().format('HH:mm')).format('HHmm')}
-													service={item}
-													showDescription={false}
-													onSwitch={() => {
-														onSwitchFrom(connectingService.id).then(() => {
-															popoverOpen = false;
-														});
-													}}
-												></AlternativeDisplay>
-											{/snippet}
-										</SubscriptionProvider>
-									{:else}
-										<AlternativeDisplay
-											outline
-											showDescription
-											from={connectingService.from}
-											to={connectingService.to}
-											time={dayjs(planArr).format('HHmm')}
-											state={failed ? 'failed' : 'loading'}
-										/>
-									{/if}
-								{/snippet}
-							</AlternativeProvider>
-						</Popover.Content>
-					</Popover.Root> -->
+				</div>
 			{/if}
 		</div>
+		{#if (connection.status === 'impossible' || connection.status === 'alternative') && !connection.isCancelled}
+			<!-- <Button
+				href="/board/{connectingService.crs}?to={connectingService.filter}&time={dayjs(
+					rtArr ?? planArr
+				).format('HHmm')}"
+				variant="default"><SearchIcon size={18} /> Alternative connections</Button
+			> -->
+		{/if}
 	</div>
 {/if}

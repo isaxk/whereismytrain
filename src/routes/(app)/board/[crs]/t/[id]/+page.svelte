@@ -23,6 +23,7 @@
 	import type { TrainService } from '$lib/types';
 
 	import type { PageData } from './$types';
+	import { dayjsFromHHmm } from '$lib/utils';
 
 	let { data }: { data: PageData } = $props();
 
@@ -179,7 +180,12 @@
 
 				{#if serviceData.reasonCode}
 					<Disruption
-						type={focus?.isCancelled ? 'cancel' : 'delay'}
+						type={focus?.isCancelled
+							? 'cancel'
+							: serviceData.callingPoints.some((cp) => cp.isCancelled)
+								? 'part-cancelled'
+								: 'delay'}
+						cancelledBetween={serviceData.cancelledBetween}
 						code={serviceData.reasonCode}
 					/>
 				{/if}
@@ -230,7 +236,8 @@
 							color={operator.color}
 							trainVisible={(callingPoints[i - 1].departed ||
 								(callingPoints.some((cp, j) => cp.departed && j < i) && !showPrevious)) &&
-								!callingPoints.some((cp, j) => (cp.departed || cp.arrived) && j > i - 1)}
+								!callingPoints.some((cp, j) => (cp.departed || cp.arrived) && j >= i) &&
+								!cp.isCancelled}
 							{category}
 							inDivision={cp.inDivision && !cp.startJoin}
 						/>
@@ -256,11 +263,21 @@
 					{/if}
 
 					{#if showSplit || filter.inDivision || !cp.inDivision || cp.endDivide}
+						{@const duration =
+							cp.departed && next.times.rt.arr !== null && cp.times.rt.dep !== null
+								? dayjs(next.times.rt.arr).diff(dayjs(cp.times.rt.dep), 's')
+								: null}
+						{@const progress =
+							duration !== null
+								? Math.max(0, Math.min(1, now.diff(dayjs(cp.times.rt.dep), 's') / duration))
+								: null}
 						<CallingPointItem
 							{cp}
 							{operator}
 							{category}
 							index={i}
+							{progress}
+							hideRealtime={dayjs(callingPoints[0].times.plan.dep).diff(now, 'm') > 60 * 5}
 							length={callingPoints.length}
 							showTrain={!(cp.departed && next?.order === 'focus')}
 							showArrivalMark={next?.startDivide}

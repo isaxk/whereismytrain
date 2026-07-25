@@ -19,6 +19,7 @@
 	import TrainIconByCategory from '../train/train-icon-by-category.svelte';
 	import Spinner from '../ui/spinner/spinner.svelte';
 	import dayjs from 'dayjs';
+	import { RssIcon } from 'lucide-svelte';
 
 	let {
 		cp,
@@ -155,5 +156,6 @@
 				</div>
 			{/if}
 		</div>
+
 	</Marker>
 {/if}
