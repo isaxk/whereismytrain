@@ -4,4 +4,4 @@ allowBuilds:
   protobufjs: true
   unrs-resolver: true
 minimumReleaseAgeExclude:
-  - sveltekit-cache-first@0.0.1
+  - sveltekit-cache-first@0.0.1 || 0.0.4
