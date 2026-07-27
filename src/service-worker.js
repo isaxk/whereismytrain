@@ -1,7 +1,7 @@
 /// <reference types="@sveltejs/kit" />
 /// <reference lib="webworker" />
 
-import { setupServiceWorker } from 'sveltekit-cache-first';
+import { setupServiceWorker } from 'sveltekit-cache-first/sw';
 
 import { build, files, version } from '$service-worker';
 
