@@ -179,13 +179,16 @@ export const POST: RequestHandler = async ({ request }) => {
 
 				const coords = tiplocsData.find((tiploc) => item.tiploc && tiploc.tiploc === item.tiploc)
 					?.coords ??
-					tiplocsData.find((tiploc) => tiploc.crs === item.crs)?.coords ?? [0, 0];
+					tiplocsData.find((tiploc) => tiploc.crs === item.crs)?.coords ?? null;
+
+				if (coords === null) return null;
 
 				return {
 					...item,
 					coords
 				};
-			});
+      })
+			.filter((item) => item !== null);
 
 		// let coords: null | [number, number] = null;
 		// let bearing: number | null = null;
