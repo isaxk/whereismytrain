@@ -27,7 +27,7 @@
 	import StationsJSON from '$lib/data/stations.json';
 	import { mapData } from '$lib/state/map.svelte.js';
 	import { localStore } from '$lib/state/saved.svelte.js';
-	import { Category, Severity, type BoardDetails, type BoardItem } from '$lib/types/index.js';
+	import { Severity, type BoardDetails, type BoardItem } from '$lib/types/index.js';
 	import { Accordion } from 'bits-ui';
 	import { cn } from '$lib/utils.js';
 	import ChevronDown from '@lucide/svelte/icons/chevron-down';
@@ -199,9 +199,9 @@
 									{#each details?.notices as notice, index (index)}
 										<AlertCard
 											class="rounded-none border-0 border-foreground/10 not-last:border-b"
-											Icon={notice.category === Category.Connectingservice
+											Icon={notice.category === 'Connectingservice'
 												? GitCompareArrowsIcon
-												: notice.category === Category.Station
+												: notice.category === 'Station'
 													? House
 													: CircleAlertIcon}
 											status={(Severity[notice.severity] ?? 'info') as
@@ -226,9 +226,9 @@
 					{:else if details?.notices.length === 1}
 						{@const notice = details.notices[0]}
 						<AlertCard
-							Icon={notice.category === Category.Connectingservice
+							Icon={notice.category === "Connectingservice"
 								? GitCompareArrowsIcon
-								: notice.category === Category.Station
+								: notice.category === "Station"
 									? House
 									: CircleAlertIcon}
 							status={(Severity[notice.severity] ?? 'info') as
@@ -237,6 +237,7 @@
 								| 'major'
 								| 'severe'}
 						>
+
 							<div class="prose text-sm dark:prose-invert prose-p:text-sm">
 								{@html notice.xhtmlMessage}
 							</div>

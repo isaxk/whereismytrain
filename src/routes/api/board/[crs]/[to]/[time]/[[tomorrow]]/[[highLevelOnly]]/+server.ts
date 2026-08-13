@@ -3,7 +3,7 @@ import dayjs from 'dayjs';
 import tz from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
 
-import { Category, Severity, type Board, type BoardItem, type Notice } from '$lib/types';
+import { Severity, type Board, type BoardItem, type Notice } from '$lib/types';
 import type { ServiceItemWithLocations, StationBoard } from '$lib/types/api';
 import { dayjsFromHHmm } from '$lib/utils';
 
@@ -111,9 +111,11 @@ function parseBoardItem(item: ServiceItemWithLocations, filter, reasonCodes): Bo
 		departed: (item.atdSpecified && item.atd !== NULL_TIME) ?? false,
 		delay,
 
-		platform: item.category === 'BR' || item.category === 'BS' ? 'BUS' : (item.platform ?? null),
+		platform: item.category === 'BR' || item.category === 'BS' ? 'BUS' : (item.isCancelled ? null : item.platform ?? null),
 		isPlatformConfirmed:
-			item.platformIsHidden !== true ||  item.serviceIsSuppressed===true || (item.platform !== undefined && item.atdSpecified === true),
+			item.platformIsHidden !== true ||
+			item.serviceIsSuppressed === true ||
+			(item.platform !== undefined && item.atdSpecified === true),
 		operator: {
 			id: item.operatorCode ?? null,
 			name: operatorList[item.operatorCode!]?.name ?? item.operator ?? 'Unknown',
@@ -167,37 +169,31 @@ export const GET: RequestHandler = async ({ params, request }) => {
 	const offset = time && time != 'null' ? date.diff(dayjs(), 'minute') : 0;
 	console.log('offset', offset);
 
-	let shouldUseRailData = false;
-	if (Math.abs(offset) > 119) {
-		shouldUseRailData = true;
-	}
+	// let shouldUseRailData = false;
+	// if (Math.abs(offset) > 119) {
+	// 	shouldUseRailData = true;
+ //  }
 
-	let url = `https://huxley2.azurewebsites.net/staffdepartures/${crs}/?timeOffset=${offset}&timeWindow=120&access_token=${ACCESS_TOKEN}&expand=true`;
-	if (shouldUseRailData) {
-		const urlObj = new URL(
-			`https://api1.raildata.org.uk/1010-live-departure-board---staff-version1_0/LDBSVWS/api/20220120/GetDepBoardWithDetails/${crs}/${date.format('YYYYMMDDTHHmmss')}?numRows=20&timeWindow=120`
-		);
-		if (to && to != 'null') urlObj.searchParams.append('filterCRS', to);
-		url = urlObj.toString();
-	} else {
-		if (to != 'null') {
-			url = `https://huxley2.azurewebsites.net/staffdepartures/${crs}/to/${to}?timeOffset=${offset}&timeWindow=120&access_token=${ACCESS_TOKEN}&expand=true`;
-		}
-	}
+  console.log(ACCESS_TOKEN);
+
+	const urlObj = new URL(
+		`https://api1.raildata.org.uk/1010-live-departure-board---staff-version1_0/LDBSVWS/api/20220120/GetDepBoardWithDetails/${crs}/${date.format('YYYYMMDDTHHmmss')}?numRows=20&timeWindow=120&services=PB`
+	);
+	if (to && to != 'null') urlObj.searchParams.append('filterCRS', to);
+	const url = urlObj.toString();
 
 	try {
 		// console.log(url);
 		const response = await fetch(url, {
-			headers: shouldUseRailData
-				? {
-						'x-apikey': ACCESS_TOKEN
-					}
-				: {}
+			headers: {
+        'x-apikey': ACCESS_TOKEN
+			}
 		});
 
-		if (!response.ok) {
-			throw new Error('Failed to fetch station board');
-		}
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(JSON.stringify(data));
+    }
 
 		const data: StationBoard = await response.json();
 
@@ -209,19 +205,17 @@ export const GET: RequestHandler = async ({ params, request }) => {
 		const nrccMessages: Notice[] = (data.nrccMessages ?? [])
 			.map((m) => ({
 				...m,
-				category: (typeof m.category === 'number'
-					? m.category
-					: Category[m.category as number]) as Category,
+				category: m.category,
 
 				severity: (typeof m.severity === 'string'
 					? (Severity[m.severity.toLowerCase() as unknown as number] ?? 0)
 					: m.severity) as unknown as Severity,
 
 				xhtmlMessage:
-					m.xhtmlMessage?.replace(
+					(m.xhtmlMessage?.replace(
 						/More information can be found in\s*<a href="([^"]+)">[^<]+<\/a>/,
 						'<a href="$1">More info</a>'
-					) ?? ''
+					) ?? '') + m.category
 			}))
 			.toSorted((a, b) => {
 				return b.severity - a.severity;

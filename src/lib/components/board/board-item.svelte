@@ -85,13 +85,6 @@
 		} | null;
 	} = $props();
 
-	let oldRtDep = $state(rtDep);
-	let oldDeparted = $state(departed);
-	let oldPlatform = $state(platform);
-	let oldisCancelled = $state(isCancelled);
-	let oldisFilterCancelled = $state(isFilterCancelled);
-	let oldFilter = $state(filter);
-
 	$effect(() => {
 		if (href !== '#') {
 			preloadCode(href);
@@ -102,20 +95,6 @@
 
 	const timeUntilDeparture = $derived(dayjs(date).diff(now, 'm'));
 	const timeUntilRtDep = $derived(dayjs(rtDep).diff(now, 'm'));
-
-	explicitEffect(
-		() => {
-			setTimeout(() => {
-				oldRtDep = rtDep;
-				oldDeparted = departed;
-				oldPlatform = platform;
-				oldisCancelled = isCancelled;
-				oldisFilterCancelled = isFilterCancelled;
-				oldFilter = filter;
-			}, 2500);
-		},
-		() => [rtDep, departed, platform, isCancelled, isFilterCancelled, filter]
-	);
 </script>
 
 <a {href} class="flex">
@@ -259,17 +238,16 @@
 	</div>
 	<div class="flex flex-col items-end gap-0.5 py-4 pr-3">
 		<ChangeNotifier
-			class={[
+			class={cn([
 				'flex h-5 flex-nowrap items-center justify-center gap-1 px-1 text-right text-nowrap',
-				platform === 'BUS' && 'text-sm/4 text-warning',
 				isPlatformConfirmed == false && 'font-light text-muted-foreground/80',
-				isPlatformConfirmed == true && ''
-			]}
+				platform === 'BUS' && 'text-sm/4 text-warning'
+			])}
 			value={platform}
 		>
 			{#if platform === 'BUS'}
 				<Bus size={16} /> Bus
-			{:else}
+			{:else if !isCancelled}
 				<span class="text-xs/3 text-muted-foreground"
 					>Platform {#if isPlatformConfirmed !== true && platform}
 						Est.

@@ -45,6 +45,8 @@
 			servicesSub.forceRefresh();
 		}, 200);
 	});
+
+	console.log('new version');
 </script>
 
 <svelte:head>

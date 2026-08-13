@@ -40,17 +40,6 @@
 		setupForegroundMessageHandler();
 		initializeNotifications();
 
-		onUpdate((accept) => {
-			toast('An update is available', {
-				description: 'Refresh the page to update',
-				duration: 10000,
-				action: {
-					label: 'Refresh',
-					onClick: () => accept()
-				}
-			});
-		});
-
 		const clear = servicesSub.init();
 		setTimeout(() => {
 			servicesSub.forceRefresh();

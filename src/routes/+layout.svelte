@@ -4,6 +4,8 @@
 
 	import { injectAnalytics } from '@vercel/analytics/sveltekit';
 	import { onMount } from 'svelte';
+	import { toast } from 'svelte-sonner';
+	import { onUpdate } from 'sveltekit-cache-first';
 
 	let { children } = $props();
 
@@ -18,6 +20,17 @@
 				}
 			});
 		}
+
+		onUpdate((accept) => {
+			toast('An update is available', {
+				description: 'Refresh the page to update',
+				duration: 10000,
+				action: {
+					label: 'Refresh',
+					onClick: () => accept()
+				}
+			});
+		});
 	});
 </script>
 
