@@ -151,9 +151,9 @@
 			/>
 		</div>
 	</div>
-	<div in:fade|global={{ duration: 200 }} class="flex flex-col gap-4 py-4">
+	<div in:fade|global={{ duration: 200 }} class="flex flex-col gap-4 pb-4">
 		{#if isBus || destination.length > 1 || serviceData.reasonCode || !isToday || error}
-			<div class="flex flex-col gap-2 px-4">
+			<div class="flex flex-col">
 				{#if error}
 					<div transition:slide|global={{ duration: 200 }}>
 						<AlertCard Icon={CloudAlert} status="major"
@@ -166,14 +166,14 @@
 					<AlertCard Icon={Bus} status="info">This is a bus service.</AlertCard>
 				{/if}
 				{#if !isToday}
-					<AlertCard Icon={CalendarIcon} status="info"
+					<AlertCard class="border-t-0" Icon={CalendarIcon} status="info"
 						>This service departs <span class="font-semibold"
 							>{dayjs(date).format('ddd DD MMM')}</span
 						>
 					</AlertCard>
 				{/if}
 				{#if destination.length > 1}
-					<AlertCard Icon={Split} status="info"
+					<AlertCard class="border-t-0" Icon={Split} status="info"
 						>This service divides. Check you are in the correct carriage.</AlertCard
 					>
 				{/if}
@@ -193,7 +193,7 @@
 		{/if}
 
 		{#if serviceData.formation && !serviceData.formationLengthOnly && serviceData.formation.length > 0}
-			<div class="px-4">
+			<div class="px-4 pt-4">
 				<Formation
 					formation={serviceData.formation}
 					destinations={serviceData.destination.map((d) => d.name)}

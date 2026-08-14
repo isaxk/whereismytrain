@@ -6,6 +6,7 @@
 		ArrowDown,
 		ArrowUp,
 		Bus,
+		ChevronRight,
 		CircleAlertIcon,
 		Clock,
 		GitCompareArrowsIcon,
@@ -31,6 +32,7 @@
 	import { Accordion } from 'bits-ui';
 	import { cn } from '$lib/utils.js';
 	import ChevronDown from '@lucide/svelte/icons/chevron-down';
+	import * as Dialog from '$lib/components/ui/dialog';
 
 	let { data } = $props();
 
@@ -147,15 +149,15 @@
 			<BoardHeader from={data.crs} to={page.data.to} {details} />
 
 			{#if (details && details.notices.length > 0) || error}
-				<div class={cn(['flex flex-col gap-2 px-4 pt-4 pb-2'])} in:fade|global={{ duration: 200 }}>
+				<div class={cn(['flex flex-col gap-2'])} in:fade|global={{ duration: 200 }}>
 					{#if error}
 						<AlertCard status="major">{error}</AlertCard>
 					{/if}
-					{#if details?.notices && details?.notices.length > 1}
-						<Accordion.Root type="single">
-							<Accordion.Item
+					{#if details?.notices && details?.notices.length > 0}
+						<Dialog.Root>
+							<Dialog.Trigger
 								class={cn([
-									'w-full overflow-hidden rounded-md border drop-shadow-xs data-[state=open]:border-foreground/20 data-[state=open]:bg-background data-[state=open]:text-foreground',
+									'w-full overflow-hidden border-y drop-shadow-xs',
 									{
 										'border-blue-500 bg-blue-100 text-black dark:bg-blue-900 dark:text-white':
 											details.notices.some((n) => n.severity === Severity.info),
@@ -169,36 +171,54 @@
 									}
 								])}
 							>
-								<Accordion.Trigger
-									class="group flex w-full items-center gap-2 border-foreground/20 px-3 py-2 text-sm font-medium data-[state=open]:border-b"
-									><CircleAlertIcon size={18} />
-									<div>
-										{#if details.notices.some((n) => n.severity === Severity.severe)}
-											Severe service disruption
-										{:else if details.notices.some((n) => n.severity === Severity.major)}
-											Major service disruption
-										{:else if details.notices.some((n) => n.severity === Severity.minor)}
-											Service disruption
-										{/if}
+								<div
+									class="group flex w-full flex-col items-start gap-1 border-foreground/20 px-4 py-2 text-sm font-medium data-[state=open]:border-b"
+								>
+									<div class="flex w-full items-center gap-2">
+										<div class="min-w-5">
+											<CircleAlertIcon size={18} />
+										</div>
+										<div class="flex min-w-0 grow items-center">
+											<div class="flex min-w-0 grow flex-col items-start">
+												<div>
+													{#if details.notices.some((n) => n.severity === Severity.severe)}
+														Severe disruption
+													{:else if details.notices.some((n) => n.severity === Severity.major)}
+														Major disruption
+													{:else if details.notices.some((n) => n.severity === Severity.minor)}
+														Disruption
+													{/if}
+												</div>
+											</div>
 
-										{#if details.notices.some((n) => n.severity !== Severity.info)}
-											<span class="inline font-normal">
-												({details.notices.length} notice{details.notices.length !== 1 ? 's' : ''})
-											</span>
-										{:else}
-											{details.notices.length} notice{details.notices.length !== 1 ? 's' : ''}
-										{/if}
-									</div>
-									<div class="grow"></div>
+											{#if details.notices.some((n) => n.severity !== Severity.info)}
+												<!-- <div class="grow"></div> -->
+												<span class="inline font-normal text-nowrap">
+													{details.notices.length} alert{details.notices.length !== 1 ? 's' : ''}
+												</span>
+											{:else}
+												{details.notices.length} notice{details.notices.length !== 1 ? 's' : ''}
+											{/if}
+										</div>
+										<!-- <div class="grow"></div> -->
 
-									<div class="transition-all group-data-[state=open]:rotate-180">
-										<ChevronDown size={18} />
+										<div class="transition-all group-data-[state=open]:rotate-180">
+											<ChevronRight size={18} />
+										</div>
 									</div>
-								</Accordion.Trigger>
-								<Accordion.Content class="flex flex-col overflow-hidden">
+									<div
+										class="w-full truncate text-left text-xs/4 font-normal text-muted-foreground group-data-[state=open]:hidden"
+									>
+										{@html details.notices[0]?.xhtmlMessage}
+									</div>
+								</div>
+							</Dialog.Trigger>
+							<Dialog.Content class="flex max-h-[90%] overflow-hidden flex-col gap-0 p-0">
+								<div class="px-4 py-3 text-base font-medium">Distruption</div>
+								<div class="min-h-0 grow overflow-y-scroll">
 									{#each details?.notices as notice, index (index)}
 										<AlertCard
-											class="rounded-none border-0 border-foreground/10 not-last:border-b"
+											class="border-foreground/10 not-last:border-b"
 											Icon={notice.category === 'Connectingservice'
 												? GitCompareArrowsIcon
 												: notice.category === 'Station'
@@ -212,7 +232,7 @@
 										>
 											<div
 												class={[
-													'prose text-sm dark:prose-invert prose-p:text-sm',
+													'prose text-sm  dark:prose-invert prose-p:text-sm',
 													notice.severity === Severity.severe ? 'text-red-100 prose-invert' : ''
 												]}
 											>
@@ -220,28 +240,9 @@
 											</div>
 										</AlertCard>
 									{/each}
-								</Accordion.Content>
-							</Accordion.Item>
-						</Accordion.Root>
-					{:else if details?.notices.length === 1}
-						{@const notice = details.notices[0]}
-						<AlertCard
-							Icon={notice.category === "Connectingservice"
-								? GitCompareArrowsIcon
-								: notice.category === "Station"
-									? House
-									: CircleAlertIcon}
-							status={(Severity[notice.severity] ?? 'info') as
-								| 'info'
-								| 'minor'
-								| 'major'
-								| 'severe'}
-						>
-
-							<div class="prose text-sm dark:prose-invert prose-p:text-sm">
-								{@html notice.xhtmlMessage}
-							</div>
-						</AlertCard>
+								</div>
+							</Dialog.Content>
+						</Dialog.Root>
 					{/if}
 				</div>
 			{/if}

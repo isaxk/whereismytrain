@@ -22,7 +22,7 @@
 <div
 	class={cn(
 		clsx([
-			'flex items-center gap-2.5 rounded-lg border px-3 py-2 text-xs',
+			'flex items-center gap-2.5 border-b border-t px-4 py-2 text-xs',
 			{
 				'border-blue-500 bg-blue-100 text-black dark:bg-blue-900 dark:text-white':
 					status === 'info',

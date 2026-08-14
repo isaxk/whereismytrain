@@ -18,6 +18,7 @@
 </script>
 
 <AlertCard
+    class="border-t-0"
 	Icon={type === 'delay' ? ClockAlertIcon : XIcon}
 	status={type === 'cancel' || type === 'part-cancelled' ? 'major' : 'minor'}
 >
