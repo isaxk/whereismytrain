@@ -47,6 +47,32 @@ export type BoardItem = {
 	cancelReason: string | null;
 };
 
+export type RouteResultFocusFilter = {
+  crs: string;
+  name: string;
+  isCancelled: boolean;
+  rtTime: string | null;
+  planTime: string | null;
+  delay: number | null;
+}
+
+export type RouteResultItem = {
+  id: string;
+	from: RouteResultFocusFilter;
+  to: RouteResultFocusFilter;
+  operator: Operator;
+  destination: string;
+  platform: string | null;
+	duration: number | null;
+	isPlatformConfirmed: boolean;
+};
+
+export type BoardNotice = {
+	severity: string;
+  category: string;
+  body: string;
+};
+
 export type BoardDetails = {
 	name: string;
 	crs: string;

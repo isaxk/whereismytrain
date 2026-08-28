@@ -31,7 +31,7 @@
 </script>
 
 {#if data}
-	<div class="px-4">
+	<div class="px-4 pt-4">
 		<Formation formation={data} {destinations} />
 	</div>
 {:else if op === 'GW'}

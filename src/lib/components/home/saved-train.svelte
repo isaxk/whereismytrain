@@ -150,7 +150,7 @@
 						<div style:min-height="{clientHeight}px"></div>
 
 						{#if !service.isCancelled && !service.isCancelledAtFilter}
-							<div class="px-2">
+							<div class="p-2">
 								<Connection
 									crs={service.filter}
 									originalArr={data.originalArrival}

@@ -126,3 +126,15 @@ export function iOS() {
 		(navigator?.userAgent.includes('Mac') && 'ontouchend' in document)
 	);
 }
+
+export function durationDisplay(minVal: number) {
+	const hours = Math.floor(minVal / 60);
+	const minutes = minVal % 60;
+	if (minutes === 0) {
+		return `${hours} hr${hours === 1 ? '' : 's'}`;
+	} else if (hours >= 1) {
+		return `${hours} hr${hours === 1 ? '' : 's'} ${minutes} min${minutes === 1 ? '' : 's'}`;
+	} else {
+		return `${minutes} min${minutes === 1 ? '' : 's'}`;
+	}
+}

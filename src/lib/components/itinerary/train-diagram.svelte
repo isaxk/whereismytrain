@@ -19,6 +19,8 @@
 	import X from '@lucide/svelte/icons/x';
 	import { buttonVariants } from '../ui/button';
 	import * as DropdownMenu from '../ui/dropdown-menu';
+	import ChevronRight from '@lucide/svelte/icons/chevron-right';
+	import { durationDisplay } from '$lib/utils';
 
 	let {
 		crs,
@@ -72,32 +74,19 @@
 
 		let diff = arrival.diff(departure, 'minutes');
 
-		if (diff > 60 && diff % 60 !== 0) {
-			return `${Math.floor(diff / 60)}h ${diff % 60}m`;
-		} else if (diff >= 60 && diff % 60 === 0) {
-			return `${Math.floor(diff / 60)}h`;
-		} else {
-			return `${diff}m`;
-		}
+		return diff;
 	});
 
-	const remaining = $derived.by(() => {
-		let arrival = dayjs(planArr);
+	const elapsed = $derived.by(() => {
+		let departure = dayjs(planDep);
 
-		if (rtArr && rtDep) {
-			arrival = dayjs(rtArr);
+		if (rtDep) {
+			departure = dayjs(rtDep);
 		}
 
-		const diff = arrival.diff(now, 'minutes');
-		if (diff < 0) {
-			return null;
-		} else if (diff > 60 && diff % 60 !== 0) {
-			return `${Math.floor(diff / 60)}h ${diff % 60}m`;
-		} else if (diff >= 60 && diff % 60 === 0) {
-			return `${Math.floor(diff / 60)}h`;
-		} else {
-			return `${diff}m`;
-		}
+		let diff = now.diff(departure, 'minutes');
+
+		return diff;
 	});
 </script>
 
@@ -106,8 +95,8 @@
 		{dayjs(rtDep ?? planDep).format('ddd DD MMM')}
 	</div>
 {/if}
-
-<div class="relative overflow-hidden rounded-lg">
+<!--
+<div class="relative hidden overflow-hidden rounded-lg">
 	<div class="flex min-h-6 items-center justify-center px-3">
 		<div class="flex w-full flex-col justify-center px-0 py-2 text-xs">
 			<ChangeNotifier
@@ -172,11 +161,13 @@
 
 								<div class="flex items-center">
 									{#if timeUntilRtArr < 1}
-										0 min remaining until arrival
+										Arriving now
 									{:else}
 										{remaining} remaining until arrival
 									{/if}
 								</div>
+								<Dot size={14} />
+								{filterDelay} mins late
 							</div>
 						{:else if departed}
 							<div class="flex items-center gap-1 font-medium">Departed</div>
@@ -213,17 +204,7 @@
 				{/if}
 			</ChangeNotifier>
 
-			<!-- <div class="w-max text-xs">
-			{#if arrived}
-				<div class="text-[10px] text-muted-foreground">{duration}</div>
-			{:else if departed}
-				<div class="text-[10px] text-muted-foreground">
-					<span class="text-foreground">{remaining}</span> / {duration} remaining
-				</div>
-			{:else}
-				<div class="text-[10px] text-muted-foreground">{duration}</div>
-			{/if}
-		</div> -->
+
 		</div>
 		<div>
 			<DropdownMenu.Root>
@@ -231,7 +212,6 @@
 					<EllipsisVertical />
 				</DropdownMenu.Trigger>
 				<DropdownMenu.Content align="end">
-					<!-- <DropdownMenu.Item onclick={() => (showMissedDialog = true)}></DropdownMenu.Item> -->
 					<a
 						href="/board/{crs}?to={filter}&time={dayjs(planDep).add(10, 'minutes').format('HHmm')}"
 					>
@@ -248,7 +228,7 @@
 		</div>
 	</div>
 	<div class="pt-0">
-		<div class="flex items-center  px-2">
+		<div class="flex items-center px-2">
 			<div class="flex w-12 justify-end">
 				<ChangeNotifier value={delay} class="flex w-max flex-col items-end text-sm tabular-nums">
 					{#if isCancelled}
@@ -308,12 +288,6 @@
 				</div>
 			</div>
 		</div>
-		<!-- <div class="flex h-2 items-center px-2">
-		<div class="w-12"></div>
-		<div class="flex h-full w-10 flex-col items-center justify-center">
-			<div class="w-1.5 grow" style:background={operator.color}></div>
-		</div>
-	</div> -->
 
 		<div class="flex h-16 items-center px-2">
 			<div class="flex w-12 justify-end">
@@ -355,6 +329,154 @@
 					{/if}
 				</ChangeNotifier>
 			</div>
+		</div>
+	</div>
+</div> -->
+
+{#snippet liveDisplay(remaining: number, delay: number, departed: boolean)}
+	<div class={['flex items-center gap-1', Math.abs(delay) > 1 ? 'text-warning' : 'text-good']}>
+		<Rss size={16} />
+		<div class="font-medium">
+			{#if !departed}
+				{#if remaining < 1}
+					now
+				{:else}
+					in {durationDisplay(remaining)}
+				{/if}
+			{:else if remaining < 1}
+				Arriving now
+			{:else}
+				{durationDisplay(remaining)} until arrival
+			{/if}
+		</div>
+		{#if Math.abs(delay) > (departed ? 5 : 1)}
+			<Dot size={14} />
+			<div class="">
+				{durationDisplay(delay)}
+				{delay > 0 ? 'late' : 'early'}
+			</div>
+		{/if}
+	</div>
+{/snippet}
+
+<div class="flex flex-col gap-1 px-3">
+	<div class="flex flex-col gap-1 pb-2">
+		<ChangeNotifier value={destination} class="flex w-max  items-center gap-1 truncate text-xs/4">
+			<div
+				class="h-max w-max rounded-sm px-1.5 py-0.5 text-[10px]/3 text-white"
+				style:background={operator.color}
+			>
+				{operator.name}
+			</div>
+
+			<div class="min-w-0 grow truncate">
+				to
+				<span class="font-medium">
+					{destination}
+				</span>
+			</div>
+		</ChangeNotifier>
+		<div class="flex h-5 items-center gap-2">
+			{#if !departed}
+				<div
+					class="flex items-center gap-1 rounded bg-muted px-1.5 text-xs text-foreground/80 drop-shadow-xs"
+				>
+					Platform <span class="text-base font-semibold text-foreground">{platform}</span>
+				</div>
+			{/if}
+			<ChangeNotifier class="w-max text-sm text-nowrap" value="{departed}{arrived}{isCancelled}">
+				{#if timeUntilRtDep !== null && timeUntilRtDep < 60}
+					{#if departed && filterDelay !== null && timeUntilRtArr !== null}
+						{@render liveDisplay(timeUntilRtArr, filterDelay, departed)}
+					{:else if departed}
+						<div class="flex items-center gap-1 font-medium">Departed</div>
+					{:else if delay !== null}
+						{@render liveDisplay(timeUntilRtDep, delay, departed)}
+					{/if}
+				{/if}
+			</ChangeNotifier>
+			<div class="grow"></div>
+		</div>
+	</div>
+	<!-- <div class="flex">
+
+		<div class="min-w-6"></div>
+
+	</div> -->
+	<div class="relative flex flex-col gap-6">
+		<div class="flex items-start gap-10">
+			<div class="flex flex-col">
+				<div class="w-full">
+					<div class="text-lg/5 font-medium tabular-nums">
+						{planDepTime}
+					</div>
+					<ChangeNotifier class="w-max text-sm text-nowrap" value="{delay}{isCancelled}">
+						{#if isCancelled}
+							<div class="text-xs/4 font-semibold text-danger">Cancelled</div>
+						{:else if delay === null}
+							<div class="text-xs/4 font-semibold text-warning">Delayed</div>
+						{:else if Math.abs(delay) >= 1}
+							<div class="text-sm/4 font-semibold text-warning tabular-nums">
+								{rtDepTime}
+							</div>
+						{:else}
+							<div class="text-xs/4 font-semibold text-good tabular-nums">On time</div>
+						{/if}
+					</ChangeNotifier>
+				</div>
+			</div>
+			<div class="min-w-0">
+				<div class="text-base/5 font-medium">{from}</div>
+				<div class="truncate text-xs/4 text-muted-foreground">{crs}</div>
+			</div>
+		</div>
+		<div class="flex items-start gap-10">
+			<div class="flex flex-col">
+				<div class="flex w-full flex-col">
+					<div class="text-lg/5 font-medium tabular-nums">
+						{planArrTime}
+					</div>
+					<ChangeNotifier
+						class="w-max text-sm text-nowrap"
+						value="{filterDelay}{isCancelledAtFilter}"
+					>
+						{#if isCancelledAtFilter}
+							<div class="text-xs/4 font-semibold text-danger">Cancelled</div>
+						{:else if filterDelay === null}
+							<div class="text-xs/4 font-semibold text-warning">Delayed</div>
+						{:else if Math.abs(filterDelay) >= 1}
+							<div class="text-sm/4 font-semibold text-warning tabular-nums">
+								{rtArrTime}
+							</div>
+						{:else}
+							<div class="text-xs/4 font-semibold text-good tabular-nums">On time</div>
+						{/if}
+					</ChangeNotifier>
+				</div>
+			</div>
+			<div class="min-w-0">
+				<div class="text-base/5 font-medium">{to}</div>
+				<div class="truncate text-xs/4 text-muted-foreground">{filter}</div>
+			</div>
+		</div>
+		<div class="absolute top-1 bottom-5 left-16.5 w-3 overflow-hidden rounded-full">
+			{#if departed}
+				<div class="absolute inset-0 opacity-50" style:background={operator.color}></div>
+				<div
+					class="absolute bottom-0 right-0 left-0 transition-all"
+					style:height="{arrived ? 100 : Math.min(75, 100 - (elapsed / duration) * 100)}%"
+					style:background={operator.color}
+				>
+					<div
+						style:background={operator.color}
+						class="absolute -top-1.5 -left-2.5 h-2 w-6 rotate-10 bg-black"
+					></div>
+				</div>
+			{:else}
+				<div class="absolute inset-0" style:background={operator.color}></div>
+			{/if}
+			<div class="absolute top-0.5 right-0.5 left-0.5 aspect-square bg-white/90 rounded-full"></div>
+			<div class="absolute bottom-0.5 right-0.5 left-0.5 aspect-square bg-white/90 rounded-full"></div>
 		</div>
 	</div>
 </div>

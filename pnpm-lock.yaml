@@ -44,6 +44,9 @@ importers:
       cupertino-pane:
         specifier: ^1.5.4
         version: 1.5.4
+      customParseFormat:
+        specifier: link:dayjs/plugin/customParseFormat
+        version: link:dayjs/plugin/customParseFormat
       dayjs:
         specifier: ^1.11.19
         version: 1.11.19

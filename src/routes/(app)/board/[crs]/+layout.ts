@@ -13,7 +13,7 @@ export const load = async ({ params, fetch, url }) => {
 	const tomorrow = search.get('tomorrow') == 'true';
 
 	const board = fetch(
-		`/api/board/${crs.toUpperCase()}/${to ?? 'null'}/${time ?? 'null'}/${tomorrow ? 'true' : 'false'}`,
+		`/api/search/${crs.toUpperCase()}/${to ?? 'null'}/${time ?? 'null'}`,
 		{
 			headers: {
 				'api-version': API_COMPATIBLE_VERSION
@@ -22,7 +22,7 @@ export const load = async ({ params, fetch, url }) => {
 	).then(async (response) => {
 		if (!response.ok) {
 			const data = await response.json();
-			throw new Error(data.message);
+			throw new Error(JSON.stringify(data));
 		} else {
 			const data = await response.json();
 			return data;

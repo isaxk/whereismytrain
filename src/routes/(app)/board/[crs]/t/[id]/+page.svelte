@@ -240,6 +240,7 @@
 								!cp.isCancelled}
 							{category}
 							inDivision={cp.inDivision && !cp.startJoin}
+							dim={cp.arrived || cp.departed}
 						/>
 					{/if}
 

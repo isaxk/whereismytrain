@@ -63,6 +63,7 @@
 		"convex-svelte": "^0.0.12",
 		"csv-parser": "^3.2.0",
 		"cupertino-pane": "^1.5.4",
+		"customParseFormat": "link:dayjs/plugin/customParseFormat",
 		"dayjs": "^1.11.19",
 		"dotenv": "^17.2.3",
 		"firebase": "^12.7.0",
