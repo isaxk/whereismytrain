@@ -76,7 +76,7 @@
 		"mode-watcher": "^1.1.0",
 		"svelte-maplibre": "^1.2.5",
 		"svelte-sonner": "^1.0.7",
-		"sveltekit-cache-first": "^0.0.4",
+		"sveltekit-cache-first": "^1.1.4",
 		"ts-node": "^10.9.2",
 		"zod": "^4.1.12"
 	}

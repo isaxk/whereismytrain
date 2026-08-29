@@ -74,7 +74,10 @@ function shortenStationName(name: string): string {
 }
 
 function generateNotificationText(
-	existing: SavedTrainServiceInfo,
+  existing: SavedTrainServiceInfo & {
+    lastNotifiedDelay: number | null;
+    lastNotifiedFilterDelay: number | null;
+	},
 	updated: SavedTrainServiceInfo
 ): NotificationData[] {
 	const notifications: NotificationData[] = [];
@@ -124,14 +127,14 @@ function generateNotificationText(
 				updated.rtArr ? dayjs(updated.rtArr).format('HH:mm') : null,
 				updated.to !== updated.destination ? shortenStationName(updated.to) : undefined
 			);
-		} else if (updated.filterDelay !== existing.filterDelay) {
+		} else if (updated.filterDelay !== existing.filterDelay && (Math.abs((updated.filterDelay ?? 0) - (existing.lastNotifiedFilterDelay ?? 0)) > 1) || (updated.filterDelay === null && existing.filterDelay !== null)) {
 			description = templates.filterDelay(
 				updated.filterDelay,
 				updated.rtArr ? dayjs(updated.rtArr).format('HH:mm') : null,
 				updated.to !== updated.destination ? shortenStationName(updated.to) : undefined
 			);
 		}
-	} else if (updated.delay !== existing.delay) {
+	} else if (updated.delay !== existing.delay && (Math.abs((updated.delay ?? 0) - (existing.lastNotifiedDelay ?? 0)) > 1) || (updated.delay === null && existing.delay !== null)) {
 		description = templates.delay(
 			updated.delay,
 			updated.rtDep ? dayjs(updated.rtDep).format('HH:mm') : null
@@ -198,7 +201,9 @@ export const pushPortUpdate = action({
 			delay: delay === undefined ? existing.delay : delay,
 			departed: args.departed !== undefined ? args.departed : existing.departed,
 			filterDelay: filterDelay !== undefined ? filterDelay : existing.filterDelay,
-			isCancelled: args.isCancelled !== undefined ? args.isCancelled : existing.isCancelled
+      isCancelled: args.isCancelled !== undefined ? args.isCancelled : existing.isCancelled,
+			lastNotifiedDelay: existing.delay,
+			lastNotifiedFilterDelay: existing.filterDelay,
 		};
 
 		await ctx.runMutation(internal.notifications.updateSubscription, {
