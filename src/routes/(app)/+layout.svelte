@@ -7,8 +7,6 @@
 	import { onMount } from 'svelte';
 	import { MediaQuery } from 'svelte/reactivity';
 	import { innerHeight, innerWidth } from 'svelte/reactivity/window';
-	import { toast } from 'svelte-sonner';
-	import { onUpdate } from 'sveltekit-cache-first';
 
 	import Map from '$lib/components/map/map.svelte';
 	import Pane from '$lib/components/pane/pane.svelte';

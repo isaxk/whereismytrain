@@ -215,7 +215,7 @@ export const GET: RequestHandler = async ({ params, request }) => {
 					(m.xhtmlMessage?.replace(
 						/More information can be found in\s*<a href="([^"]+)">[^<]+<\/a>/,
 						'<a href="$1">More info</a>'
-					) ?? '') + m.category
+					) ?? '')
 			}))
 			.toSorted((a, b) => {
 				return b.severity - a.severity;

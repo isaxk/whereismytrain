@@ -5,7 +5,7 @@
 	import { injectAnalytics } from '@vercel/analytics/sveltekit';
 	import { onMount } from 'svelte';
 	import { toast } from 'svelte-sonner';
-	import { onUpdate } from 'sveltekit-cache-first';
+	import { onUpdate } from 'sveltekit-cache-first/client';
 
 	let { children } = $props();
 
