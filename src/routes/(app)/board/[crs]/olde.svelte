@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
 
-	import dayjs from 'dayjs';
 	import {
 		ArrowDown,
 		ArrowUp,
@@ -13,7 +12,10 @@
 		House,
 		Rows2,
 		Rows4
-	} from 'lucide-svelte';
+	} from '@lucide/svelte/icons';
+	import ChevronDown from '@lucide/svelte/icons/chevron-down';
+	import { Accordion } from 'bits-ui';
+	import dayjs from 'dayjs';
 	import { untrack } from 'svelte';
 	import { flip } from 'svelte/animate';
 	import { SvelteURLSearchParams } from 'svelte/reactivity';
@@ -23,16 +25,15 @@
 	import BoardItemComponent from '$lib/components/board/board-item.svelte';
 	import AlertCard from '$lib/components/ui/alert-card.svelte';
 	import Button from '$lib/components/ui/button/button.svelte';
+	import * as Dialog from '$lib/components/ui/dialog';
 	import Skeleton from '$lib/components/ui/skeleton.svelte';
 	import * as Tabs from '$lib/components/ui/tabs';
 	import StationsJSON from '$lib/data/stations.json';
 	import { mapData } from '$lib/state/map.svelte.js';
 	import { localStore } from '$lib/state/saved.svelte.js';
 	import { Severity, type BoardDetails, type BoardItem } from '$lib/types/index.js';
-	import { Accordion } from 'bits-ui';
 	import { cn } from '$lib/utils.js';
-	import ChevronDown from '@lucide/svelte/icons/chevron-down';
-	import * as Dialog from '$lib/components/ui/dialog';
+
 
 	let { data } = $props();
 

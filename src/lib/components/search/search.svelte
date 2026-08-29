@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
+	import { page } from '$app/state';
 
+	import { X } from '@lucide/svelte/icons';
 	import format from 'format-fuse.js';
 	import Fuse from 'fuse.js';
-	import { X } from 'lucide-svelte';
 	import { type Snippet } from 'svelte';
 	import { crossfade, fade } from 'svelte/transition';
 
@@ -13,7 +14,7 @@
 	import Popular from '../home/popular.svelte';
 
 	import Highlight from './highlight.svelte';
-	import { page } from '$app/state';
+
 
 	let {
 		trigger,

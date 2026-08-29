@@ -1,6 +1,6 @@
 <script lang="ts">
+	import { Footprints, GitCompareArrowsIcon, RouteIcon, SearchIcon } from '@lucide/svelte/icons';
 	import dayjs from 'dayjs';
-	import { Footprints, GitCompareArrowsIcon, RouteIcon, SearchIcon } from 'lucide-svelte';
 
 	import Tubeicon from '$lib/assets/tubeicon.svelte';
 	import { londonTerminals, walkingConnections } from '$lib/data/favourites';
@@ -8,9 +8,9 @@
 
 	import SubscriptionProvider from '../providers/subscription-provider.svelte';
 	import { buttonVariants } from '../ui/button';
+	import Button from '../ui/button/button.svelte';
 	import * as Popover from '../ui/popover';
 
-	import Button from '../ui/button/button.svelte';
 
 	let { crs, planArr, rtArr, originalArr } = $props();
 

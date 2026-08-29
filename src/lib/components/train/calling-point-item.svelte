@@ -1,5 +1,4 @@
 <script lang="ts">
-	import dayjs from 'dayjs';
 	import {
 		ArrowDownRight,
 		ArrowUpRight,
@@ -10,7 +9,8 @@
 		Hand,
 		Rss,
 		X
-	} from 'lucide-svelte';
+	} from '@lucide/svelte/icons';
+	import dayjs from 'dayjs';
 
 	import { highlightedStation } from '$lib/state/map.svelte';
 	import type { CallingPoint, Operator } from '$lib/types';

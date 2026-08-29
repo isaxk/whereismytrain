@@ -1,5 +1,4 @@
 <script lang="ts">
-	import dayjs from 'dayjs';
 	import {
 		Bus,
 		CircleQuestionMarkIcon,
@@ -9,18 +8,21 @@
 		Rss,
 		Trash,
 		TriangleAlertIcon
-	} from 'lucide-svelte';
+	} from '@lucide/svelte/icons';
+	import Check from '@lucide/svelte/icons/check';
+	import ChevronRight from '@lucide/svelte/icons/chevron-right';
+	import X from '@lucide/svelte/icons/x';
+	import dayjs from 'dayjs';
 	import { onMount } from 'svelte';
 
 	import type { CallingPoint, Operator, SavedTrainServiceInfo, TrainService } from '$lib/types';
-
-	import ChangeNotifier from '../ui/change-notifier.svelte';
-	import Check from '@lucide/svelte/icons/check';
-	import X from '@lucide/svelte/icons/x';
-	import { buttonVariants } from '../ui/button';
-	import * as DropdownMenu from '../ui/dropdown-menu';
-	import ChevronRight from '@lucide/svelte/icons/chevron-right';
 	import { durationDisplay } from '$lib/utils';
+
+	import MapTrainIndication from '../map/map-train-indication.svelte';
+	import TrainIconByCategory from '../train/train-icon-by-category.svelte';
+	import { buttonVariants } from '../ui/button';
+	import ChangeNotifier from '../ui/change-notifier.svelte';
+	import * as DropdownMenu from '../ui/dropdown-menu';
 
 	let {
 		crs,
@@ -459,24 +461,22 @@
 				<div class="truncate text-xs/4 text-muted-foreground">{filter}</div>
 			</div>
 		</div>
-		<div class="absolute top-1 bottom-5 left-16.5 w-3 overflow-hidden rounded-full">
+		<div class="absolute top-1 bottom-5 left-16.5 w-3 rounded-full">
 			{#if departed}
-				<div class="absolute inset-0 opacity-50" style:background={operator.color}></div>
+				<div class="absolute inset-0 opacity-75 rounded-full" style:background={operator.color}></div>
 				<div
-					class="absolute bottom-0 right-0 left-0 transition-all"
+					class="absolute right-0 bottom-0 rounded-full left-0 transition-all"
 					style:height="{arrived ? 100 : Math.min(75, 100 - (elapsed / duration) * 100)}%"
 					style:background={operator.color}
 				>
-					<div
-						style:background={operator.color}
-						class="absolute -top-1.5 -left-2.5 h-2 w-6 rotate-10 bg-black"
-					></div>
 				</div>
 			{:else}
-				<div class="absolute inset-0" style:background={operator.color}></div>
+				<div class="absolute inset-0 rounded-full" style:background={operator.color}></div>
 			{/if}
-			<div class="absolute top-0.5 right-0.5 left-0.5 aspect-square bg-white/90 rounded-full"></div>
-			<div class="absolute bottom-0.5 right-0.5 left-0.5 aspect-square bg-white/90 rounded-full"></div>
+			<div class="absolute top-0.5 right-0.5 left-0.5 aspect-square rounded-full bg-white/90"></div>
+			<div
+				class="absolute right-0.5 bottom-0.5 left-0.5 aspect-square rounded-full bg-white/90"
+			></div>
 		</div>
 	</div>
 </div>

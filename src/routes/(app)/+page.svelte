@@ -1,6 +1,4 @@
 <script lang="ts">
-	import dayjs from 'dayjs';
-	import relativeTime from 'dayjs/plugin/relativeTime';
 	import {
 		AlertTriangle,
 		Bug,
@@ -15,7 +13,11 @@
 		WifiOff,
 		CloudAlert,
 		Bell
-	} from 'lucide-svelte';
+	} from '@lucide/svelte/icons';
+	import ChevronDown from '@lucide/svelte/icons/chevron-down';
+	import { Accordion } from 'bits-ui';
+	import dayjs from 'dayjs';
+	import relativeTime from 'dayjs/plugin/relativeTime';
 	import { onMount } from 'svelte';
 	import { flip } from 'svelte/animate';
 	import { fly } from 'svelte/transition';
@@ -24,6 +26,8 @@
 	import SavedTrain from '$lib/components/home/saved-train.svelte';
 	import TrainSearch from '$lib/components/home/train-search.svelte';
 	import Github from '$lib/components/icons/github.svelte';
+	import TrainDiagram from '$lib/components/itinerary/train-diagram.svelte';
+	import SubscriptionProvider from '$lib/components/providers/subscription-provider.svelte';
 	import Button, { buttonVariants } from '$lib/components/ui/button/button.svelte';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 	import * as Item from '$lib/components/ui/item/index.js';
@@ -31,10 +35,7 @@
 	import { pwa, saved } from '$lib/state/saved.svelte';
 	import { refreshing, servicesSub } from '$lib/state/services-subscriber.svelte';
 	import { iOS } from '$lib/utils.js';
-	import { Accordion } from 'bits-ui';
-	import TrainDiagram from '$lib/components/itinerary/train-diagram.svelte';
-	import SubscriptionProvider from '$lib/components/providers/subscription-provider.svelte';
-	import ChevronDown from '@lucide/svelte/icons/chevron-down';
+
 
 	dayjs.extend(relativeTime);
 
@@ -160,7 +161,7 @@
 
 					<Accordion.Content class="">
 						{#each saved.value.filter((item) => item.service.arrived) as item (item.id)}
-							<div class="border-b border-border py-2 even:bg-muted/20">
+							<a href="/board/{item.focusCrs}/t/{item.service_id}?to={item.filterCrs}&backTo=/" class="border-b border-border py-2 even:bg-muted/20">
 								<svelte:boundary>
 									<SubscriptionProvider
 										serviceId={item.service_id}
@@ -179,7 +180,7 @@
 										</div>
 									{/snippet}
 								</svelte:boundary>
-							</div>
+							</a>
 						{/each}
 					</Accordion.Content>
 				</Accordion.Item>

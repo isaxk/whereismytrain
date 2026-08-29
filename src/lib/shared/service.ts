@@ -5,6 +5,7 @@ import type {
 	CallingPoint,
 	CallingPointOrder,
 	Carriage,
+	Formation,
 	SavedTrainServiceInfo,
 	ServiceLocation,
 	TimeObject,
@@ -322,16 +323,20 @@ export async function fetchService(
 
 	let formationLengthOnly: boolean = (data.locations ?? [])[focusIndex]?.length ? true : false;
 
-	let formation: Carriage[] | null = (data.locations ?? [])[focusIndex]?.length
-		? [...Array((data.locations ?? [])[focusIndex]?.length).keys()].map((_, i) => {
-				return {
-					coachNumber: (i + 1).toString(),
-					serviceClass: 'standard',
-					toilet: false,
-					toiletIsAccessible: false,
-					loading: null
-				};
-			})
+	let formation: Formation[] | null = (data.locations ?? [])[focusIndex]?.length
+		? [
+				{
+					carriages: [...Array((data.locations ?? [])[focusIndex]?.length).keys()].map((_, i) => {
+						return {
+							coachNumber: (i + 1).toString(),
+							serviceClass: 'standard',
+							toilet: false,
+							toiletIsAccessible: false,
+							loading: null
+						};
+					})
+				}
+			]
 		: null;
 
 	if (data.formation) {
@@ -345,13 +350,17 @@ export async function fetchService(
 
 		if (focus?.coaches || lastWithLoading?.coaches) {
 			formationLengthOnly = false;
-			formation = ((focus?.coaches || lastWithLoading?.coaches) ?? []).map((c, i) => ({
-				coachNumber: c.number ?? '',
-				serviceClass: (c.coachClass === 'First' ? 'first' : 'standard') as 'first' | 'standard',
-				toilet: (c.toilet && c.toilet?.value !== 'None') ?? false,
-				toiletIsAccessible: c.toilet?.value === 'Accessible',
-				loading: (lastWithLoading?.coaches ?? [])[i].loading?.value ?? null
-			}));
+			formation = [
+				{
+					carriages: ((focus?.coaches || lastWithLoading?.coaches) ?? []).map((c, i) => ({
+						coachNumber: c.number ?? '',
+						serviceClass: (c.coachClass === 'First' ? 'first' : 'standard') as 'first' | 'standard',
+						toilet: (c.toilet && c.toilet?.value !== 'None') ?? false,
+						toiletIsAccessible: c.toilet?.value === 'Accessible',
+						loading: (lastWithLoading?.coaches ?? [])[i].loading?.value ?? null
+					}))
+				}
+			];
 		}
 	}
 
@@ -390,22 +399,28 @@ export async function fetchService(
 		)
 	);
 
-  let cancelledBetween: string | null = null;
-  if (parsedPoints.some((l) => l.isCancelled) && parsedPoints.some((l) => !l.isCancelled)) {
-    const firstCancelled = parsedPoints.findIndex((l) => l.isCancelled);
-    const lastCancelled = parsedPoints.findLastIndex((l) => l.isCancelled);
-    if (firstCancelled !== lastCancelled && !parsedPoints.some((l, i) => !l.isCancelled && i > firstCancelled && i < lastCancelled)) {
-      const end = lastCancelled === parsedPoints.length - 1 ? parsedPoints[lastCancelled] : parsedPoints[lastCancelled + 1];
-      const start = firstCancelled === 0 ? parsedPoints[firstCancelled] : parsedPoints[firstCancelled - 1];
-      if ((firstCancelled === 0 || lastCancelled === parsedPoints.length - 1)) {
-        cancelledBetween = 'has been cancelled between ' + start.name + ' and ' + end.name;
-      }
-      // else {
-      //   cancelledBetween = 'will no longer call at stations between ' + parsedPoints[firstCancelled].name + ' and ' + end.name;
-      // }
-
-    }
-  }
+	let cancelledBetween: string | null = null;
+	if (parsedPoints.some((l) => l.isCancelled) && parsedPoints.some((l) => !l.isCancelled)) {
+		const firstCancelled = parsedPoints.findIndex((l) => l.isCancelled);
+		const lastCancelled = parsedPoints.findLastIndex((l) => l.isCancelled);
+		if (
+			firstCancelled !== lastCancelled &&
+			!parsedPoints.some((l, i) => !l.isCancelled && i > firstCancelled && i < lastCancelled)
+		) {
+			const end =
+				lastCancelled === parsedPoints.length - 1
+					? parsedPoints[lastCancelled]
+					: parsedPoints[lastCancelled + 1];
+			const start =
+				firstCancelled === 0 ? parsedPoints[firstCancelled] : parsedPoints[firstCancelled - 1];
+			if (firstCancelled === 0 || lastCancelled === parsedPoints.length - 1) {
+				cancelledBetween = 'has been cancelled between ' + start.name + ' and ' + end.name;
+			}
+			// else {
+			//   cancelledBetween = 'will no longer call at stations between ' + parsedPoints[firstCancelled].name + ' and ' + end.name;
+			// }
+		}
+	}
 
 	const final: TrainService = {
 		rid: id,
@@ -433,7 +448,7 @@ export async function fetchService(
 		uid: data.uid!,
 		sdd: data.sdd!,
 		date,
-    isToday: dayjs().isSame(date, 'day'),
+		isToday: dayjs().isSame(date, 'day'),
 		cancelledBetween,
 		reasonCode: (data.delayReason?.Value ?? data.cancelReason?.Value ?? null)?.toString() ?? ''
 	};

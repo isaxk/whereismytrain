@@ -1,16 +1,16 @@
 <script lang="ts">
 	import { getKnownFormation } from '$lib/data/formations';
-	import type { Carriage } from '$lib/types';
+	import type { Carriage, Formation as FormationType } from '$lib/types';
 
 	import Formation from './formation.svelte';
 
-	let { op, crs, sdd, uid, length, placeholder, destinations } = $props();
+	let { op, crs, sdd, uid, length, placeholder, destinations, cps } = $props();
 
 	// console.log('length', length);
 
 	async function getFormation(op: string, length: number, destinations: string[]) {
+		console.log(op, length, destinations);
 		const knownFormation = getKnownFormation(op, length, destinations);
-		// console.log('knownFormation', knownFormation);
 		if (knownFormation) {
 			return knownFormation;
 		} else {
@@ -21,7 +21,7 @@
 		}
 	}
 
-	let data: Carriage[] | null = $state(placeholder ?? null);
+	let data: FormationType[] | null = $state(placeholder ?? null);
 
 	$effect(() => {
 		getFormation(op, length, destinations).then((d) => {
@@ -31,8 +31,8 @@
 </script>
 
 {#if data}
-	<div class="px-4 pt-4">
-		<Formation formation={data} {destinations} />
+	<div class="px-4">
+		<Formation formation={data} {destinations} {cps} />
 	</div>
 {:else if op === 'GW'}
 	<div class="flex gap-1 overflow-x-scroll px-4">

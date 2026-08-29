@@ -1,8 +1,9 @@
 <script lang="ts">
-	import type { RouteResultFocusFilter, RouteResultItem } from '$lib/types';
+	import { Bus, ChevronRight, CircleQuestionMark, Rss } from '@lucide/svelte/icons';
 	import dayjs from 'dayjs';
-	import { Bus, ChevronRight, CircleQuestionMark, Rss } from 'lucide-svelte';
 	import tz from 'dayjs/plugin/timezone';
+
+	import type { RouteResultFocusFilter, RouteResultItem } from '$lib/types';
 	import { durationDisplay } from '$lib/utils';
 
 	dayjs.extend(tz);
@@ -48,7 +49,9 @@
 				<ChevronRight size={20} />
 			</div>
 			<div class="w-full">
-				{@render timeDisplay(item.to)}
+				{#if item.to}
+					{@render timeDisplay(item.to)}
+				{/if}
 			</div>
 		</div>
 	</div>

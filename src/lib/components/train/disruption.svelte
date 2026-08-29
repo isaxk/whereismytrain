@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { ClockAlertIcon, XIcon } from 'lucide-svelte';
+	import { ClockAlertIcon, XIcon } from '@lucide/svelte/icons';
 
 	import AlertCard from '$lib/components/ui/alert-card.svelte';
 

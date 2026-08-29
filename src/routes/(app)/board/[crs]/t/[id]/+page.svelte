@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { page } from '$app/state';
 
+	import { ArrowLeft, Bus, CalendarIcon, CloudAlert, Split } from '@lucide/svelte/icons';
 	import dayjs, { Dayjs } from 'dayjs';
-	import { ArrowLeft, Bus, CalendarIcon, CloudAlert, Split } from 'lucide-svelte';
 	import { onDestroy, onMount } from 'svelte';
 	import { fade, slide } from 'svelte/transition';
 
@@ -21,9 +21,9 @@
 	import { headerColor, highlightedStation, mapData } from '$lib/state/map.svelte.js';
 	import { refreshing } from '$lib/state/services-subscriber.svelte';
 	import type { TrainService } from '$lib/types';
+	import { dayjsFromHHmm } from '$lib/utils';
 
 	import type { PageData } from './$types';
-	import { dayjsFromHHmm } from '$lib/utils';
 
 	let { data }: { data: PageData } = $props();
 
@@ -151,7 +151,7 @@
 			/>
 		</div>
 	</div>
-	<div in:fade|global={{ duration: 200 }} class="flex flex-col gap-4 pb-4">
+	<div in:fade|global={{ duration: 200 }} class="flex flex-col">
 		{#if isBus || destination.length > 1 || serviceData.reasonCode || !isToday || error}
 			<div class="flex flex-col">
 				{#if error}
@@ -191,109 +191,113 @@
 				{/if}
 			</div>
 		{/if}
-
-		{#if serviceData.formation && !serviceData.formationLengthOnly && serviceData.formation.length > 0}
-			<div class="px-4 pt-4">
-				<Formation
-					formation={serviceData.formation}
-					destinations={serviceData.destination.map((d) => d.name)}
-				/>
-			</div>
-		{:else if !isBus && isToday}
-			<ThirdPartyFormation
-				placeholder={serviceData.formation ?? null}
-				op={operator.id}
-				uid={serviceData.uid}
-				sdd={serviceData.sdd}
-				crs={data.crs}
-				length={serviceData.formation ? serviceData.formation?.length : null}
-				destinations={serviceData.destination.map((d) => d.name)}
-			/>
-		{/if}
-
-		<div class="flex flex-col px-4">
-			<div class="flex gap-4 px-2 pb-2 text-xs text-muted-foreground">
-				<div class="w-18">
-					<div class="w-10 text-right">Time</div>
-					<div class="grow"></div>
+		<div class="pt-4 flex flex-col gap-4">
+			{#if serviceData.formation && !serviceData.formationLengthOnly && serviceData.formation.length > 0}
+				<div class="px-4">
+					<Formation
+						cps={serviceData.callingPoints}
+						formation={serviceData.formation}
+						destinations={serviceData.destination.map((d) => d.name)}
+					/>
 				</div>
-				<div class="grow">Station</div>
-				<div>Platform</div>
-			</div>
+			{:else if !isBus && isToday}
+				<ThirdPartyFormation
+					cps={serviceData.callingPoints}
+					placeholder={serviceData.formation ?? null}
+					op={operator.id}
+					uid={serviceData.uid}
+					sdd={serviceData.sdd}
+					crs={data.crs}
+					length={serviceData.formation ? serviceData.formation?.[0].carriages.length : null}
+					destinations={serviceData.destination.map((d) => d.crs)}
+				/>
+			{/if}
 
-			{#each callingPoints as cp, i (cp.tiploc + cp.times.plan.dep + i)}
-				{#if !['previous', 'origin'].includes(cp.order) || showPrevious}
-					{@const next = callingPoints[i + 1]}
-					{@const prev = callingPoints[i - 1]}
+			<div class="flex flex-col px-4">
+				<div class="flex gap-4 px-2 pb-2 text-xs text-muted-foreground">
+					<div class="w-18">
+						<div class="w-10 text-right">Time</div>
+						<div class="grow"></div>
+					</div>
+					<div class="grow">Station</div>
+					<div>Platform</div>
+				</div>
 
-					{@const anyPrevious =
-						callingPoints.filter((c) => c.order === 'previous' || c.order === 'origin').length > 0}
+				{#each callingPoints as cp, i (cp.tiploc + cp.times.plan.dep + i)}
+					{#if !['previous', 'origin'].includes(cp.order) || showPrevious}
+						{@const next = callingPoints[i + 1]}
+						{@const prev = callingPoints[i - 1]}
 
-					{#if cp.order === 'focus' && anyPrevious}
-						<LineToggle
-							bind:show={showPrevious}
-							name="previous"
-							color={operator.color}
-							trainVisible={(callingPoints[i - 1].departed ||
-								(callingPoints.some((cp, j) => cp.departed && j < i) && !showPrevious)) &&
-								!callingPoints.some((cp, j) => (cp.departed || cp.arrived) && j >= i) &&
-								!cp.isCancelled}
-							{category}
-							inDivision={cp.inDivision && !cp.startJoin}
-							dim={cp.arrived || cp.departed}
-						/>
-					{/if}
+						{@const anyPrevious =
+							callingPoints.filter((c) => c.order === 'previous' || c.order === 'origin').length >
+							0}
 
-					{#if cp.startDivide}
-						<DivideLine type="split" color={operator.color} />
-					{/if}
-
-					{#if cp.startDivide && !filter.inDivision}
-						<div class="-mt-4">
+						{#if cp.order === 'focus' && anyPrevious}
 							<LineToggle
-								bind:show={showSplit}
-								name="division"
+								bind:show={showPrevious}
+								name="previous"
 								color={operator.color}
-								trainVisible={(cp.departed || cp.arrived) &&
-									!callingPoints.find((cp) => cp.endDivide)?.arrived &&
-									!showSplit}
+								trainVisible={(callingPoints[i - 1].departed ||
+									(callingPoints.some((cp, j) => cp.departed && j < i) && !showPrevious)) &&
+									!callingPoints.some((cp, j) => (cp.departed || cp.arrived) && j >= i) &&
+									!cp.isCancelled}
 								{category}
-								inDivision={true}
+								inDivision={cp.inDivision && !cp.startJoin}
+								dim={cp.arrived || cp.departed}
 							/>
-						</div>
-					{/if}
+						{/if}
 
-					{#if showSplit || filter.inDivision || !cp.inDivision || cp.endDivide}
-						{@const duration =
-							cp.departed && next.times.rt.arr !== null && cp.times.rt.dep !== null
-								? dayjs(next.times.rt.arr).diff(dayjs(cp.times.rt.dep), 's')
-								: null}
-						{@const progress =
-							duration !== null
-								? Math.max(0, Math.min(1, now.diff(dayjs(cp.times.rt.dep), 's') / duration))
-								: null}
-						<CallingPointItem
-							{cp}
-							{operator}
-							{category}
-							index={i}
-							{progress}
-							hideRealtime={dayjs(callingPoints[0].times.plan.dep).diff(now, 'm') > 60 * 5}
-							length={callingPoints.length}
-							showTrain={!(cp.departed && next?.order === 'focus')}
-							showArrivalMark={next?.startDivide}
-							showDepartureMark={prev?.endDivide || cp.startDivide}
-							hideDetails={cp.endDivide &&
-								!showSplit &&
-								!callingPoints.find((cp) => cp.order === 'filter')?.inDivision}
-						/>
-					{/if}
+						{#if cp.startDivide}
+							<DivideLine type="split" color={operator.color} />
+						{/if}
 
-					{#if cp.endDivide && (showPrevious || !previousIncludesStartDivide)}
-						<DivideLine type="end-split" color={operator.color} />
+						{#if cp.startDivide && !filter.inDivision}
+							<div class="-mt-4">
+								<LineToggle
+									bind:show={showSplit}
+									name="division"
+									color={operator.color}
+									trainVisible={(cp.departed || cp.arrived) &&
+										!callingPoints.find((cp) => cp.endDivide)?.arrived &&
+										!showSplit}
+									{category}
+									inDivision={true}
+								/>
+							</div>
+						{/if}
+
+						{#if showSplit || filter.inDivision || !cp.inDivision || cp.endDivide}
+							{@const duration =
+								cp.departed && next.times.rt.arr !== null && cp.times.rt.dep !== null
+									? dayjs(next.times.rt.arr).diff(dayjs(cp.times.rt.dep), 's')
+									: null}
+							{@const progress =
+								duration !== null
+									? Math.max(0, Math.min(1, now.diff(dayjs(cp.times.rt.dep), 's') / duration))
+									: null}
+							<CallingPointItem
+								{cp}
+								{operator}
+								{category}
+								index={i}
+								{progress}
+								hideRealtime={dayjs(callingPoints[0].times.plan.dep).diff(now, 'm') > 60 * 5}
+								length={callingPoints.length}
+								showTrain={!(cp.departed && next?.order === 'focus')}
+								showArrivalMark={next?.startDivide}
+								showDepartureMark={prev?.endDivide || cp.startDivide}
+								hideDetails={cp.endDivide &&
+									!showSplit &&
+									!callingPoints.find((cp) => cp.order === 'filter')?.inDivision}
+							/>
+						{/if}
+
+						{#if cp.endDivide && (showPrevious || !previousIncludesStartDivide)}
+							<DivideLine type="end-split" color={operator.color} />
+						{/if}
 					{/if}
-				{/if}
-			{/each}
+				{/each}
+			</div>
 		</div>
 	</div>
 {:else if error}

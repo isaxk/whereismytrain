@@ -1,11 +1,11 @@
 <script lang="ts">
+	import { Bell, BellOff, BellRing, BookmarkIcon, GitCompareArrowsIcon, X } from '@lucide/svelte/icons';
+	import Check from '@lucide/svelte/icons/check';
 	import { useConvexClient } from 'convex-svelte';
 	import dayjs from 'dayjs';
-	import { Bell, BellOff, BellRing, BookmarkIcon, GitCompareArrowsIcon, X } from 'lucide-svelte';
 
-	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import * as AlertDialog from '$lib/components/ui/alert-dialog/index.js';
-
+	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 	import { getFCMToken } from '$lib/notifications';
 	import { parseSavedInfo } from '$lib/shared/service';
@@ -18,8 +18,9 @@
 	import SubscriptionProvider from '../providers/subscription-provider.svelte';
 	import Button, { buttonVariants } from '../ui/button/button.svelte';
 	import { Spinner } from '../ui/spinner/index';
+
 	import { PUBLIC_NOTIFICATIONS_ENABLED } from '$env/static/public';
-	import Check from '@lucide/svelte/icons/check';
+
 
 	const convex = useConvexClient();
 

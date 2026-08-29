@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 
-	import { ArrowLeft } from 'lucide-svelte';
+	import { ArrowLeft } from '@lucide/svelte/icons';
 
 	import Button from '$lib/components/ui/button/button.svelte';
 </script>

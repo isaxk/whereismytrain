@@ -59,7 +59,7 @@ export type RouteResultFocusFilter = {
 export type RouteResultItem = {
   id: string;
 	from: RouteResultFocusFilter;
-  to: RouteResultFocusFilter;
+  to: RouteResultFocusFilter | null;
   operator: Operator;
   destination: string;
   platform: string | null;
@@ -155,6 +155,11 @@ export type CallingPoint = {
 	showTrain: boolean;
 };
 
+export type Formation = {
+  carriages: Carriage[];
+  destination?: string[] | null;
+}
+
 export type Carriage = {
 	coachNumber: string | null;
 	serviceClass: 'first' | 'standard';
@@ -182,7 +187,7 @@ export type TrainService = {
   title: string;
 	cancelledBetween: string | null;
 	reasonCode: string | null;
-	formation: Carriage[] | null;
+	formation: Formation[] | null;
 	formationLengthOnly: boolean;
 	destination: DestinationOrigin[];
 	category: 'standard' | 'express' | 'sleeper' | 'bus' | 'metro';

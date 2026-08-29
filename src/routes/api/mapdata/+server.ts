@@ -1,9 +1,9 @@
 import { createClient } from '@supabase/supabase-js';
 import { json } from '@sveltejs/kit';
+import * as turf from '@turf/turf';
 import dayjs from 'dayjs';
 import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
-import * as turf from '@turf/turf';
 
 import { type ServiceLocation as APIServiceLocation } from '$lib/types/api';
 import type {
@@ -13,6 +13,7 @@ import type {
 	ServiceLocationWithGeometry
 } from '$lib/types/index.js';
 import { calculateBearing, parseServiceId } from '$lib/utils';
+import { smoothPathByTiploc } from '$lib/utils/line';
 
 import type { RequestHandler } from './$types';
 
@@ -22,7 +23,6 @@ import {
 	SUPABASE_ANON_KEY,
 	SUPABASE_URL
 } from '$env/static/private';
-import { smoothPathByTiploc } from '$lib/utils/line';
 
 const nullTime = '0001-01-01T00:00:00';
 

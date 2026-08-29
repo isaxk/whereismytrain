@@ -1,5 +1,5 @@
 <script>
-	import { ChevronDown } from 'lucide-svelte';
+	import { ChevronDown } from '@lucide/svelte/icons';
 
 	import { t } from '$lib/utils';
 

@@ -77,7 +77,7 @@
 		{/if}
 	</div>
 {:else}
-	<div class="relative mx-auto w-full max-w-screen-sm transform-gpu">
+	<div class="relative mx-auto w-full flex flex-col min-h-full max-w-screen-sm transform-gpu">
 		{@render children()}
 	</div>
 {/if}
