@@ -38,24 +38,44 @@ export const GET: RequestHandler = async ({ params }) => {
 			const gwFormation = await response.json();
 			console.log(JSON.stringify(gwFormation, null, 2));
 
-      if (gwFormation.Portions.length === 2 && gwFormation.Portions[1].StartCrs === gwFormation.Portions[0].EndCrs) {
-        const carriagesA = gwFormation.Portions[0].Assemblies.map((a: any) => a.Vehicles).flat()
-        const carriagesB = gwFormation.Portions[1].Assemblies.map((a: any) => a.Vehicles).flat();
+			if (
+				gwFormation.Portions.length === 2 &&
+				gwFormation.Portions[1].StartCrs === gwFormation.Portions[0].EndCrs
+			) {
+				const carriagesA = gwFormation.Portions[0].Assemblies.map((a: any) => a.Vehicles).flat();
+				const carriagesB = gwFormation.Portions[1].Assemblies.map((a: any) => a.Vehicles).flat();
+				if (carriagesA.length > carriagesB.length) {
+					formation = [
+						{
+							carriages: carriagesB.map((c: any) => parseCarriage(c)).toReversed(),
+							destination: [gwFormation.Portions[0].EndCrs]
+						},
+						{
+							carriages: carriagesA
+								.slice(0, -carriagesB.length)
+								.map((c: any) => parseCarriage(c))
+								.toReversed(),
+							destination: [gwFormation.Portions[0].EndCrs, gwFormation.Portions[1].EndCrs]
+						}
+					];
+				} else {
+					formation = [
+						{
+							carriages: gwFormation.Portions[0].Assemblies.map((a: any) => a.Vehicles)
+								.flat()
+								.map((c: any) => parseCarriage(c))
+								.toReversed(),
+							destination: [gwFormation.Portions[0].EndCrs]
+						}
+					];
+				}
+			} else {
 				formation = [
 					{
-						carriages: carriagesB.map((c: any) => parseCarriage(c)).toReversed() ,
-						destination: [gwFormation.Portions[0].EndCrs]
-					},
-					{
-						carriages: carriagesA.slice(0, -carriagesB.length).map((c: any) => parseCarriage(c)).toReversed(),
-						destination: [gwFormation.Portions[0].EndCrs, gwFormation.Portions[1].EndCrs]
-					}
-				];
-			}
-			else {
-				formation = [
-					{
-						carriages: gwFormation.Portions[0].Assemblies.map((a: any) => a.Vehicles).flat().map((c: any) => parseCarriage(c)).toReversed(),
+						carriages: gwFormation.Portions[0].Assemblies.map((a: any) => a.Vehicles)
+							.flat()
+							.map((c: any) => parseCarriage(c))
+							.toReversed(),
 						destination: [gwFormation.Portions[0].EndCrs]
 					}
 				];
