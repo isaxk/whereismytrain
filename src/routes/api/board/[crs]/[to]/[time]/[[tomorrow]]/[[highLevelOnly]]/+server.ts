@@ -3,6 +3,7 @@ import dayjs from 'dayjs';
 import tz from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
 
+import { operatorList } from '$lib/data/operators';
 import { Severity, type Board, type BoardItem, type Notice } from '$lib/types';
 import type { ServiceItemWithLocations, StationBoard } from '$lib/types/api';
 import { dayjsFromHHmm } from '$lib/utils';
@@ -10,7 +11,6 @@ import { dayjsFromHHmm } from '$lib/utils';
 import { API_COMPATIBLE_VERSION, NULL_TIME } from '../../../../../../_shared';
 
 import { ACCESS_TOKEN, REFERENCE_DATA_KEY } from '$env/static/private';
-import { operatorList } from '$lib/data/operators';
 
 dayjs.extend(utc);
 dayjs.extend(tz);

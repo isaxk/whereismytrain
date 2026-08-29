@@ -17,6 +17,7 @@
 	import { favourites } from '$lib/data/favourites';
 	import StationsJSON from '$lib/data/stations.json';
 	import { paneHeight } from '$lib/state/map.svelte';
+	import { saved } from '$lib/state/saved.svelte';
 	import { refreshing } from '$lib/state/services-subscriber.svelte';
 	import { explicitEffect } from '$lib/state/utils.svelte';
 	import type { MapData, ServiceMapData, TrainService } from '$lib/types';
@@ -24,10 +25,9 @@
 
 	import MapService from './map-service.svelte';
 	import { easeToIfChanged, getBbox, setBounds } from './map-utils';
+	import SavedMapService from './saved-map-service.svelte';
 
 	import type { Feature } from 'geojson';
-	import SavedMapService from './saved-map-service.svelte';
-	import { saved } from '$lib/state/saved.svelte';
 
 	const lg = new MediaQuery('(min-width: 1024px)');
 

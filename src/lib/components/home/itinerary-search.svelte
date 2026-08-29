@@ -1,8 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
 
-	import dayjs from 'dayjs';
-	import { onMessage } from 'firebase/messaging';
 	import {
 		ArrowDownLeft,
 		ArrowDownRight,
@@ -12,7 +10,9 @@
 		GitCompareArrowsIcon,
 		PlusCircle,
 		X
-	} from 'lucide-svelte';
+	} from '@lucide/svelte/icons';
+	import dayjs from 'dayjs';
+	import { onMessage } from 'firebase/messaging';
 	import { onMount } from 'svelte';
 
 	import { dayjsFromHHmm } from '$lib/utils';

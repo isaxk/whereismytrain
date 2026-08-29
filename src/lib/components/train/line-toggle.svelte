@@ -1,5 +1,5 @@
 <script>
-	import { ChevronDown } from 'lucide-svelte';
+	import { ChevronDown } from '@lucide/svelte/icons';
 
 	import { t } from '$lib/utils';
 
@@ -11,7 +11,8 @@
 		color = '#000000',
 		inDivision = false,
 		category = 'standard',
-		name
+		name,
+		dim = false,
 	} = $props();
 
 	const send = t.send;
@@ -25,7 +26,7 @@
 		<div class="w-2"></div>
 	{/if}
 	<div class="relative flex h-full w-3 justify-center">
-		<div style:background={color} class="h-full w-1.5 bg-black"></div>
+		<div style:background={color} class={["h-full w-3 bg-black", dim ? 'opacity-75' : 'opacity-100']}></div>
 		{#if trainVisible}
 			<div
 				class="absolute top-1/2 z-10 -translate-y-1/2"

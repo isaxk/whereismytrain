@@ -44,6 +44,9 @@ importers:
       cupertino-pane:
         specifier: ^1.5.4
         version: 1.5.4
+      customParseFormat:
+        specifier: link:dayjs/plugin/customParseFormat
+        version: link:dayjs/plugin/customParseFormat
       dayjs:
         specifier: ^1.11.19
         version: 1.11.19
@@ -65,9 +68,6 @@ importers:
       kafkajs:
         specifier: ^2.2.4
         version: 2.2.4
-      lucide-svelte:
-        specifier: ^0.554.0
-        version: 0.554.0(svelte@5.43.14)
       maplibre-gl:
         specifier: ^5.14.0
         version: 5.14.0
@@ -100,8 +100,8 @@ importers:
         specifier: ^3.12.1
         version: 3.12.1
       '@lucide/svelte':
-        specifier: ^0.561.0
-        version: 0.561.0(svelte@5.43.14)
+        specifier: ^1.36.0
+        version: 1.36.0(svelte@5.43.14)
       '@sveltejs/adapter-vercel':
         specifier: ^6.1.1
         version: 6.1.2(@sveltejs/kit@2.49.0(@sveltejs/vite-plugin-svelte@6.2.1(supports-color@7.2.0)(svelte@5.43.14)(vite@7.2.4(@types/node@22.19.1)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.22.4)))(svelte@5.43.14)(vite@7.2.4(@types/node@22.19.1)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.22.4)))(rollup@4.53.3)(supports-color@7.2.0)
@@ -1000,8 +1000,8 @@ packages:
   '@jridgewell/trace-mapping@0.3.9':
     resolution: {integrity: sha512-3Belt6tdc8bPgAtbcmdtNJlirVoTmEb5e2gC94PnkwEW9jI6CAHUeoG85tjWP5WquqfavoMtMwiG4P926ZKKuQ==}
 
-  '@lucide/svelte@0.561.0':
-    resolution: {integrity: sha512-vofKV2UFVrKE6I4ewKJ3dfCXSV6iP6nWVmiM83MLjsU91EeJcEg7LoWUABLp/aOTxj1HQNbJD1f3g3L0JQgH9A==}
+  '@lucide/svelte@1.36.0':
+    resolution: {integrity: sha512-koohl99Nwi1YbthsGn1OPbnXjCTMBHKxf6rHt+3rst7bC2baoS/hXiYGg0haJPo1EU67RWi9nzfmSiganod2AQ==}
     peerDependencies:
       svelte: ^5
 
@@ -3024,12 +3024,6 @@ packages:
     resolution: {integrity: sha512-F9ODfyqML2coTIsQpSkRHnLSZMtkU8Q+mSfcaIyKwy58u+8k5nvAYeiNhsyMARvzNcXJ9QfWVrcPsC9e9rAxtg==}
     engines: {node: 20 || >=22}
 
-  lucide-svelte@0.554.0:
-    resolution: {integrity: sha512-LLcpHi3SuKup0nVD1kKqo8FDZnjXJp48uST26GGh8Jcyrxqk5gmgpnvKmHsHox674UL3cPS1DCul/wFL7ybGqg==}
-    deprecated: Package deprecated. Please use @lucide/svelte instead.
-    peerDependencies:
-      svelte: ^3 || ^4 || ^5.0.0-next.42
-
   luxon@3.7.2:
     resolution: {integrity: sha512-vtEhXh/gNjI9Yg1u4jX/0YVPMvxzHuGgCm6tC5kZyb08yjGWGnqAjGJvcXbqQR2P3MyMEFnRbpcdFS6PBcLqew==}
     engines: {node: '>=12'}
@@ -4639,7 +4633,7 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
 
-  '@lucide/svelte@0.561.0(svelte@5.43.14)':
+  '@lucide/svelte@1.36.0(svelte@5.43.14)':
     dependencies:
       svelte: 5.43.14
 
@@ -7515,10 +7509,6 @@ snapshots:
   long@5.3.2: {}
 
   lru-cache@11.2.2: {}
-
-  lucide-svelte@0.554.0(svelte@5.43.14):
-    dependencies:
-      svelte: 5.43.14
 
   luxon@3.7.2: {}
 

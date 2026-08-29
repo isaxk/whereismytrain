@@ -12,6 +12,7 @@
 
 	import type { Id } from '../../../convex/_generated/dataModel';
 	import type { Snippet } from 'svelte';
+
 	import { PUBLIC_NOTIFICATIONS_ENABLED } from '$env/static/public';
 
 	let {

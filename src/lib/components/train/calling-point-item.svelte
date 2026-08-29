@@ -1,5 +1,4 @@
 <script lang="ts">
-	import dayjs from 'dayjs';
 	import {
 		ArrowDownRight,
 		ArrowUpRight,
@@ -10,7 +9,8 @@
 		Hand,
 		Rss,
 		X
-	} from 'lucide-svelte';
+	} from '@lucide/svelte/icons';
+	import dayjs from 'dayjs';
 
 	import { highlightedStation } from '$lib/state/map.svelte';
 	import type { CallingPoint, Operator } from '$lib/types';
@@ -84,13 +84,13 @@
 <div
 	bind:this={elm}
 	class={[
-		'flex h-14 items-center gap-2 rounded-xl px-2 transition-all',
+		'flex h-14 items-start gap-2 px-2 transition-all',
 		highlightedStation.current === cp.crs + (cp.rtDepDate || '') && 'animate-pulse bg-amber-100'
 	]}
 >
 	<div
 		class={[
-			'z-0 flex w-10 min-w-10 justify-end gap-0 tabular-nums',
+			'z-0 flex w-10 min-w-10 justify-end gap-0 pt-4.5 tabular-nums',
 
 			{
 				'opacity-100': cp.order === 'focus' || cp.order === 'filter',
@@ -119,14 +119,14 @@
 				]}
 			>
 				<div class="text-nowrap">
-					<span class="text-xs/5 font-normal text-foreground"
+					<span class="text-xs/4 font-normal text-foreground"
 						>{#if showArrivalMark}a.{:else if showDepartureMark}d.{/if}
 					</span>{time.plan}
 				</div>
 			</div>
 			{#if time.rt !== time.plan && !cp.isCancelled && !hideRealtime}
 				{#if time.rt}
-					<div class="text-sm/4 font-semibold text-nowrap text-warning">
+					<div class="text-sm/3 font-semibold text-nowrap text-warning">
 						{time.rt}
 					</div>
 				{:else}
@@ -152,34 +152,58 @@
 	>
 		{#if cp.isOrigin || cp.startJoin}
 			<div class="grow"></div>
-			<div style:background={operator.color} class="h-1.5 w-4"></div>
-			<div style:background={operator.color} class="w-1.5 grow bg-black"></div>
+			<div
+				style:background={operator.color}
+				class={['h-3 w-3 rounded-t-full p-0.5', cp.departed ? 'opacity-75' : 'opacity-100']}
+			>
+				<div class="h-full w-full rounded-full bg-white"></div>
+			</div>
+			<div
+				style:background={operator.color}
+				class={['w-3 grow bg-black', cp.departed ? 'opacity-75' : 'opacity-100']}
+			></div>
 		{:else if index === length - 1 || cp.endDivide}
-			<div style:background={operator.color} class="w-1.5 grow bg-black"></div>
-			<div style:background={operator.color} class="h-1.5 w-4"></div>
+			<div
+				style:background={operator.color}
+				class={['w-3 grow bg-black', cp.arrivalCancelled ? 'opacity-75' : 'opacity-100']}
+			></div>
+			<div style:background={operator.color} class="h-3 w-3 rounded-b-full p-0.5">
+				<div class="h-full w-full rounded-full bg-white"></div>
+			</div>
 			<div class="grow"></div>
 			<!-- {:else if cp.isDestination || (cp.departureCancelled && !cp.isCancelled)}
 			<div style:background={operator.color} class="w-1.5 grow bg-black"></div>
 			<div style:background={operator.color} class="h-1.5 w-4"></div>
 			<div style:background={operator.color} class="w-1.5 grow bg-black opacity-75"></div> -->
 		{:else}
-			<div style:background={operator.color} class="w-1.5 grow bg-black"></div>
-			<div class="flex w-4">
-				<div class="w-[5px]"></div>
-				<div style:background={operator.color} class={['h-1.5 w-1.5']}></div>
+			<div
+				style:background={operator.color}
+				class={['w-3 grow bg-black', cp.arrived || cp.departed ? 'opacity-75' : 'opacity-100']}
+			></div>
+
+			<div
+				style:background={operator.color}
+				class={['h-3 w-3 p-0.5', cp.departed ? 'opacity-75' : 'opacity-100']}
+			>
 				<div
-					style:background={operator.color}
-					class={['h-1.5 grow', cp.isCancelled && 'opacity-50']}
+					class={[
+						'h-full w-full rounded-full',
+						cp.order === 'focus' || cp.order === 'filter' ? 'bg-white' : 'bg-white/75'
+					]}
 				></div>
 			</div>
-			<div style:background={operator.color} class="w-1.5 grow bg-black"></div>
+
+			<div
+				style:background={operator.color}
+				class={['w-3 grow bg-black', cp.departed ? 'opacity-75' : 'opacity-100']}
+			></div>
 		{/if}
 		{#if (cp.departed || cp.isCancelled) && cp.showTrain && showTrain}
 			{@const top = 32 + (progress ?? 0.5) * 24}
 			<!-- 32px, 56px -->
 			<div
 				class="absolute z-10"
-				style:top="{top}px"
+				style:top="44px"
 				in:receive|global={{
 					key: cp.inDivision ? 'train-pos-icon-division' : 'train-pos-icon-'
 				}}
@@ -215,13 +239,13 @@
 			</div>
 		{/if}
 	</div>
-	<div class={['min-w-0 grow', cp.order === 'post-destination' ? 'opacity-40' : '']}>
+	<div class={['min-w-0 grow pt-4.5', cp.order === 'post-destination' ? 'opacity-40' : '']}>
 		<div class="flex items-end gap-1">
 			<div
 				class={cn([
-					'min-w-0 overflow-hidden text-sm/5 text-nowrap text-ellipsis text-foreground/60',
+					'min-w-0 overflow-hidden text-sm/5 text-nowrap text-ellipsis font-medium  text-foreground/60',
 					{
-						'font-medium text-foreground': cp.order === 'focus' || cp.order === 'filter'
+						'text-foreground': cp.order === 'focus' || cp.order === 'filter'
 					}
 				])}
 			>
@@ -237,18 +261,12 @@
 			</div> -->
 		</div>
 
-		<ChangeNotifier value={cp.isCancelled} class="flex w-max  items-center gap-2">
+		<ChangeNotifier value={cp.isCancelled} class="flex w-max items-center gap-2">
 			{#if cp.isCancelled}
-				<div class="flex w-max items-center gap-1 text-xs/4 text-red-600">
+				<div class="flex w-max items-center gap-1 text-xs/3 text-red-600">
 					<X size={16} /> Cancelled
 				</div>
 			{:else}
-				<!-- {#if (cp.order === 'filter' ? cp.arrivalDelay : cp.delay) === null}
-			<div class="flex items-center gap-1 text-xs/4 text-warning">
-				<ClockAlert size={14} />
-				Delayed
-			</div>
-			{/if} -->
 				{#if cp.order === 'focus'}
 					{#if cp.delay !== null && !cp.departed}
 						{@const timeUntilDeparture = cp.times.rt.dep
@@ -258,7 +276,7 @@
 							{#if timeUntilDeparture !== null && timeUntilDeparture < 60}
 								<div
 									class={[
-										'flex items-center gap-1 text-xs/4 font-medium',
+										'flex items-center gap-1 text-xs/3 font-medium',
 										cp.delay === 0 ? 'text-good' : 'text-warning'
 									]}
 								>
@@ -272,7 +290,7 @@
 								</div>
 							{/if}
 							{#if cp.delay !== null && cp.delay !== 0}
-								<div class="flex items-center text-xs/4 text-warning">
+								<div class="flex items-center text-xs/3 text-warning">
 									{#if timeUntilDeparture !== null && timeUntilDeparture < 60}
 										<Dot size={14} />
 									{:else}
@@ -285,13 +303,13 @@
 						</div>
 					{:else if cp.delay !== null && cp.departed}
 						{#if cp.delay !== 0}
-							<div class="flex items-center gap-1 text-xs/4 text-warning">
+							<div class="flex items-center gap-1 text-xs/3 text-warning">
 								<ClockAlert size={14} />
 								Departed {Math.abs(cp.delay)} min{#if Math.abs(cp.delay) !== 1}s{/if}
 								{#if cp.delay > 0}late{:else}early{/if}
 							</div>
 						{:else}
-							<div class="flex items-center gap-1 text-xs/4 text-good">
+							<div class="flex items-center gap-1 text-xs/3 text-good">
 								<Rss size={14} />
 								Departed
 							</div>
@@ -316,25 +334,26 @@
 			{/if}
 		</ChangeNotifier>
 	</div>
-
-	<ChangeNotifier
-		value={cp.platform}
-		class={[
-			'flex flex-col items-end justify-center gap-0',
-			cp.order === 'focus' ? 'text-lg font-medium' : 'text-sm text-zinc-400',
-			cp.order === 'post-destination' ? 'opacity-25' : '',
-			hideDetails ? 'opacity-0' : ''
-		]}
-	>
-		{#if cp.platform && cp.isPlatformConfirmed}
-			<div class={['flex items-center gap-1']}>
-				{cp.platform}
-			</div>
-		{/if}
-		{#if cp.platform && !cp.isPlatformConfirmed}
-			<div class="text-xs/5 text-zinc-400/80">
-				Est. {cp.platform}
-			</div>
-		{/if}
-	</ChangeNotifier>
+	<div class="pt-4.5">
+		<ChangeNotifier
+			value={cp.platform}
+			class={[
+				'flex flex-col items-end justify-center gap-0',
+				cp.order === 'focus' ? 'text-lg font-medium' : 'text-sm text-zinc-400',
+				cp.order === 'post-destination' ? 'opacity-25' : '',
+				hideDetails ? 'opacity-0' : ''
+			]}
+		>
+			{#if cp.platform && cp.isPlatformConfirmed}
+				<div class={['flex items-center gap-1']}>
+					{cp.platform}
+				</div>
+			{/if}
+			{#if cp.platform && !cp.isPlatformConfirmed}
+				<div class="text-xs/5 text-zinc-400/80">
+					Est. {cp.platform}
+				</div>
+			{/if}
+		</ChangeNotifier>
+	</div>
 </div>

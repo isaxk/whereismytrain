@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { refreshing, servicesSub } from '$lib/state/services-subscriber.svelte';
 	import type { ServiceMapData, TrainService } from '$lib/types';
+
 	import { API_COMPATIBLE_VERSION } from '../../../routes/api/_shared';
 
 	import MapService from './map-service.svelte';

@@ -1,7 +1,9 @@
 <script lang="ts">
 	import { page } from '$app/state';
 
+	import { RssIcon } from '@lucide/svelte/icons';
 	import clsx from 'clsx';
+	import dayjs from 'dayjs';
 	import { fade } from 'svelte/transition';
 	import { Marker } from 'svelte-maplibre';
 
@@ -18,8 +20,6 @@
 
 	import TrainIconByCategory from '../train/train-icon-by-category.svelte';
 	import Spinner from '../ui/spinner/spinner.svelte';
-	import dayjs from 'dayjs';
-	import { RssIcon } from 'lucide-svelte';
 
 	let {
 		cp,

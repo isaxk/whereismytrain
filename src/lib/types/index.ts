@@ -47,6 +47,32 @@ export type BoardItem = {
 	cancelReason: string | null;
 };
 
+export type RouteResultFocusFilter = {
+  crs: string;
+  name: string;
+  isCancelled: boolean;
+  rtTime: string | null;
+  planTime: string | null;
+  delay: number | null;
+}
+
+export type RouteResultItem = {
+  id: string;
+	from: RouteResultFocusFilter;
+  to: RouteResultFocusFilter | null;
+  operator: Operator;
+  destination: string;
+  platform: string | null;
+	duration: number | null;
+	isPlatformConfirmed: boolean;
+};
+
+export type BoardNotice = {
+	severity: string;
+  category: string;
+  body: string;
+};
+
 export type BoardDetails = {
 	name: string;
 	crs: string;
@@ -129,6 +155,11 @@ export type CallingPoint = {
 	showTrain: boolean;
 };
 
+export type Formation = {
+  carriages: Carriage[];
+  destination?: string[] | null;
+}
+
 export type Carriage = {
 	coachNumber: string | null;
 	serviceClass: 'first' | 'standard';
@@ -156,7 +187,7 @@ export type TrainService = {
   title: string;
 	cancelledBetween: string | null;
 	reasonCode: string | null;
-	formation: Carriage[] | null;
+	formation: Formation[] | null;
 	formationLengthOnly: boolean;
 	destination: DestinationOrigin[];
 	category: 'standard' | 'express' | 'sleeper' | 'bus' | 'metro';

@@ -1,6 +1,6 @@
 // some operators with limited fleets have known formations
 
-import type { Carriage } from '$lib/types';
+import type { Carriage, Formation } from '$lib/types';
 
 export type CondensedFormation = {
 	coachNumbers: string[];
@@ -53,11 +53,11 @@ export function getKnownFormation(op: string, length: number, destinations?: str
 		}
 	}
 
-	const condensedFormation = knownFormations[op]?.[length];
-	// console.log('condensedFormation:', condensedFormation);
+  const condensedFormation = knownFormations[op]?.[length];
+	console.log(op, length, destinations)
 
-	if (condensedFormation) {
-		const formation: Carriage[] = condensedFormation.coachNumbers.map((n, i): Carriage => {
+  if (condensedFormation) {
+		const carriages: Carriage[] = condensedFormation.coachNumbers.map((n, i): Carriage => {
 			return {
 				coachNumber: n,
 				serviceClass: condensedFormation.serviceClasses?.[i] ?? 'standard',
@@ -68,6 +68,17 @@ export function getKnownFormation(op: string, length: number, destinations?: str
 				isFrontSection: i < (condensedFormation.frontLength ?? Number.POSITIVE_INFINITY)
 			};
 		});
+		const formation: Formation[] = [
+			{
+				carriages: carriages.filter((c) => c.isFrontSection),
+				destination: destinations && [destinations[0]]
+			},
+			{
+				carriages: carriages.filter((c) => !c.isFrontSection),
+				destination: destinations && [destinations[1]]
+			}
+		];
+		console.log(formation);
 		return formation;
 	} else {
 		return null;

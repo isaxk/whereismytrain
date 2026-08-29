@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 
 	import { Tween } from 'svelte/motion';
@@ -7,7 +8,6 @@
 
 	import TrainIconByCategory from '../train/train-icon-by-category.svelte';
 	import Spinner from '../ui/spinner/spinner.svelte';
-	import { goto } from '$app/navigation';
 
 	let {
 		trainPosition,

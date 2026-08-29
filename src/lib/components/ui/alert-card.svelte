@@ -1,6 +1,6 @@
 <script lang="ts">
+	import { CircleAlert } from '@lucide/svelte/icons';
 	import clsx from 'clsx';
-	import { CircleAlert } from 'lucide-svelte';
 
 	import { cn } from '$lib/utils';
 

@@ -1,7 +1,7 @@
 <script lang="ts">
+	import { GitCompareArrowsIcon } from '@lucide/svelte/icons';
 	import ArrowLeft from '@lucide/svelte/icons/arrow-left';
 	import dayjs from 'dayjs';
-	import { GitCompareArrowsIcon } from 'lucide-svelte';
 
 	import Tubeicon from '$lib/assets/tubeicon.svelte';
 	import BoardItemComponent from '$lib/components/board/board-item.svelte';

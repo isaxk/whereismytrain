@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { preloadCode } from '$app/navigation';
 
-	import dayjs from 'dayjs';
 	import {
 		ArrowDownRight,
 		BadgeQuestionMarkIcon,
@@ -19,11 +18,13 @@
 		Table,
 		Table2,
 		X
-	} from 'lucide-svelte';
+	} from '@lucide/svelte/icons';
+	import dayjs from 'dayjs';
 
 	import { explicitEffect } from '$lib/state/utils.svelte';
 	import type { DestinationOrigin, Operator } from '$lib/types';
 	import { cn, dayjsFromHHmm } from '$lib/utils';
+
 	import ChangeNotifier from '../ui/change-notifier.svelte';
 
 	let {

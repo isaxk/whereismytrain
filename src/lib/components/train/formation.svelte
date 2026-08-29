@@ -1,25 +1,38 @@
 <script lang="ts">
-	import { Accessibility, ArrowLeft, ArrowRight, Bike, Toilet, VolumeOffIcon } from 'lucide-svelte';
+	import {
+		Accessibility,
+		ArrowLeft,
+		ArrowRight,
+		Bike,
+		Toilet,
+		VolumeOffIcon
+	} from '@lucide/svelte/icons';
 	import { fade } from 'svelte/transition';
 
-	import type { Carriage } from '$lib/types';
+	import type { CallingPoint, Carriage, Formation } from '$lib/types';
 
 	let {
 		formation,
-		destinations
-	}: { formation: Carriage[] | null; destinations?: string[] | null } = $props();
+		destinations,
+		cps
+	}: {
+		formation: Formation[] | null;
+		destinations?: string[] | null;
+		cps?: CallingPoint[] | null;
+	} = $props();
 
 	const showIconBar = $derived(
-		formation?.some(
-			(c) => c.serviceClass === 'first' || c.toilet || c.toiletIsAccessible || c.bikeSpace
-		)
+		formation
+			?.map((f) => f.carriages)
+			.flat()
+			.some((c) => c.serviceClass === 'first' || c.toilet || c.toiletIsAccessible || c.bikeSpace)
 	);
 
-	const frontLength = $derived(formation?.filter((c) => c.isFrontSection).length);
+	// const frontLength = $derived(formation?.filter((c) => c.isFrontSection).length);
 </script>
 
 <div in:fade={{ duration: 200 }} class=" h-max min-h-max overflow-x-scroll overflow-y-clip">
-	{#if frontLength && formation && frontLength !== formation?.length}
+	<!-- {#if frontLength && formation && frontLength !== formation?.length}
 		<div class="flex gap-1 pb-1 text-xs text-nowrap">
 			<div class="min-w-14"></div>
 			<div
@@ -35,56 +48,81 @@
 				<ArrowRight size={14} />
 			</div>
 		</div>
-	{/if}
+	{/if} -->
 	<div class="flex gap-1">
-		<div
-			class="h-16 min-w-14 rounded-tl-[100%] rounded-r-md rounded-bl-xl border-2 border-border bg-muted drop-shadow-xs"
-		></div>
-		{#each formation as carriage, i (JSON.stringify(carriage) + i)}
-			<div
-				class="relative flex h-16 min-w-16 flex-col items-center justify-center gap-0.5 overflow-hidden rounded-md border border-border bg-background drop-shadow-xs"
-			>
-				{#if carriage.loading !== null}
+		{#each formation as section, i (i)}
+			<div>
+				{#if formation!.length > 1}
 					<div
-						style:height="{Math.min(90, Math.max(10, carriage.loading))}%"
 						class={[
-							'absolute right-0 bottom-0 left-0 z-0',
-							{
-								'bg-green-100 dark:bg-green-950': carriage.loading < 40,
-								'bg-yellow-100 dark:bg-yellow-950': carriage.loading > 40 && carriage.loading < 70,
-								'bg-red-100 dark:bg-red-950': carriage.loading >= 70
-							}
+							'flex w-full items-center justify-end gap-1 text-xs font-medium ',
+							i === 0 ? 'flex-row pr-1' : 'flex-row-reverse pl-1'
 						]}
-					></div>
-				{/if}
-				<div class="z-10 text-sm font-semibold">
-					{carriage.coachNumber ?? i + 1}
-				</div>
-				{#if showIconBar}
-					<div class="z-10 flex h-4 items-center gap-1">
-						{#if carriage.serviceClass === 'first'}
-							<div
-								class="flex items-end rounded bg-foreground px-1 py-px text-[8px]/4 font-bold text-background"
-							>
-								1
-								<span class="ml-[.5px] text-[6px]/4 font-light"> st</span>
-							</div>
-						{/if}
-						{#if carriage.toilet}
-							<Toilet size={12} />
-						{/if}
-						{#if carriage.toiletIsAccessible}
-							<Accessibility size={12} />
-						{/if}
-						{#if carriage.bikeSpace}
-							<Bike size={12} />
-						{/if}
-						{#if carriage.quietSpace}
-							<VolumeOffIcon size={12} />
-						{/if}
+					>
+						<ArrowLeft size={16} class={i === 1 ? 'rotate-180' : ''} /> to {section.destination
+							?.map((d) => cps?.find((cp) => cp.crs === d)?.name)
+							.join(' and ')}
 					</div>
 				{/if}
+				<div class="flex gap-1">
+					{#if i === 0}
+						<div
+							class="h-16 min-w-14 rounded-tl-[100%] rounded-r-md rounded-bl-xl border-2 border-border bg-muted drop-shadow-xs"
+						></div>
+					{/if}
+					{#each section.carriages as carriage, i (JSON.stringify(carriage) + i)}
+						<div
+							class="relative flex h-16 min-w-16 flex-col items-center justify-center gap-0.5 overflow-hidden rounded-md border border-border bg-background drop-shadow-xs"
+						>
+							{#if carriage.loading !== null}
+								<div
+									style:height="{Math.min(90, Math.max(10, carriage.loading))}%"
+									class={[
+										'absolute right-0 bottom-0 left-0 z-0',
+										{
+											'bg-green-100 dark:bg-green-950': carriage.loading < 40,
+											'bg-yellow-100 dark:bg-yellow-950':
+												carriage.loading > 40 && carriage.loading < 70,
+											'bg-red-100 dark:bg-red-950': carriage.loading >= 70
+										}
+									]}
+								></div>
+							{/if}
+							<div class="z-10 text-sm font-semibold">
+								{carriage.coachNumber ?? i + 1}
+							</div>
+							{#if showIconBar}
+								<div class="z-10 flex h-4 items-center gap-1">
+									{#if carriage.serviceClass === 'first'}
+										<div
+											class="flex items-end rounded bg-foreground px-1 py-px text-[8px]/4 font-bold text-background"
+										>
+											1
+											<span class="ml-[.5px] text-[6px]/4 font-light"> st</span>
+										</div>
+									{/if}
+									{#if carriage.toilet}
+										<Toilet size={12} />
+									{/if}
+									{#if carriage.toiletIsAccessible}
+										<Accessibility size={12} />
+									{/if}
+									{#if carriage.bikeSpace}
+										<Bike size={12} />
+									{/if}
+									{#if carriage.quietSpace}
+										<VolumeOffIcon size={12} />
+									{/if}
+								</div>
+							{/if}
+						</div>
+					{/each}
+				</div>
+
 			</div>
+			{#if i < formation!.length - 1}
+				<div class="h-20 min-w-0.5 bg-muted-foreground/20"></div>
+			{/if}
 		{/each}
 	</div>
 </div>

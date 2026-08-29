@@ -1,8 +1,9 @@
-import { PUBLIC_MAP_ENABLED } from '$env/static/public';
 import AllStationsJSON from '$lib/data/stations.json';
 import type { Board } from '$lib/types';
 
 import { API_COMPATIBLE_VERSION } from '../../../api/_shared/index.js';
+
+import { PUBLIC_MAP_ENABLED } from '$env/static/public';
 
 export const load = async ({ params, fetch, url }) => {
 	const { crs } = params;
@@ -13,7 +14,7 @@ export const load = async ({ params, fetch, url }) => {
 	const tomorrow = search.get('tomorrow') == 'true';
 
 	const board = fetch(
-		`/api/board/${crs.toUpperCase()}/${to ?? 'null'}/${time ?? 'null'}/${tomorrow ? 'true' : 'false'}`,
+		`/api/search/${crs.toUpperCase()}/${to ?? 'null'}/${time ?? 'null'}/${tomorrow ? 'true' : 'false'}`,
 		{
 			headers: {
 				'api-version': API_COMPATIBLE_VERSION
@@ -22,7 +23,7 @@ export const load = async ({ params, fetch, url }) => {
 	).then(async (response) => {
 		if (!response.ok) {
 			const data = await response.json();
-			throw new Error(data.message);
+			throw new Error(JSON.stringify(data));
 		} else {
 			const data = await response.json();
 			return data;

@@ -3,7 +3,7 @@
 	import { londonTerminals } from '$lib/data/favourites';
 	import type { CallingPoint, TrainService, SavedTrain as SavedTrainType } from '$lib/types';
 	import { dayjsFromHHmm } from '$lib/utils';
-	import { Bell, GitCompareArrowsIcon } from 'lucide-svelte';
+	import { Bell, GitCompareArrowsIcon } from '@lucide/svelte/icons';
 	import tube from '$lib/assets/tube.svg';
 	import Button from '$lib/components/ui/button/button.svelte';
 	import { subscribeToTrain, unsubscribeToTrain } from '$lib/notifications';
