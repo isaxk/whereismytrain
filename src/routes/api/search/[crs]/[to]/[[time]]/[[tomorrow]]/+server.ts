@@ -129,14 +129,13 @@ export const GET: RequestHandler = async ({ params }) => {
 	)
 		time = null;
 
-	const date =
-		(time && time != 'null'
-			? dayjs(time, !time?.includes(':') ? 'HHmm' : 'HH:mm').tz('Europe/London')
-			: dayjs().tz('Europe/London'))
-			.add(tomorrow === 'true' ? 1 : 0, 'day');
+  let date = dayjs().tz('Europe/London');
+  if (time) date = dayjs.tz(time, !time?.includes(':') ? 'HHmm' : 'HH:mm', 'Europe/London');
+  if (tomorrow === 'true') date = date.add(1, 'day');
+
 
 	const url = new URL(
-		`https://api1.raildata.org.uk/1010-live-departure-board---staff-version1_0/LDBSVWS/api/20220120/GetDepBoardWithDetails/${crs}/${date.format('YYYYMMDDTHHmmss')}?numRows=20&timeWindow=120&services=PB`
+		`https://api1.raildata.org.uk/1010-live-departure-board---staff-version1_0/LDBSVWS/api/20220120/GetDepBoardWithDetails/${crs}/${date.format('YYYYMMDDTHHmmss')}?numRows=20&timeWindow=480&services=PB`
 	);
 	if (to) url.searchParams.append('filterCRS', to);
 
