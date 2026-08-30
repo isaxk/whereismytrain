@@ -61,11 +61,10 @@ export const GET: RequestHandler = async ({ params }) => {
 				} else {
 					formation = [
 						{
-							carriages: gwFormation.Portions[0].Assemblies.map((a: any) => a.Vehicles)
+							carriages: gwFormation.Portions.findLast((p: any) => p.StationsCrsCodes.includes(crs)).Assemblies.map((a: any) => a.Vehicles)
 								.flat()
 								.map((c: any) => parseCarriage(c))
 								.toReversed(),
-							destination: [gwFormation.Portions[0].EndCrs]
 						}
 					];
 				}
