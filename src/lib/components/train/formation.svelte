@@ -10,14 +10,17 @@
 	import { fade } from 'svelte/transition';
 
 	import type { CallingPoint, Carriage, Formation } from '$lib/types';
+	import LoadingIndicator from './loading-indicator.svelte';
 
 	let {
 		formation,
 		destinations,
+		loading,
 		cps
 	}: {
 		formation: Formation[] | null;
 		destinations?: string[] | null;
+		loading: number | null;
 		cps?: CallingPoint[] | null;
 	} = $props();
 
@@ -76,7 +79,7 @@
 						>
 							{#if carriage.loading !== null}
 								<div
-									style:height="{Math.min(90, Math.max(10, carriage.loading))}%"
+									style:height="{Math.min(95, Math.max(10, carriage.loading))}%"
 									class={[
 										'absolute right-0 bottom-0 left-0 z-0',
 										{
@@ -126,3 +129,7 @@
 		{/each}
 	</div>
 </div>
+
+{#if loading && !formation?.some((c) => c.carriages.some((cr) => cr.loading !== null))}
+	<LoadingIndicator loading={loading} />
+{/if}

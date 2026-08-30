@@ -339,28 +339,38 @@ export async function fetchService(
 			]
 		: null;
 
+	let loading = null;
+
 	if (data.formation) {
 		const focus = data.formation.find(
 			(f) => f.tiploc === (data.locations ?? [])[focusIndex]?.tiploc
 		);
-		const lastWithLoading =
+		const lastWithLoadingCarriages =
 			data.formation.find((f) =>
-				f ? f?.coaches?.some((c) => c.loading?.value !== null) : false
+				f ? f?.coaches?.some((c) => c.loading?.Value !== null) : false
 			) ?? null;
 
-		if (focus?.coaches || lastWithLoading?.coaches) {
+		if (focus?.coaches || lastWithLoadingCarriages?.coaches) {
 			formationLengthOnly = false;
 			formation = [
 				{
-					carriages: ((focus?.coaches || lastWithLoading?.coaches) ?? []).map((c, i) => ({
+					carriages: ((focus?.coaches || lastWithLoadingCarriages?.coaches) ?? []).map((c, i) => ({
 						coachNumber: c.number ?? '',
 						serviceClass: (c.coachClass === 'First' ? 'first' : 'standard') as 'first' | 'standard',
 						toilet: (c.toilet && c.toilet?.value !== 'None') ?? false,
 						toiletIsAccessible: c.toilet?.value === 'Accessible',
-						loading: (lastWithLoading?.coaches ?? [])[i].loading?.value ?? null
+						loading: (lastWithLoadingCarriages?.coaches ?? [])[i].loading?.Value ?? null
 					}))
 				}
 			];
+		}
+
+		const focusFormation = data.formation.find(
+			(f) => f.tiploc === (data.locations ?? [])[focusIndex]?.tiploc
+		);
+
+		if (focusFormation?.serviceLoading?.loadingPercentage?.Value) {
+			loading = focusFormation.serviceLoading?.loadingPercentage?.Value;
 		}
 	}
 
@@ -438,6 +448,7 @@ export async function fetchService(
 		},
 		title,
 		formedFrom,
+		loading,
 		destination: destination.map((d) => ({
 			name: d.locationName ?? '',
 			crs: d.crs ?? '',
@@ -651,7 +662,7 @@ function parseCallingPoint(
 
 	const activities = item.activities?.split(' ') ?? [];
 
-	console.log(item.crs, activities);
+	// console.log(item.crs, activities);
 
 	let feature: 'request' | 'pickup' | 'setdown' | null = null;
 	if (activities.includes('R')) {

@@ -24,6 +24,7 @@
 	import { dayjsFromHHmm } from '$lib/utils';
 
 	import type { PageData } from './$types';
+	import LoadingIndicator from '$lib/components/train/loading-indicator.svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -191,10 +192,11 @@
 				{/if}
 			</div>
 		{/if}
-		<div class="pt-4 flex flex-col gap-4">
+		<div class="flex flex-col gap-4 pt-4">
 			{#if serviceData.formation && !serviceData.formationLengthOnly && serviceData.formation.length > 0}
 				<div class="px-4">
 					<Formation
+						loading={serviceData.loading}
 						cps={serviceData.callingPoints}
 						formation={serviceData.formation}
 						destinations={serviceData.destination.map((d) => d.name)}
@@ -202,6 +204,7 @@
 				</div>
 			{:else if !isBus && isToday}
 				<ThirdPartyFormation
+					loading={serviceData.loading}
 					cps={serviceData.callingPoints}
 					placeholder={serviceData.formation ?? null}
 					op={operator.id}
@@ -211,6 +214,8 @@
 					length={serviceData.formation ? serviceData.formation?.[0].carriages.length : null}
 					destinations={serviceData.destination.map((d) => d.crs)}
 				/>
+			{:else if serviceData.loading}
+				<LoadingIndicator loading={serviceData.loading} />
 			{/if}
 
 			<div class="flex flex-col px-4">

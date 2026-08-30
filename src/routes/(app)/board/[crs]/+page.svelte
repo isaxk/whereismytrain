@@ -248,7 +248,7 @@
 		{/if}
 	</div>
 	{#if results}
-		<div class="grow" in:fade={{ duration: timeSpentLoading > 100 ? 150 : 0 }}>
+		<div class="" in:fade={{ duration: timeSpentLoading > 100 ? 150 : 0 }}>
 			{#each results as result (result.id + result.from.planTime)}
 				<a
 					href={serviceUrl(result.id)}

@@ -187,7 +187,8 @@ export type TrainService = {
   title: string;
 	cancelledBetween: string | null;
 	reasonCode: string | null;
-	formation: Formation[] | null;
+  formation: Formation[] | null;
+	loading: number | null;
 	formationLengthOnly: boolean;
 	destination: DestinationOrigin[];
 	category: 'standard' | 'express' | 'sleeper' | 'bus' | 'metro';

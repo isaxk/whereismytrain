@@ -258,7 +258,7 @@ export interface CoachDataLoading {
 	source?: string;
 	sourceInstance?: string;
 	/** @format int32 */
-	value?: number;
+	Value?: number;
 }
 
 export interface StationBoardWithDetails {

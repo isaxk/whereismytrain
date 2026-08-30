@@ -4,7 +4,7 @@
 
 	import Formation from './formation.svelte';
 
-	let { op, crs, sdd, uid, length, placeholder, destinations, cps } = $props();
+	let { op, crs, sdd, uid, length, placeholder, destinations, cps, loading } = $props();
 
 	// console.log('length', length);
 
@@ -32,7 +32,7 @@
 
 {#if data}
 	<div class="px-4">
-		<Formation formation={data} {destinations} {cps} />
+		<Formation formation={data} {destinations} {cps} {loading} />
 	</div>
 {:else if op === 'GW'}
 	<div class="flex gap-1 overflow-x-scroll px-4">

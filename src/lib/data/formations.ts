@@ -68,7 +68,7 @@ export function getKnownFormation(op: string, length: number, destinations?: str
 				isFrontSection: i < (condensedFormation.frontLength ?? Number.POSITIVE_INFINITY)
 			};
 		});
-		const formation: Formation[] = [
+		const formation: Formation[] = (destinations?.length ?? 0) > 1 ? [
 			{
 				carriages: carriages.filter((c) => c.isFrontSection),
 				destination: destinations && [destinations[0]]
@@ -76,6 +76,11 @@ export function getKnownFormation(op: string, length: number, destinations?: str
 			{
 				carriages: carriages.filter((c) => !c.isFrontSection),
 				destination: destinations && [destinations[1]]
+			}
+		] : [
+			{
+				carriages: carriages,
+				destination: destinations
 			}
 		];
 		console.log(formation);

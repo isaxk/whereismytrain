@@ -85,20 +85,19 @@
 			const time = dayjs()
 				.hour(parseInt(hour))
 				.minute(parseInt(minute))
-				.add(tomorrow ? 1 : 0, 'day')
-				.format('HHmm');
-			if (to && time === initialTime && !tomorrow) {
+				.add(tomorrow ? 1 : 0, 'day');
+			if (to && Math.abs(time.diff(initialTime, 'minute')) < 5 && !tomorrow) {
 				return `/board/${from}?to=${to}`;
 			} else if (to && tomorrow) {
-				return `/board/${from}?to=${to}&time=${time}&tomorrow=${tomorrow}`;
+				return `/board/${from}?to=${to}&time=${time.format('HHmm')}&tomorrow=${tomorrow}`;
 			} else if (to) {
-				return `/board/${from}?to=${to}&time=${time}`;
-			} else if (time === initialTime && !tomorrow) {
+				return `/board/${from}?to=${to}&time=${time.format('HHmm')}`;
+			} else if (Math.abs(time.diff(initialTime, 'minute')) < 5 && !tomorrow) {
 				return `/board/${from}`;
 			} else if (tomorrow) {
-				return `/board/${from}?time=${time}&tomorrow=${tomorrow}`;
+				return `/board/${from}?time=${time.format('HHmm')}&tomorrow=${tomorrow}`;
 			} else {
-				return `/board/${from}?time=${time}`;
+				return `/board/${from}?time=${time.format('HHmm')}`;
 			}
 		} else {
 			return `#`;

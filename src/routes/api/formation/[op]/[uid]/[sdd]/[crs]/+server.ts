@@ -5,6 +5,7 @@ import { type RequestHandler, json } from '@sveltejs/kit';
 import type { Carriage, Formation } from '$lib/types';
 
 function parseCarriage(c: any): Carriage {
+  console.log(c);
 	return {
 		serviceClass: c.IsFirstClass ? 'first' : 'standard',
 		coachNumber: c.CoachLetter,
@@ -15,7 +16,7 @@ function parseCarriage(c: any): Carriage {
 		// toiletStatus: 'Unknown',
 		loading:
 			c.SeatAvailability === 'Low'
-				? 70
+				? 100
 				: c.SeatAvailability === 'Medium'
 					? 50
 					: c.SeatAvailability === 'High'

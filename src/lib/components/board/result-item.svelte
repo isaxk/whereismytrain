@@ -9,23 +9,29 @@
 	dayjs.extend(tz);
 
 	let { item }: { item: RouteResultItem } = $props();
+
+	let timeUntilDeparture = dayjs(item.from.planTime).diff(dayjs(), 'minute');
 </script>
 
-{#snippet timeDisplay(point: RouteResultFocusFilter)}
-	<div class="min-w-18">
+{#snippet timeDisplay(point: RouteResultFocusFilter, hideLive: boolean = false)}
+	<div class="h-9 min-w-18">
 		<div class="text-lg/5 font-medium tabular-nums">
 			{dayjs(point.planTime).format('HH:mm')}
 		</div>
-		{#if point.isCancelled}
-			<div class="text-xs/4 font-semibold text-danger">Cancelled</div>
-		{:else if point.delay === null}
-			<div class="text-xs/4 font-semibold text-warning">Delayed</div>
-		{:else if Math.abs(point.delay) >= 1}
-			<div class="text-sm/4 font-semibold text-warning tabular-nums">
-				{dayjs(point.rtTime).format('HH:mm')}
-			</div>
-		{:else}
-			<div class="text-xs/4 font-semibold text-good tabular-nums">On time</div>
+		{#if !hideLive}
+			{#if point.isCancelled}
+				<div class="text-xs/4 font-semibold text-danger">Cancelled</div>
+			{:else if point.delay === null}
+				<div class="text-xs/4 font-semibold text-warning">Delayed</div>
+			{:else if Math.abs(point.delay) >= 1}
+				<div class="text-sm/4 font-semibold text-warning tabular-nums">
+					{dayjs(point.rtTime).format('HH:mm')}
+				</div>
+			{:else if timeUntilDeparture < 4 * 60}
+				<div class="text-xs/4 font-semibold text-good tabular-nums">On time</div>
+			{:else}
+				<div class="text-xs/4 font-semibold text-muted-foreground tabular-nums">Scheduled</div>
+			{/if}
 		{/if}
 	</div>
 {/snippet}
@@ -50,7 +56,7 @@
 			</div>
 			<div class="w-full">
 				{#if item.to}
-					{@render timeDisplay(item.to)}
+					{@render timeDisplay(item.to, item.from.isCancelled)}
 				{/if}
 			</div>
 		</div>
@@ -87,5 +93,7 @@
 				</div>
 			{/if}
 		</div>
+	{:else}
+		<div class="w-10"></div>
 	{/if}
 </div>
