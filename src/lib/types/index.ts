@@ -61,10 +61,12 @@ export type RouteResultItem = {
 	from: RouteResultFocusFilter;
   to: RouteResultFocusFilter | null;
   operator: Operator;
-  destination: string;
+  destination: string[];
   platform: string | null;
 	duration: number | null;
-	isPlatformConfirmed: boolean;
+  isPlatformConfirmed: boolean;
+	planArrivesFirst: boolean;
+	rtArrivesFirst: boolean;
 };
 
 export type BoardNotice = {

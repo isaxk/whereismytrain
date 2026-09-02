@@ -234,7 +234,7 @@
 	</div>
 {/if}
 
-<div class="grow flex flex-col">
+<div class="flex grow flex-col">
 	<div class="flex p-2 px-3">
 		<Button variant="secondary" disabled={!earlierUrl} href={earlierUrl}
 			><ClockArrowUpIcon /> Earlier trains</Button
@@ -249,16 +249,35 @@
 	</div>
 	{#if results}
 		<div class="" in:fade={{ duration: timeSpentLoading > 100 ? 150 : 0 }}>
-			{#each results as result (result.id + result.from.planTime)}
-				<a
-					href={serviceUrl(result.id)}
-					animate:flip={{ duration: 150 }}
-					in:fade={{ duration: 100 }}
-					class="block odd:bg-muted/40"
-				>
-					<ResultItem item={result} />
-				</a>
-			{/each}
+			{#if results.length > 0}
+				{#each results as result (result.id + result.from.planTime)}
+					<a
+						href={serviceUrl(result.id)}
+						animate:flip={{ duration: 150 }}
+						in:fade={{ duration: 100 }}
+						class="block odd:bg-muted/40"
+					>
+						<ResultItem item={result} />
+					</a>
+				{/each}
+			{:else}
+				<div class="px-3 text-sm py-4">
+					<div class="text-lg font-semibold">No direct trains found</div>
+					{#if details?.time}
+						<div class="text-sm">
+							There were no results between {details.time} and {dayjs(details.time, 'HHmm').add(2, 'hours').format('HH:mm')}. You can try:
+						</div>
+					{:else}
+						<div class="text-sm">
+							There were no results in the next 2 hours. You can try:
+						</div>
+					{/if}
+					<ul class="list-disc pl-4">
+						<li>Searching for later or earlier trains</li>
+						<li>Or use the <a class="text-blue-500 underline" href="https://www.nationalrail.co.uk/">National Rail Journey Planner</a> for journeys with changes</li>
+					</ul>
+				</div>
+			{/if}
 		</div>
 	{:else if loading}
 		<div in:fade={{ duration: 100 }}>

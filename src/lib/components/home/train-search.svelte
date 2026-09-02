@@ -86,7 +86,7 @@
 				.hour(parseInt(hour))
 				.minute(parseInt(minute))
 				.add(tomorrow ? 1 : 0, 'day');
-			if (to && Math.abs(time.diff(initialTime, 'minute')) < 5 && !tomorrow) {
+			if (to && Math.abs(time.diff(dayjs(), 'minute')) < 5 && !tomorrow) {
 				return `/board/${from}?to=${to}`;
 			} else if (to && tomorrow) {
 				return `/board/${from}?to=${to}&time=${time.format('HHmm')}&tomorrow=${tomorrow}`;

@@ -383,7 +383,16 @@
 				<div
 					class="flex items-center gap-1 rounded bg-muted px-1.5 text-xs text-foreground/80 drop-shadow-xs"
 				>
-					Platform <span class="text-base font-semibold text-foreground">{platform}</span>
+					Platform {#if !isPlatformConfirmed}Est.
+					{/if}
+					<span
+						class={[
+							'',
+							!isPlatformConfirmed
+								? 'font-medium text-sm text-muted-foreground'
+								: 'font-semibold text-base text-foreground'
+						]}>{platform}</span
+					>
 				</div>
 			{/if}
 			<ChangeNotifier class="w-max text-sm text-nowrap" value="{departed}{arrived}{isCancelled}">
@@ -463,13 +472,15 @@
 		</div>
 		<div class="absolute top-1 bottom-5 left-16.5 w-3 rounded-full">
 			{#if departed}
-				<div class="absolute inset-0 opacity-75 rounded-full" style:background={operator.color}></div>
 				<div
-					class="absolute right-0 bottom-0 rounded-full left-0 transition-all"
+					class="absolute inset-0 rounded-full opacity-75"
+					style:background={operator.color}
+				></div>
+				<div
+					class="absolute right-0 bottom-0 left-0 rounded-full transition-all"
 					style:height="{arrived ? 100 : Math.min(75, 100 - (elapsed / duration) * 100)}%"
 					style:background={operator.color}
-				>
-				</div>
+				></div>
 			{:else}
 				<div class="absolute inset-0 rounded-full" style:background={operator.color}></div>
 			{/if}

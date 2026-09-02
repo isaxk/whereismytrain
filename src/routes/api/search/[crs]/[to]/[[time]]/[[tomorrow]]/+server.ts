@@ -22,56 +22,65 @@ async function parseResult(
 	toParam: string | null,
 	toName: string | null
 ): Promise<RouteResultItem> {
-
-  let to = toParam;
-  if (!to) {
-    to = item.destination[0].crs;
-    toName = item.destination[0].locationName;
-  }
+	let to = toParam;
+	if (!to) {
+		to = item.destination[0].crs;
+		toName = item.destination[0].locationName;
+	}
 
 	let filter = item.subsequentLocations.find((loc: any) => loc.crs === to);
-	let destination = item.destination[0];
+	let destination = [item.destination[0]];
+
+	if (!filter) {
+		const associations = item.subsequentLocations
+			.map((loc: any) => loc.associations?.filter((a) => a.category === 'divide') ?? [])
+			.filter((a) => a.length > 0)
+			.flat();
+		if (associations.length === 0) {
+			throw new Error(`No associations found for ${to}`);
+		}
+		const assocLocations = await Promise.all(
+			associations.map(async (a) => {
+				const response = await fetch(
+					`https://api1.raildata.org.uk/1010-query-services-and-service-details1_0/LDBSVWS/api/20220120/GetServiceDetailsByRID/${a.rid}`,
+					{
+						headers: {
+							'x-apikey': SERVICE_DETAILS_TOKEN
+						}
+					}
+				);
+				const data = await response.json();
+				return data.locations;
+			})
+		);
+
+		filter = assocLocations.flat().find((loc: any) => loc.crs === to);
+		const splitWithFilter = assocLocations.findIndex((list) =>
+			list.some((loc: any) => loc.crs === to)
+		);
+		destination = item.destination[splitWithFilter + 1];
 
 		if (!filter) {
-			const associations = item.subsequentLocations
-				.map((loc: any) => loc.associations?.filter((a) => a.category === 'divide') ?? [])
-				.filter((a) => a.length > 0)
-				.flat();
-			if (associations.length === 0) {
-				throw new Error(`No associations found for ${to}`);
-			}
-			const assocLocations = await Promise.all(
-				associations.map(async (a) => {
-					const response = await fetch(
-						`https://api1.raildata.org.uk/1010-query-services-and-service-details1_0/LDBSVWS/api/20220120/GetServiceDetailsByRID/${a.rid}`,
-						{
-							headers: {
-								'x-apikey': SERVICE_DETAILS_TOKEN
-							}
-						}
-					);
-					const data = await response.json();
-					return data.locations;
-				})
-			);
-
-			filter = assocLocations.flat().find((loc: any) => loc.crs === to);
-			const splitWithFilter = assocLocations.findIndex((list) =>
-				list.some((loc: any) => loc.crs === to)
-			);
-			destination = item.destination[splitWithFilter + 1];
-
-			if (!filter) {
-				throw new Error(`No filter found for ${to}`);
-			}
+			throw new Error(`No filter found for ${to}`);
 		}
+	} else {
+		const splitPoint = item.subsequentLocations.findIndex((loc: any) =>
+			loc.associations?.some((a) => a.category === 'divide')
+		);
+		const filterIndex = item.subsequentLocations.findIndex((loc: any) => loc.crs === to);
+		if (splitPoint > filterIndex) {
+			destination = item.destination;
+		}
+	}
 
 	const isBus = item.category.includes('B');
 
 	const delay = item.atd || item.etd ? dayjs(item.atd ?? item.etd).diff(item.std, 'minutes') : null;
-	const filterDelay = to ? (
-		filter.ata || filter.eta ? dayjs(filter.ata ?? filter.eta).diff(filter.sta, 'minutes') : null
-	) : null;
+	const filterDelay = to
+		? filter.ata || filter.eta
+			? dayjs(filter.ata ?? filter.eta).diff(filter.sta, 'minutes')
+			: null
+		: null;
 
 	return {
 		id: item.rid,
@@ -95,19 +104,22 @@ async function parseResult(
 					}
 				: null,
 		destination: toParam
-			? destination.locationName
-			: item.destination.map((d) => d.locationName).join(' and '),
+			? destination.map((d) => d.locationName)
+			: item.destination.map((d) => d.locationName),
 		operator: {
 			id: item.operatorCode,
 			name: operatorList[item.operatorCode]?.name ?? item.operator,
 			color: operatorList[item.operatorCode]?.bg ?? '#000'
 		},
 		platform: isBus ? 'BUS' : item.platform !== '' ? (item.platform ?? null) : null,
-		duration: to ? dayjs(filter.ata ?? filter.eta ?? filter.sta).diff(
-			dayjs(item.atd ?? item.etd ?? item.std),
-			'minutes'
-		) : null,
-		isPlatformConfirmed: !item.platformIsHidden || item.atdSpecified
+		duration: to
+			? dayjs(filter.ata ?? filter.eta ?? filter.sta).diff(
+					dayjs(item.atd ?? item.etd ?? item.std),
+					'minutes'
+				)
+			: null,
+    isPlatformConfirmed: !item.platformIsHidden || item.atdSpecified,
+		arrivesFirst: false,
 	};
 }
 
@@ -129,13 +141,12 @@ export const GET: RequestHandler = async ({ params }) => {
 	)
 		time = null;
 
-  let date = dayjs().tz('Europe/London');
-  if (time) date = dayjs.tz(time, !time?.includes(':') ? 'HHmm' : 'HH:mm', 'Europe/London');
-  if (tomorrow === 'true') date = date.add(1, 'day');
-
+	let date = dayjs().tz('Europe/London');
+	if (time) date = dayjs.tz(time, !time?.includes(':') ? 'HHmm' : 'HH:mm', 'Europe/London');
+	if (tomorrow === 'true') date = date.add(1, 'day');
 
 	const url = new URL(
-		`https://api1.raildata.org.uk/1010-live-departure-board---staff-version1_0/LDBSVWS/api/20220120/GetDepBoardWithDetails/${crs}/${date.format('YYYYMMDDTHHmmss')}?numRows=20&timeWindow=480&services=PB`
+		`https://api1.raildata.org.uk/1010-live-departure-board---staff-version1_0/LDBSVWS/api/20220120/GetDepBoardWithDetails/${crs}/${date.format('YYYYMMDDTHHmmss')}?numRows=20&timeWindow=240&services=PB`
 	);
 	if (to) url.searchParams.append('filterCRS', to);
 
@@ -153,13 +164,27 @@ export const GET: RequestHandler = async ({ params }) => {
 	const data = await response.json();
 	const services = (data.trainServices ?? [])
 		.concat(data.busServices ?? [])
-		.toSorted((a, b) => a.std - b.std);
+		.toSorted((a, b) => (dayjs(a.std).isBefore(b.std) ? -1 : 1));
 
 	const results = await Promise.all(
 		services.map((item: any) =>
 			parseResult(item, crs, data.locationName, to, data.filterLocationName)
 		)
-	);
+  );
+
+  if (to && results.length > 0) {
+    const sortedByArrival = results.toSorted((a, b) => (dayjs(a.to.planTime).isBefore(b.to.planTime) ? -1 : 1));
+    const sortedByRtArrival = results.toSorted((a, b) => (dayjs(a.to.rtTime).isBefore(b.to.rtTime) ? -1 : 1))
+    const planId = sortedByArrival[0].id;
+    const rtId = sortedByRtArrival[0].id;
+    if (results.findIndex((item) => item.id === rtId) > 0) {
+      results.find((item) => item.id === rtId).rtArrivesFirst = true;
+    }
+    if (results.findIndex((item) => item.id === planId) > 0) {
+      results.find((item) => item.id === planId).planArrivesFirst = true;
+    }
+    console.log(results);
+	}
 
 	const notices: BoardNotice[] = data.nrccMessages
 		?.map((n: any) => ({
