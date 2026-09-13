@@ -72,4 +72,4 @@ async function seedData() {
 	}
 }
 
-// seedData();
+seedData();

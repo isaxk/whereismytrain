@@ -2,8 +2,8 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 
+	import { ArrowLeft, ChevronRight, Clock, Pin, Plus } from '@lucide/svelte/icons';
 	import dayjs from 'dayjs';
-	import { ArrowLeft, ChevronRight, Clock, Pin, Plus } from 'lucide-svelte';
 	import { fade } from 'svelte/transition';
 
 	import Search from '$lib/components/search/search.svelte';
@@ -12,9 +12,9 @@
 	import { pinned } from '$lib/state/saved.svelte';
 	import { refreshing } from '$lib/state/services-subscriber.svelte';
 	import { Severity, type BoardDetails } from '$lib/types';
+	import { cn } from '$lib/utils';
 
 	import Spinner from '../ui/spinner/spinner.svelte';
-	import { cn } from '$lib/utils';
 
 	let {
 		from,
@@ -80,12 +80,12 @@
 			{#if page.data.tomorrow == true}
 				<div class="px-4 text-[10px]/2 text-muted-foreground">Tomorrow</div>
 			{/if}
-			{#if details && Math.abs(details?.offset) > 0}
+			{#if details && details.time}
 				<div class="flex items-center justify-center gap-1 px-4 text-xs text-nowrap">
 					<div class="min-w-3">
 						<Clock size={12} />
 					</div>
-					{dayjs(details?.time).format('HH:mm')}
+					{details.time}
 				</div>
 			{:else}
 				<div

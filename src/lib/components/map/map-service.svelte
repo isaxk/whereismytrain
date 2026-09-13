@@ -2,6 +2,7 @@
 	import { page } from '$app/state';
 
 	import clsx from 'clsx';
+	import dayjs from 'dayjs';
 	import { onMount } from 'svelte';
 	import { Tween } from 'svelte/motion';
 	import { MediaQuery } from 'svelte/reactivity';
@@ -17,7 +18,6 @@
 
 	import MapLocationGroup from './map-location-group.svelte';
 	import MapStationMarker from './map-station-marker.svelte';
-	import dayjs from 'dayjs';
 
 	let {
 		serviceData,

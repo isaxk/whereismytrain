@@ -3,11 +3,11 @@
 	import { goto, preloadCode, preloadData } from '$app/navigation';
 	import { page } from '$app/state';
 
+	import { ChevronRight, Clock, CloudOff, X } from '@lucide/svelte/icons';
 	import SearchIcon from '@lucide/svelte/icons/search';
 	import dayjs from 'dayjs';
 	import format from 'format-fuse.js';
 	import Fuse from 'fuse.js';
-	import { ChevronRight, Clock, CloudOff, X } from 'lucide-svelte';
 	import { onMount, tick } from 'svelte';
 	import { flip } from 'svelte/animate';
 	import { fly, scale } from 'svelte/transition';
@@ -78,27 +78,26 @@
 	const fromFormatted = $derived(browser ? format(fromResults) : []);
 	const toFormatted = $derived(browser ? format(toResults) : []);
 
-	const initialTime = dayjs().format('HHmm');
+	const initialTime = dayjs().format('HH:mm');
 
 	const href = $derived.by(() => {
 		if (from) {
 			const time = dayjs()
 				.hour(parseInt(hour))
 				.minute(parseInt(minute))
-				.add(tomorrow ? 1 : 0, 'day')
-				.format('HHmm');
-			if (to && time === initialTime && !tomorrow) {
+				.add(tomorrow ? 1 : 0, 'day');
+			if (to && Math.abs(time.diff(dayjs(), 'minute')) < 5 && !tomorrow) {
 				return `/board/${from}?to=${to}`;
 			} else if (to && tomorrow) {
-				return `/board/${from}?to=${to}&time=${time}&tomorrow=${tomorrow}`;
+				return `/board/${from}?to=${to}&time=${time.format('HHmm')}&tomorrow=${tomorrow}`;
 			} else if (to) {
-				return `/board/${from}?to=${to}&time=${time}`;
-			} else if (time === initialTime && !tomorrow) {
+				return `/board/${from}?to=${to}&time=${time.format('HHmm')}`;
+			} else if (Math.abs(time.diff(initialTime, 'minute')) < 5 && !tomorrow) {
 				return `/board/${from}`;
 			} else if (tomorrow) {
-				return `/board/${from}?time=${time}&tomorrow=${tomorrow}`;
+				return `/board/${from}?time=${time.format('HHmm')}&tomorrow=${tomorrow}`;
 			} else {
-				return `/board/${from}?time=${time}`;
+				return `/board/${from}?time=${time.format('HHmm')}`;
 			}
 		} else {
 			return `#`;

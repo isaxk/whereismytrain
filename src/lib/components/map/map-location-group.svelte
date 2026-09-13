@@ -2,7 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 
-	import { CircleAlert } from 'lucide-svelte';
+	import { CircleAlert } from '@lucide/svelte/icons';
 	import { onMount } from 'svelte';
 	import { Tween } from 'svelte/motion';
 	import { LineLayer, GeoJSON } from 'svelte-maplibre';

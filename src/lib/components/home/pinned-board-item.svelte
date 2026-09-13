@@ -1,6 +1,6 @@
 <script lang="ts">
+	import { X } from '@lucide/svelte/icons';
 	import ChevronRight from '@lucide/svelte/icons/chevron-right';
-	import { X } from 'lucide-svelte';
 
 	import { pinned } from '$lib/state/saved.svelte';
 	import type { PinnedBoard } from '$lib/types';

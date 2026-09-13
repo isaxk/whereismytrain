@@ -1,10 +1,11 @@
 <script lang="ts">
+	import { Bus, ClockAlert, X } from '@lucide/svelte/icons';
 	import Check from '@lucide/svelte/icons/check';
 	import dayjs from 'dayjs';
-	import { Bus, ClockAlert, X } from 'lucide-svelte';
 
 	import { saved } from '$lib/state/saved.svelte';
 	import type { SavedTrainServiceInfo } from '$lib/types';
+
 	import TrainDiagram from '../itinerary/train-diagram.svelte';
 
 	let {

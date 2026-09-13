@@ -1,7 +1,7 @@
 <script>
 	import { page } from '$app/state';
 
-	import { ArrowLeft } from 'lucide-svelte';
+	import { ArrowLeft } from '@lucide/svelte/icons';
 
 	let { children } = $props();
 </script>

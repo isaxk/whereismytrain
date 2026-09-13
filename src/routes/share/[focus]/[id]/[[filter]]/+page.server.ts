@@ -1,5 +1,6 @@
-import type { TrainService } from '$lib/types/index.js';
 import dayjs from 'dayjs';
+
+import type { TrainService } from '$lib/types/index.js';
 
 import { API_COMPATIBLE_VERSION } from '../../../../api/_shared/index.js';
 

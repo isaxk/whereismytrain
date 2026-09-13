@@ -16,7 +16,8 @@ setupServiceWorker(self, {
 			'/api/formation',
 			'/api/popular',
 			'/api/reasoncode',
-			'/api/mapdata'
+      '/api/mapdata',
+			'/api/search'
 		]
 	}
 });

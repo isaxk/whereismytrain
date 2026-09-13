@@ -82,7 +82,9 @@
 	});
 </script>
 
-<div bind:this={paneElm} class={['w-full rounded-t-2xl bg-background ']}>
+<div bind:this={paneElm} class={['flex rounded-t-2xl bg-background ']}>
 	<div bind:this={scrollTopElm}></div>
-	{@render children()}
+	<div class="flex min-h-full flex-col">
+		{@render children()}
+	</div>
 </div>

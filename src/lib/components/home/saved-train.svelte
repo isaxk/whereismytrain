@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { useConvexClient } from 'convex-svelte';
-	import dayjs from 'dayjs';
 	import {
 		AlertTriangle,
 		EllipsisVertical,
@@ -8,7 +6,9 @@
 		Trash,
 		TriangleAlertIcon,
 		X
-	} from 'lucide-svelte';
+	} from '@lucide/svelte/icons';
+	import { useConvexClient } from 'convex-svelte';
+	import dayjs from 'dayjs';
 	import { onDestroy, onMount, untrack } from 'svelte';
 	import { fly } from 'svelte/transition';
 
@@ -20,6 +20,7 @@
 
 	import TrainDiagram from '../itinerary/train-diagram.svelte';
 	import SubscriptionProvider from '../providers/subscription-provider.svelte';
+	import Search from '../search/search.svelte';
 	import AlertCard from '../ui/alert-card.svelte';
 	import Button, { buttonVariants } from '../ui/button/button.svelte';
 	import * as Dialog from '../ui/dialog';
@@ -27,7 +28,6 @@
 	import Spinner from '../ui/spinner/spinner.svelte';
 
 	import Connection from './connection.svelte';
-	import Search from '../search/search.svelte';
 
 	let { data, index }: { data: SavedTrain; index: number } = $props();
 
@@ -150,7 +150,7 @@
 						<div style:min-height="{clientHeight}px"></div>
 
 						{#if !service.isCancelled && !service.isCancelledAtFilter}
-							<div class="px-2">
+							<div class="p-2">
 								<Connection
 									crs={service.filter}
 									originalArr={data.originalArrival}
