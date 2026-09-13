@@ -65,8 +65,6 @@ export type RouteResultItem = {
   platform: string | null;
 	duration: number | null;
   isPlatformConfirmed: boolean;
-	planArrivesFirst: boolean;
-	rtArrivesFirst: boolean;
 };
 
 export type BoardNotice = {

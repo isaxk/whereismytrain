@@ -5,6 +5,7 @@
 
 	import type { RouteResultFocusFilter, RouteResultItem } from '$lib/types';
 	import { durationDisplay } from '$lib/utils';
+	import ChangeNotifier from '../ui/change-notifier.svelte';
 
 	dayjs.extend(tz);
 
@@ -34,6 +35,7 @@
 			{/if}
 		</div>
 		{#if !hideLive}
+			<ChangeNotifier class="w-max" value="{point.isCancelled}-{point.delay}">
 				{#if point.isCancelled}
 					<div class="text-xs/4 font-semibold text-danger">Cancelled</div>
 				{:else if point.delay === null}
@@ -55,6 +57,7 @@
 				{#if rtArrivesFirst}
 					<Zap size={16} />
 				{/if}
+			</ChangeNotifier>
 		{/if}
 	</div>
 {/snippet}
@@ -70,7 +73,7 @@
 			</div>
 			to
 			{#each item.destination as destination, i (destination + i)}
-				<div>
+				<div class="">
 					{#if i > item.destination.length - 2 && item.destination.length > 1}
 						<span class="">and</span>
 					{/if}
@@ -87,11 +90,7 @@
 			</div>
 			<div class="w-full">
 				{#if item.to}
-					{@render timeDisplay(
-						item.to,
-						item.from.isCancelled,
-
-					)}
+					{@render timeDisplay(item.to, item.from.isCancelled)}
 				{/if}
 			</div>
 		</div>
@@ -104,13 +103,14 @@
 	{/if} -->
 
 	{#if !item.from.isCancelled || item.platform === 'BUS'}
-		<div
+		<ChangeNotifier
+			value="{item.platform}-{item.isPlatformConfirmed}"
 			class={[
 				'flex h-12 w-10 flex-col items-center justify-center rounded bg-muted',
 				{
 					'text-warning': item.platform === 'BUS',
 					'bg-muted/75 text-muted-foreground/75':
-						item.platform === null || !item.isPlatformConfirmed
+						item.platform === null || (!item.isPlatformConfirmed && item.platform !== 'BUS')
 				}
 			]}
 		>
@@ -127,7 +127,7 @@
 					{/if}
 				</div>
 			{/if}
-		</div>
+		</ChangeNotifier>
 	{:else}
 		<div class="w-10"></div>
 	{/if}

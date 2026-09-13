@@ -66,6 +66,7 @@
 		const search = new SvelteURLSearchParams();
 		if (data.to) search.set('to', data.to);
 		if (data.time) search.set('time', data.time);
+		if (data.tomorrow) search.set('tomorrow', 'true');
 		return `/board/${data.crs}/t/${rid}?${search.toString()}`;
 	}
 

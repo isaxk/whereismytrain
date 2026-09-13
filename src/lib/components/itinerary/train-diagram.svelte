@@ -416,7 +416,7 @@
 	</div> -->
 	<div class="relative flex flex-col gap-6">
 		<div class="flex items-start gap-10">
-			<div class="flex flex-col">
+			<div class="flex flex-col w-13">
 				<div class="w-full">
 					<div class="text-lg/5 font-medium tabular-nums">
 						{planDepTime}
@@ -442,7 +442,7 @@
 			</div>
 		</div>
 		<div class="flex items-start gap-10">
-			<div class="flex flex-col">
+			<div class="flex flex-col w-13">
 				<div class="flex w-full flex-col">
 					<div class="text-lg/5 font-medium tabular-nums">
 						{planArrTime}

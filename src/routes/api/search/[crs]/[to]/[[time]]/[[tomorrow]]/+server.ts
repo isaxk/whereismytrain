@@ -29,7 +29,14 @@ async function parseResult(
 	}
 
 	let filter = item.subsequentLocations.find((loc: any) => loc.crs === to);
-	let destination = [item.destination[0]];
+  let destination = [item.destination[0]];
+
+  // let destinationChanged = item.subsequentLocations[item.subsequentLocations.length - 1].isCancelled;
+
+  // if(item.isCancelled) {
+  //   destinationChanged = false;
+  // }
+
 
 	if (!filter) {
 		const associations = item.subsequentLocations
@@ -105,7 +112,7 @@ async function parseResult(
 				: null,
 		destination: toParam
 			? destination.map((d) => d.locationName)
-			: item.destination.map((d) => d.locationName),
+      : item.destination.map((d) => d.locationName),
 		operator: {
 			id: item.operatorCode,
 			name: operatorList[item.operatorCode]?.name ?? item.operator,
@@ -119,7 +126,6 @@ async function parseResult(
 				)
 			: null,
     isPlatformConfirmed: !item.platformIsHidden || item.atdSpecified,
-		arrivesFirst: false,
 	};
 }
 
