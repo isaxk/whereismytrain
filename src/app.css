@@ -148,10 +148,19 @@
 :root {
 	overscroll-behavior: none;
 	color: var(--color-foreground);
+	--pane-offset: -150;
+}
+
+
+@media (display-mode: standalone) {
+	:root {
+	--pane-offset: -45;
+	}
 }
 
 .pane {
 	padding-top: 0px !important;
+
 }
 
 .maplibregl-ctrl-top-left {
@@ -191,3 +200,15 @@ input[type='time']::-webkit-calendar-picker-indicator {
 [data-sonner-toast] [data-content] {
 	width: 100%;
 }*/
+
+@media (display-mode: standalone) {
+  .remove-blur {
+    position: fixed;
+    inset: 0 0 auto;
+    height: 11px;
+    pointer-events: none;
+    background: #fff;
+    -webkit-background-clip: text;
+    background-clip: text;
+  }
+}

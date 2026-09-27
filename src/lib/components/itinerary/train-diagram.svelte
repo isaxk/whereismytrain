@@ -13,7 +13,7 @@
 	import ChevronRight from '@lucide/svelte/icons/chevron-right';
 	import X from '@lucide/svelte/icons/x';
 	import dayjs from 'dayjs';
-	import { onMount } from 'svelte';
+	import { onMount, type Snippet } from 'svelte';
 
 	import type { CallingPoint, Operator, SavedTrainServiceInfo, TrainService } from '$lib/types';
 	import { durationDisplay } from '$lib/utils';
@@ -44,8 +44,17 @@
 		isCancelledAtFilter,
 		operator,
 		showDate = false,
+		menu,
+		cancelled,
+		id,
 		onRemove = () => {}
-	}: SavedTrainServiceInfo & { showDate?: boolean; onRemove?: () => void } = $props();
+	}: SavedTrainServiceInfo & {
+		id: string;
+		showDate?: boolean;
+		onRemove?: () => void;
+		menu?: Snippet;
+		cancelled?: Snippet;
+	} = $props();
 
 	const planDepTime = $derived(dayjs(planDep).format('HH:mm'));
 	const rtDepTime = $derived(rtDep ? dayjs(rtDep).format('HH:mm') : null);
@@ -90,6 +99,8 @@
 
 		return diff;
 	});
+
+	const href = $derived(`/board/${crs}/t/${id}?to=${filter}&backTo=/`);
 </script>
 
 {#if showDate}
@@ -362,51 +373,64 @@
 {/snippet}
 
 <div class="flex flex-col gap-1 px-3">
-	<div class="flex flex-col gap-1 pb-2">
-		<ChangeNotifier value={destination} class="flex w-max  items-center gap-1 truncate text-xs/4">
-			<div
-				class="h-max w-max rounded-sm px-1.5 py-0.5 text-[10px]/3 text-white"
-				style:background={operator.color}
-			>
-				{operator.name}
-			</div>
-
-			<div class="min-w-0 grow truncate">
-				to
-				<span class="font-medium">
-					{destination}
-				</span>
-			</div>
-		</ChangeNotifier>
-		<div class="flex h-5 items-center gap-2">
-			{#if !departed}
+	<div class="flex items-center gap-1">
+		<a {href} class="flex min-w-0 grow flex-col gap-1 pb-2">
+			<ChangeNotifier value={destination} class="flex w-max  items-center gap-1 truncate text-xs/4">
 				<div
-					class="flex items-center gap-1 rounded bg-muted px-1.5 text-xs text-foreground/80 drop-shadow-xs"
+					class="h-max w-max rounded-sm px-1.5 py-0.5 text-[10px]/3 text-white"
+					style:background={operator.color}
 				>
-					Platform {#if !isPlatformConfirmed}Est.
+					{operator.name}
+				</div>
+
+				<div class="min-w-0 grow truncate">
+					to
+					<span class="font-medium">
+						{destination}
+					</span>
+				</div>
+			</ChangeNotifier>
+			{#if !isCancelled}
+				<div class="flex h-5 items-center gap-2">
+					{#if !departed}
+						<div
+							class="flex items-center gap-1 rounded bg-muted px-1.5 text-xs text-foreground/80 drop-shadow-xs"
+						>
+							Platform {#if !isPlatformConfirmed}Est.
+							{/if}
+							<span
+								class={[
+									'',
+									!isPlatformConfirmed
+										? 'text-sm font-medium text-muted-foreground'
+										: 'text-base font-semibold text-foreground'
+								]}>{platform}</span
+							>
+						</div>
 					{/if}
-					<span
-						class={[
-							'',
-							!isPlatformConfirmed
-								? 'font-medium text-sm text-muted-foreground'
-								: 'font-semibold text-base text-foreground'
-						]}>{platform}</span
+					<ChangeNotifier
+						class="w-max text-sm text-nowrap"
+						value="{departed}{arrived}{isCancelled}"
 					>
+						{#if timeUntilRtDep !== null && timeUntilRtDep < 60}
+							{#if departed && filterDelay !== null && timeUntilRtArr !== null}
+								{@render liveDisplay(timeUntilRtArr, filterDelay, departed)}
+							{:else if departed}
+								<div class="flex items-center gap-1 font-medium">Departed</div>
+							{:else if delay !== null}
+								{@render liveDisplay(timeUntilRtDep, delay, departed)}
+							{/if}
+						{/if}
+					</ChangeNotifier>
 				</div>
 			{/if}
-			<ChangeNotifier class="w-max text-sm text-nowrap" value="{departed}{arrived}{isCancelled}">
-				{#if timeUntilRtDep !== null && timeUntilRtDep < 60}
-					{#if departed && filterDelay !== null && timeUntilRtArr !== null}
-						{@render liveDisplay(timeUntilRtArr, filterDelay, departed)}
-					{:else if departed}
-						<div class="flex items-center gap-1 font-medium">Departed</div>
-					{:else if delay !== null}
-						{@render liveDisplay(timeUntilRtDep, delay, departed)}
-					{/if}
-				{/if}
-			</ChangeNotifier>
-			<div class="grow"></div>
+		</a>
+		<div>
+			{#if isCancelled}
+				{@render cancelled?.()}
+			{:else}
+				{@render menu?.()}
+			{/if}
 		</div>
 	</div>
 	<!-- <div class="flex">
@@ -414,9 +438,9 @@
 		<div class="min-w-6"></div>
 
 	</div> -->
-	<div class="relative flex flex-col gap-6">
+	<a {href} class="relative flex flex-col gap-6">
 		<div class="flex items-start gap-10">
-			<div class="flex flex-col w-13">
+			<div class="flex w-13 flex-col">
 				<div class="w-full">
 					<div class="text-lg/5 font-medium tabular-nums">
 						{planDepTime}
@@ -442,7 +466,7 @@
 			</div>
 		</div>
 		<div class="flex items-start gap-10">
-			<div class="flex flex-col w-13">
+			<div class="flex w-13 flex-col">
 				<div class="flex w-full flex-col">
 					<div class="text-lg/5 font-medium tabular-nums">
 						{planArrTime}
@@ -465,7 +489,7 @@
 					</ChangeNotifier>
 				</div>
 			</div>
-			<div class="min-w-0">
+			<div class="min-w-0 grow">
 				<div class="text-base/5 font-medium">{to}</div>
 				<div class="truncate text-xs/4 text-muted-foreground">{filter}</div>
 			</div>
@@ -489,5 +513,5 @@
 				class="absolute right-0.5 bottom-0.5 left-0.5 aspect-square rounded-full bg-white/90"
 			></div>
 		</div>
-	</div>
+	</a>
 </div>

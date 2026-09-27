@@ -140,7 +140,7 @@ export const operatorList: Record<string, { name: string; bg: string; text: stri
 		text: '#ffffff'
 	},
 	AW: {
-		name: 'TfW',
+		name: 'Transport for Wales',
 		bg: '#D32D1F',
 		text: '#ffffff'
 	},
@@ -150,7 +150,7 @@ export const operatorList: Record<string, { name: string; bg: string; text: stri
 		text: '#ffffff'
 	},
 	EM: {
-		name: 'East Midlands Railway',
+		name: 'EMR',
 		bg: '#411838',
 		text: '#ffffff'
 	},

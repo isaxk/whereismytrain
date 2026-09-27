@@ -1,6 +1,8 @@
 <script lang="ts">
 	import {
 		AlertTriangle,
+		ArrowLeftRight,
+		CircleMinus,
 		EllipsisVertical,
 		SearchIcon,
 		Trash,
@@ -28,6 +30,7 @@
 	import Spinner from '../ui/spinner/spinner.svelte';
 
 	import Connection from './connection.svelte';
+	import { goto } from '$app/navigation';
 
 	let { data, index }: { data: SavedTrain; index: number } = $props();
 
@@ -93,6 +96,9 @@
 	);
 
 	onMount(() => {
+		if (dayjs().diff(dayjs(data.service.planArr), 'h') > 6) {
+			saved.value = saved.value.filter((_, i) => i !== index);
+		}
 		const interval = setInterval(() => {
 			now = dayjs();
 		}, 1000);
@@ -128,39 +134,67 @@
 				>
 					<div>
 						{#key serviceId}
-							<a
-								bind:clientHeight
-								class="absolute top-0 right-0 left-0"
-								out:fly={{ duration: 200, y: 15 }}
-								in:fly={{ duration: 200, y: -15, delay: 201 }}
-								href={`/board/${data.focusCrs}/t/${data.service_id}?to=${data.filterCrs}&backTo=/`}
+							<TrainDiagram
+								{...service}
+								id={serviceId}
+								onRemove={onUnsubscribe}
+								showDate={!dayjs(service.rtDep ?? service.planDep).isSame(dayjs(), 'day') &&
+									!saved.value.some(
+										(item, i) =>
+											i < index &&
+											!dayjs(item.service.rtDep ?? item.service.planDep).isSame(dayjs(), 'day')
+									)}
 							>
-								<TrainDiagram
-									{...service}
-									onRemove={onUnsubscribe}
-									showDate={!dayjs(service.rtDep ?? service.planDep).isSame(dayjs(), 'day') &&
-										!saved.value.some(
-											(item, i) =>
-												i < index &&
-												!dayjs(item.service.rtDep ?? item.service.planDep).isSame(dayjs(), 'day')
-										)}
-								/>
-							</a>
+								{#snippet menu()}
+									<DropdownMenu.Root>
+										<DropdownMenu.Trigger
+											class={[buttonVariants({ variant: 'outline', size: 'icon-sm' })]}
+											><EllipsisVertical /></DropdownMenu.Trigger
+										>
+										<DropdownMenu.Content>
+											<DropdownMenu.Item
+												onclick={() =>
+													goto(
+														`/board/${data.focusCrs}/?to=${data.filterCrs}&time=${dayjs(data.service.planDep).format('HHmm')}`
+													)}
+											>
+												<ArrowLeftRight />
+												Alternatives
+											</DropdownMenu.Item>
+											<DropdownMenu.Item onclick={() => onUnsubscribe()} variant="destructive">
+												<CircleMinus />
+												Remove
+											</DropdownMenu.Item>
+										</DropdownMenu.Content>
+									</DropdownMenu.Root>
+								{/snippet}
+								{#snippet cancelled()}
+									<Button
+										onclick={() =>
+											goto(
+												`/board/${data.focusCrs}/?to=${data.filterCrs}&time=${dayjs(data.service.planDep).format('HHmm')}`
+											)}
+									>
+										<ArrowLeftRight />
+										Alternatives
+									</Button>
+								{/snippet}
+							</TrainDiagram>
 						{/key}
-						<div style:min-height="{clientHeight}px"></div>
+						<!-- <div style:min-height="{clientHeight}px"></div> -->
 
-						{#if !service.isCancelled && !service.isCancelledAtFilter}
-							<div class="p-2">
-								<Connection
-									crs={service.filter}
-									originalArr={data.originalArrival}
-									planArr={service.planArr}
-									rtArr={service.rtArr}
-								/>
-							</div>
-						{:else}
+						<!-- {#if !service.isCancelled && !service.isCancelledAtFilter} -->
+						<div class="pt-6">
+							<Connection
+								crs={service.filter}
+								originalArr={data.originalArrival}
+								planArr={service.planArr}
+								rtArr={service.rtArr}
+							/>
+						</div>
+						<!-- {:else}
 							<div class="h-6"></div>
-						{/if}
+						{/if} -->
 					</div>
 				</div>
 			{/if}

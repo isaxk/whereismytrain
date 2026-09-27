@@ -1,5 +1,11 @@
 <script lang="ts">
-	import { Footprints, GitCompareArrowsIcon, RouteIcon, SearchIcon } from '@lucide/svelte/icons';
+	import {
+		ArrowLeftRight,
+		Footprints,
+		GitCompareArrowsIcon,
+		RouteIcon,
+		SearchIcon
+	} from '@lucide/svelte/icons';
 	import dayjs from 'dayjs';
 
 	import Tubeicon from '$lib/assets/tubeicon.svelte';
@@ -11,10 +17,7 @@
 	import Button from '../ui/button/button.svelte';
 	import * as Popover from '../ui/popover';
 
-
 	let { crs, planArr, rtArr, originalArr } = $props();
-
-
 
 	function isValidConnectionTime(
 		acrossLondon: boolean,
@@ -22,11 +25,13 @@
 		planArr: string | null,
 		originalArr: string | null
 	) {
+		console.log(originalArr);
 		const originalDiff =
 			planDep && planArr ? dayjs(planDep).diff(dayjs(originalArr ?? planArr), 'm') : null;
 
 		const schDiff = planDep && planArr ? dayjs(planDep).diff(dayjs(planArr), 'm') : null;
 
+		console.log(originalDiff, schDiff);
 		const maxTime = acrossLondon ? 180 : 90;
 
 		if (
@@ -42,7 +47,14 @@
 			saved.value.find((connection) => {
 				if (connection.focusCrs !== crs) return null;
 
-				return isValidConnectionTime(false, connection.service.planDep, planArr, originalArr);
+				const valid = isValidConnectionTime(
+					false,
+					connection.service.planDep,
+					planArr,
+					originalArr
+				);
+				console.log(connection.focusCrs, valid);
+				return valid;
 			}) ??
 			saved.value.find((connection) => {
 				const acrossLondon =
@@ -50,15 +62,18 @@
 					londonTerminals.includes(crs) &&
 					connection.focusCrs !== crs;
 
-				const walking = walkingConnections.some(
-					(c) => c.includes(crs ?? '') && c.includes(connection?.focusCrs ?? '')
-				) && crs !== connection?.focusCrs;
+				const walking =
+					walkingConnections.some(
+						(c) => c.includes(crs ?? '') && c.includes(connection?.focusCrs ?? '')
+					) && crs !== connection?.focusCrs;
 
 				if (connection.focusCrs !== crs && !acrossLondon && !walking) return false;
 
 				return isValidConnectionTime(true, connection.service.planDep, planArr, originalArr);
 			}) ??
 			null;
+
+		console.log('connectingService', savedItem);
 
 		return savedItem
 			? { ...savedItem?.service, service_id: savedItem?.service_id, id: savedItem?.id }
@@ -145,11 +160,12 @@
 {/snippet}
 
 {#if connection && connectingService}
-
-	<div class="rounded-lg flex flex-col gap-1 border border-border bg-muted/60 px-2 py-2 drop-shadow-xs">
+	<div
+		class="flex flex-col gap-1 rounded-lg border border-border bg-muted/60 px-2 py-2 drop-shadow-xs"
+	>
 		<div class="grow text-sm font-medium">
 			{#if connection.status === 'impossible'}
-				<div class="flex items-center gap-1 font-medium text-danger">
+				<div class="flex items-center gap-1 text-base font-medium text-danger">
 					{@render icon()}
 					Connection likely missed
 				</div>
@@ -189,12 +205,14 @@
 			{/if}
 		</div>
 		{#if (connection.status === 'impossible' || connection.status === 'alternative') && !connection.isCancelled}
-			<!-- <Button
+			<Button
 				href="/board/{connectingService.crs}?to={connectingService.filter}&time={dayjs(
 					rtArr ?? planArr
-				).format('HHmm')}"
-				variant="default"><SearchIcon size={18} /> Alternative connections</Button
-			> -->
+				)
+					.add(5, 'm')
+					.format('HHmm')}"
+				variant="default"><ArrowLeftRight size={18} /> Find alternatives</Button
+			>
 		{/if}
 	</div>
 {/if}
