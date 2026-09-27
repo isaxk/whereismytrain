@@ -12,7 +12,16 @@
 		CircleAlert,
 		WifiOff,
 		CloudAlert,
-		Bell
+		Bell,
+
+		EllipsisVertical,
+
+		ArrowLeftRight,
+
+		CircleMinus
+
+
+
 	} from '@lucide/svelte/icons';
 	import ChevronDown from '@lucide/svelte/icons/chevron-down';
 	import { Accordion } from 'bits-ui';
@@ -35,7 +44,7 @@
 	import { pwa, saved } from '$lib/state/saved.svelte';
 	import { refreshing, servicesSub } from '$lib/state/services-subscriber.svelte';
 	import { iOS } from '$lib/utils.js';
-
+	import { goto } from '$app/navigation';
 
 	dayjs.extend(relativeTime);
 
@@ -142,7 +151,81 @@
 	<TrainSearch />
 </div>
 <div class="flex flex-col py-4">
-	{#if saved.value.filter((item) => !item.service.arrived).length === 0}
+	{#if saved.value.some((item) => item.service.arrived)}
+		<Accordion.Root type="single" class="px-4 pb-2">
+			<Accordion.Item class="group">
+				<Accordion.Trigger class={['', buttonVariants({ variant: 'ghost' })]}
+					><ChevronDown size={16} class="transition-all group-data-[state=open]:rotate-180" />
+					Completed trains</Accordion.Trigger
+				>
+
+				<Accordion.Content class="">
+					{#each saved.value.filter((item) => item.service.arrived) as item (item.id)}
+						<div class="border-b border-border py-2 even:bg-muted/20">
+							<svelte:boundary>
+								<SubscriptionProvider
+									serviceId={item.service_id}
+									crs={item.focusCrs}
+									filter={item.filterCrs}
+								>
+									{#snippet children({ onUnsubscribe })}
+										<TrainDiagram
+											id={item.service_id}
+											{...item.service}
+											onRemove={() => onUnsubscribe()}
+										>
+										{#snippet menu()}
+											<DropdownMenu.Root>
+												<DropdownMenu.Trigger
+													class={[buttonVariants({ variant: 'outline', size: 'icon-sm' })]}
+													><EllipsisVertical /></DropdownMenu.Trigger
+												>
+												<DropdownMenu.Content>
+													<DropdownMenu.Item
+														onclick={() =>
+															goto(
+																`/board/${item.focusCrs}/?to=${item.filterCrs}&time=${dayjs(item.service.planDep).format('HHmm')}`
+															)}
+													>
+														<ArrowLeftRight />
+														Alternatives
+													</DropdownMenu.Item>
+													<DropdownMenu.Item onclick={() => onUnsubscribe()} variant="destructive">
+														<CircleMinus />
+														Remove
+													</DropdownMenu.Item>
+												</DropdownMenu.Content>
+											</DropdownMenu.Root>
+										{/snippet}
+										{#snippet cancelled()}
+											<Button
+												onclick={() =>
+													goto(
+														`/board/${item.focusCrs}/?to=${item.filterCrs}&time=${dayjs(item.service.planDep).format('HHmm')}`
+													)}
+											>
+												<ArrowLeftRight />
+												Alternatives
+											</Button>
+										{/snippet}
+										</TrainDiagram>
+									{/snippet}
+								</SubscriptionProvider>
+								{#snippet failed(e)}
+									<div>
+										An error occurred loading this subscribed train. Try unsubscribing and
+										re-subscribing.
+										{e}
+									</div>
+								{/snippet}
+							</svelte:boundary>
+						</div>
+					{/each}
+				</Accordion.Content>
+			</Accordion.Item>
+		</Accordion.Root>
+	{/if}
+	{#if saved.value.length === 0}
 		<div class="flex flex-col items-center justify-center gap-1 p-4 py-5 text-muted-foreground">
 			<div class="font-semibold">No trains added yet</div>
 			<div class="max-w-xs text-center text-sm">
@@ -151,41 +234,6 @@
 			</div>
 		</div>
 	{:else}
-		{#if saved.value.some((item) => item.service.arrived)}
-			<Accordion.Root type="single" class="px-4 pb-2">
-				<Accordion.Item class="group">
-					<Accordion.Trigger class={['', buttonVariants({ variant: 'ghost' })]}
-						><ChevronDown size={16} class="transition-all group-data-[state=open]:rotate-180" />
-						Completed trains</Accordion.Trigger
-					>
-
-					<Accordion.Content class="">
-						{#each saved.value.filter((item) => item.service.arrived) as item (item.id)}
-							<div class="border-b border-border py-2 even:bg-muted/20">
-								<svelte:boundary>
-									<SubscriptionProvider
-										serviceId={item.service_id}
-										crs={item.focusCrs}
-										filter={item.filterCrs}
-									>
-										{#snippet children({ onUnsubscribe })}
-											<TrainDiagram id={item.service_id} {...item.service} onRemove={() => onUnsubscribe()} />
-										{/snippet}
-									</SubscriptionProvider>
-									{#snippet failed(e)}
-										<div>
-											An error occurred loading this subscribed train. Try unsubscribing and
-											re-subscribing.
-											{e}
-										</div>
-									{/snippet}
-								</svelte:boundary>
-							</div>
-						{/each}
-					</Accordion.Content>
-				</Accordion.Item>
-			</Accordion.Root>
-		{/if}
 		{#each saved.value as item, index (item.id)}
 			<div class="px-4 even:bg-muted/20">
 				<svelte:boundary>
