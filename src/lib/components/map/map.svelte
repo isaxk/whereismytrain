@@ -196,7 +196,7 @@
 		}
 	}}
 >
-	<div class="blur-panel fixed top-0 right-0 left-0 z-10000000 h-safe-top"></div>
+	<!-- <div class="blur-panel fixed top-0 right-0 left-0 z-10000000 h-safe-top"></div> -->
 	{#if lg.current}
 		<NavigationControl position="top-left" />
 	{/if}

@@ -45,9 +45,7 @@
 		'sticky top-0 z-20 flex h-18 items-center gap-2 border-b border-b-border bg-background px-4 pt-2 lg:pt-0'
 	])}
 >
-	<div class="absolute top-1.5 right-0 left-0 flex h-2 min-w-10 justify-center lg:hidden">
-		<div class="h-[5px] w-10 rounded-sm bg-black/40"></div>
-	</div>
+
 	<Button size="icon" variant="outline" href="../"><ArrowLeft size={20} /></Button>
 	<div class="flex w-full min-w-0 grow flex-col pl-2">
 		<div class="text-2xl/7 font-bold">{from}</div>

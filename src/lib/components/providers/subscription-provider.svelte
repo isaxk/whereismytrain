@@ -192,6 +192,13 @@
 						date: serviceData.date,
 						subscriptionId
 					};
+				} else if (serviceData && !saved.value[existing].subscriptionId) {
+					saved.value[existing] = {
+						...saved.value[existing],
+						service_id: serviceId,
+						service: parsedServiceInfo,
+						date: serviceData.date,
+					};
 				} else {
 					console.error('Failed to register subscription');
 				}

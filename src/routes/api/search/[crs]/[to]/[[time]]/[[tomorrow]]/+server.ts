@@ -22,6 +22,9 @@ async function parseResult(
 	toParam: string | null,
 	toName: string | null
 ): Promise<RouteResultItem> {
+
+  console.log(item);
+
 	let to = toParam;
 	if (!to) {
 		to = item.destination[0].crs;
@@ -30,6 +33,10 @@ async function parseResult(
 
 	let filter = item.subsequentLocations.find((loc: any) => loc.crs === to);
   let destination = [item.destination[0]];
+
+  if (item.origin.some((l) => l.crs === 'SSD') && item.destination.some((l) => l.crs === 'LST') || item.origin.some((l) => l.crs === 'LST') && item.destination.some((l) => l.crs === 'SSD')) {
+		item.operatorCode = 'SX';
+	}
 
   // let destinationChanged = item.subsequentLocations[item.subsequentLocations.length - 1].isCancelled;
 

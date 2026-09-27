@@ -57,7 +57,7 @@
 <div
 	class="fixed top-0 right-0 left-0 z-10 flex h-18 w-full flex-col justify-center rounded-t-2xl border-b border-border bg-background px-4"
 >
-	<div class="flex items-center justify-start gap-2">
+	<div class="flex items-center justify-start gap-2 pt-1">
 		<div class="grow text-3xl font-bold">Where is my train?</div>
 		<div class="relative flex h-9 items-center">
 			{#if refreshing.current}
@@ -161,7 +161,7 @@
 
 					<Accordion.Content class="">
 						{#each saved.value.filter((item) => item.service.arrived) as item (item.id)}
-							<a href="/board/{item.focusCrs}/t/{item.service_id}?to={item.filterCrs}&backTo=/" class="border-b border-border py-2 even:bg-muted/20">
+							<div class="border-b border-border py-2 even:bg-muted/20">
 								<svelte:boundary>
 									<SubscriptionProvider
 										serviceId={item.service_id}
@@ -169,7 +169,7 @@
 										filter={item.filterCrs}
 									>
 										{#snippet children({ onUnsubscribe })}
-											<TrainDiagram {...item.service} onRemove={() => onUnsubscribe()} />
+											<TrainDiagram id={item.service_id} {...item.service} onRemove={() => onUnsubscribe()} />
 										{/snippet}
 									</SubscriptionProvider>
 									{#snippet failed(e)}
@@ -180,7 +180,7 @@
 										</div>
 									{/snippet}
 								</svelte:boundary>
-							</a>
+							</div>
 						{/each}
 					</Accordion.Content>
 				</Accordion.Item>
